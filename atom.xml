@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-06-21T02:15:46.182Z</updated>
+    <updated>2019-06-21T02:36:04.226Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -10,6 +10,490 @@
     <logo>https://p.guipulp.top//images/avatar.png</logo>
     <icon>https://p.guipulp.top//favicon.ico</icon>
     <rights>All rights reserved 2019, PeterPan</rights>
+    <entry>
+        <title type="html"><![CDATA[kubeadm搭建v1.10.3kubernetes集群]]></title>
+        <id>https://p.guipulp.top//post/jZoeyPf8e</id>
+        <link href="https://p.guipulp.top//post/jZoeyPf8e">
+        </link>
+        <updated>2019-06-21T02:33:01.000Z</updated>
+        <summary type="html"><![CDATA[<p>本文使用kubeadm和容器化etcd安装kubernetes集群用于poc</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本文使用kubeadm和容器化etcd安装kubernetes集群用于poc</p>
+<!-- more -->
+<blockquote>
+<p>lab 说明：
+1.此lab手册不需要越过长城
+2.100.64.16.176 为master地址，配置时候需要替换该地址为新环境的master地址
+3.lab环境为单节点master环境
+4.lab环境etcd访问方式为http方式</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>clusterinfo</th>
+<th>ip</th>
+<th>package</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>k8s-node1(master)</td>
+<td>100.64.16.176</td>
+<td>kubeadm, etcd, kubelet, kubectl, docker</td>
+</tr>
+<tr>
+<td>k8s-node2(node)</td>
+<td>100.64.16.177</td>
+<td>kubeadm, kubelet, kubectl, docker</td>
+</tr>
+<tr>
+<td>k8s-node3(node)</td>
+<td>100.64.16.178</td>
+<td>kubeadm, kubelet, kubectl, docker</td>
+</tr>
+</tbody>
+</table>
+<h3 id="环境准备">环境准备</h3>
+<h4 id="注意事项">注意事项</h4>
+<p>该部分内容需要在所有节点执行</p>
+<h4 id="关闭防火墙">关闭防火墙</h4>
+<pre><code>systemctl stop firewalld &amp;&amp; systemctl disable firewalld
+</code></pre>
+<h4 id="关闭交换">关闭交换</h4>
+<pre><code>swapoff -a
+</code></pre>
+<h4 id="设置系统路由参数">设置系统路由参数</h4>
+<p>系统路由参数,防止kubeadm报路由警告</p>
+<pre><code>cat &lt;&lt;EOF &gt;  /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+vm.swappiness=0
+EOF
+sysctl --system
+</code></pre>
+<h4 id="关闭selinux">关闭selinux</h4>
+<pre><code>sed -i 's/SELINUX=permissive/SELINUX=disabled/' /etc/sysconfig/selinux
+setenforce 0
+</code></pre>
+<h4 id="安装docker">安装docker</h4>
+<ol>
+<li>安装</li>
+</ol>
+<pre><code>yum install -y docker
+systemctl enable docker
+systemctl start docker
+</code></pre>
+<ol start="2">
+<li>配置docker daemon(不需要加速器可省略)</li>
+</ol>
+<pre><code>vim /etc/docker/daemon.json 
+{
+  &quot;registry-mirrors&quot;: [&quot;https://v5d7kh0f.mirror.aliyuncs.com&quot;]
+}
+</code></pre>
+<ol start="3">
+<li>修改docker启动文件</li>
+</ol>
+<pre><code>vim /usr/lib/systemd/system/docker.service
+# 添加下面行
+ExecStartPost=/sbin/iptables -P FORWARD ACCEPT
+</code></pre>
+<ol start="4">
+<li>重新加载docker服务</li>
+</ol>
+<pre><code>systemctl daemon-reload
+service docker restart
+</code></pre>
+<h3 id="安装k8s">安装k8s</h3>
+<h4 id="软件包准备">软件包准备</h4>
+<p><strong>注意：该部分内容所有节点都需要执行</strong></p>
+<ol>
+<li>上传软件包到所有节点</li>
+</ol>
+<p><a href="https://pan.baidu.com/s/1LPDoy5QHan77QKj8s8nz1w">软件包下载地址</a></p>
+<blockquote>
+<p>若提示资源不存在，请复制浏览器里的地址，重新访问。</p>
+</blockquote>
+<pre><code># 所有节点解压并安装软件包
+tar xf k8s-*.tgz &amp;&amp; cd k8s-* &amp;&amp; yum localinstall -y *.rpm
+</code></pre>
+<ol start="2">
+<li>配置所有节点的kubelet</li>
+</ol>
+<pre><code># 修改/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+# 添加如下配置 
+Environment=&quot;KUBELET_EXTRA_ARGS=--pod-infra-container-image=registry.cn-shanghai.aliyuncs.com/gcr-k8s/pause-amd64:3.0&quot;
+</code></pre>
+<ol start="3">
+<li>所有节点重新载入配置</li>
+</ol>
+<pre><code>systemctl daemon-reload
+systemctl enable kubelet
+</code></pre>
+<h4 id="master安装">master安装</h4>
+<h5 id="安装etcd">安装etcd</h5>
+<ol>
+<li>配置启动etcd</li>
+</ol>
+<pre><code>docker stop etcd &amp;&amp; docker rm etcd
+rm -rf /data/etcd
+mkdir -p /data/etcd
+docker run -d \
+--restart always \
+-v /etc/etcd/ssl/certs:/etc/ssl/certs \
+-v /data/etcd:/var/lib/etcd \
+-p 2380:2380 \
+-p 2379:2379 \
+--name etcd \
+registry.cn-hangzhou.aliyuncs.com/google_containers/etcd-amd64:3.1.12 \
+etcd --name=etcd0 \
+--advertise-client-urls=http://100.64.16.176:2379 \
+--listen-client-urls=http://0.0.0.0:2379 \
+--initial-advertise-peer-urls=http://100.64.16.176:2380 \
+--listen-peer-urls=http://0.0.0.0:2380 \
+--initial-cluster-token=9477af68bbee1b9ae037d6fd9e7efefd \
+--initial-cluster=etcd0=http://100.64.16.176:2380 \
+--initial-cluster-state=new \
+--auto-tls \
+--peer-auto-tls \
+--data-dir=/var/lib/etcd
+</code></pre>
+<ol start="2">
+<li>验证etcd</li>
+</ol>
+<pre><code>docker exec -ti etcd ash
+etcdctl member list
+etcdctl cluster-health
+exit
+</code></pre>
+<h5 id="生成kubeadmin文件">生成kubeadmin文件</h5>
+<pre><code># 生成token
+# 保留token后面还要使用
+token=$(kubeadm token generate)
+echo $token
+
+# 生成配置文件
+# advertiseAddress 配置为master地址
+cat &gt;kubeadm-master.config&lt;&lt;EOF
+apiVersion: kubeadm.k8s.io/v1alpha1
+kind: MasterConfiguration
+kubernetesVersion: v1.10.3
+imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
+
+api:
+  advertiseAddress: 100.64.16.176
+
+apiServerExtraArgs:
+  endpoint-reconciler-type: lease
+
+controllerManagerExtraArgs:
+  node-monitor-grace-period: 10s
+  pod-eviction-timeout: 10s
+
+networking:
+  podSubnet: 10.244.0.0/16
+
+etcd:
+  endpoints:
+  - &quot;http://100.64.16.176:2379&quot;
+
+apiServerCertSANs:
+- &quot;node1&quot;
+- &quot;100.64.16.176&quot;
+- &quot;127.0.0.1&quot;
+
+token: $token
+tokenTTL: &quot;0&quot;
+
+featureGates:
+  CoreDNS: true
+EOF
+</code></pre>
+<h5 id="初始化master节点">初始化master节点</h5>
+<pre><code>kubeadm init --config kubeadm-master.config
+systemctl enable kubelet
+</code></pre>
+<h5 id="配置kubectl">配置kubectl</h5>
+<pre><code>mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+</code></pre>
+<h5 id="安装网络插件">安装网络插件</h5>
+<ol>
+<li>下载配置</li>
+</ol>
+<pre><code>mkdir flannel &amp;&amp; cd flannel
+wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+</code></pre>
+<ol start="2">
+<li>修改配置</li>
+</ol>
+<pre><code># 此处的ip配置要与上面kubeadm的pod-network一致
+  net-conf.json: |
+    {
+      &quot;Network&quot;: &quot;10.244.0.0/16&quot;,
+      &quot;Backend&quot;: {
+        &quot;Type&quot;: &quot;vxlan&quot;
+      }
+    }
+
+# 修改镜像
+image: registry.cn-shanghai.aliyuncs.com/gcr-k8s/flannel:v0.10.0-amd64
+</code></pre>
+<ol start="3">
+<li>启动</li>
+</ol>
+<pre><code>kubectl apply -f kube-flannel.yml
+</code></pre>
+<ol start="4">
+<li>检查master</li>
+</ol>
+<pre><code>kubectl get pods -n kube-system
+kubectl get svc -n kube-system
+</code></pre>
+<h4 id="node节点安装">node节点安装</h4>
+<ol>
+<li>配置node kubelet开机启动</li>
+</ol>
+<pre><code>systemctl enable kubelet
+systemctl start kubelet
+</code></pre>
+<ol start="2">
+<li>初始化node</li>
+</ol>
+<pre><code># 这个命令是之前初始化master完成时，输出的命令
+kubeadm join 100.64.16.176:6443 --token i2ha18.euygiv9g922b5fkf --discovery-token-ca-cert-hash sha256:1c8fe595a95e2daed035ba89f9604ef6ad5fb0d589b89adbff80ea8c09db567e
+</code></pre>
+<ol start="3">
+<li>在master上检查集群状态</li>
+</ol>
+<pre><code>kubectl get nodes
+</code></pre>
+<h3 id="k8s集群检查">k8s集群检查</h3>
+<pre><code>kubectl run nginx --replicas=2 --labels=&quot;run=load-balancer-example&quot; --image=nginx  --port=80
+kubectl get pods --all-namespaces -o wide 
+</code></pre>
+<p><a href="https://asciinema.org/a/bnyI5J6IcupDM5SV2eglMtJKu"><img src="https://asciinema.org/a/bnyI5J6IcupDM5SV2eglMtJKu.png" alt="asciicast"></a></p>
+<h3 id="总结">总结</h3>
+<p>经过这篇博客, 我们成功部署了一个3个节点的kubernetes 1.10.3的集群, 但是此时集群DashBoard, 监控都还没完成, 在接下来的<a href="https://p.fengjingblog.top/2018/06/11/kubernetes-Addons%E5%AE%89%E8%A3%85/">kubernetes Addons安装</a>中将进行这些组件的部署。</p>
+<h3 id="排错">排错</h3>
+<p>如果出现如下错误：</p>
+<pre><code>Jun 14 12:33:30 k8s-node1 kubelet: E0614 12:33:30.265135   12998 summary.go:102] Failed to get system container stats for &quot;/system.slice/kubelet.service&quot;: failed to get cgroup stats for &quot;/system.slice/kubelet.service&quot;: failed to get container info for &quot;/system.slice/kubelet.service&quot;: unknown container &quot;/system.slice/kubelet.service&quot;
+Jun 14 12:33:30 k8s-node1 etcd: rejected connection from &quot;100.64.16.176:54174&quot; (error &quot;EOF&quot;, ServerName &quot;&quot;)
+</code></pre>
+<ul>
+<li>针对etcd的报错可以尝试降低etcd的版本，本人使用<code>https://github.com/coreos/etcd/releases/download/v3.1.15/etcd-v3.1.15-linux-amd64.tar.gz</code>该版本的etcd后解决。</li>
+<li>针对kubelet的错误可以在<code>/etc/systemd/system/kubelet.service.d/10-kubeadm.conf</code> 文件最后一行末尾追加<code>--runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice</code>,完整文档如下：</li>
+</ul>
+<pre><code>[Service]
+Environment=&quot;KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf&quot;
+Environment=&quot;KUBELET_SYSTEM_PODS_ARGS=--pod-manifest-path=/etc/kubernetes/manifests --allow-privileged=true&quot;
+Environment=&quot;KUBELET_NETWORK_ARGS=--network-plugin=cni --cni-conf-dir=/etc/cni/net.d --cni-bin-dir=/opt/cni/bin&quot;
+Environment=&quot;KUBELET_DNS_ARGS=--cluster-dns=10.96.0.10 --cluster-domain=cluster.local&quot;
+Environment=&quot;KUBELET_AUTHZ_ARGS=--authorization-mode=Webhook --client-ca-file=/etc/kubernetes/pki/ca.crt&quot;
+Environment=&quot;KUBELET_CADVISOR_ARGS=--cadvisor-port=0&quot;
+Environment=&quot;KUBELET_CGROUP_ARGS=--cgroup-driver=systemd&quot;
+Environment=&quot;KUBELET_CERTIFICATE_ARGS=--rotate-certificates=true --cert-dir=/var/lib/kubelet/pki&quot;
+Environment=&quot;KUBELET_EXTRA_ARGS=--pod-infra-container-image=registry.cn-shanghai.aliyuncs.com/gcr-k8s/pause-amd64:3.0&quot;
+ExecStart=
+ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_AUTHZ_ARGS $KUBELET_CADVISOR_ARGS $KUBELET_CGROUP_ARGS $KUBELET_CERTIFICATE_ARGS $KUBELET_EXTRA_ARGS --runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Centos 7 install nfs]]></title>
+        <id>https://p.guipulp.top//post/vo3IdA9w1</id>
+        <link href="https://p.guipulp.top//post/vo3IdA9w1">
+        </link>
+        <updated>2019-06-21T02:32:06.000Z</updated>
+        <summary type="html"><![CDATA[<p>使用centos7 安装NFS用于环境POC</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>使用centos7 安装NFS用于环境POC</p>
+<!-- more -->
+<h1 id="安装nfs和rpcbind">安装nfs和rpcbind</h1>
+<p><strong>lab环境仅适用于测试</strong>
+<strong>lab环境需要关闭防火墙</strong></p>
+<pre><code>yum -y install nfs-utils ,rpcbind
+</code></pre>
+<h1 id="启动nfs和rpcbind">启动nfs和rpcbind</h1>
+<pre><code># nfs需要向rpc注册，rpc一旦重启，注册的文件都丢失，向他注册的服务都需要重启，注意启动顺序
+systemctl start rpcbind.service &amp;&amp; systemctl start nfs.service
+systemctl enable  rpcbind.service &amp;&amp; systemctl enable nfs.service
+</code></pre>
+<h1 id="配置nfs">配置nfs</h1>
+<blockquote>
+<p>配置文件/etc/exports</p>
+</blockquote>
+<pre><code>/nfsdata  *(rw,sync,no_root_squash)
+systemctl restart rpcbind.service &amp;&amp; systemctl restart nfs.service
+</code></pre>
+<ul>
+<li>nfsdata 为存放数据的目录,需要先创建</li>
+<li>'*':任何人</li>
+<li>rw:读写权限</li>
+<li>sync:资料会先暂存于内存中，而非直接写入硬盘。</li>
+<li>no_root_squash:当登录NFS主机使用共享目录的使用者是root时，其权限将被转换成为匿名使用者，通常它的UID与GID都会变成nobody身份。</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[全手动生成服务证书]]></title>
+        <id>https://p.guipulp.top//post/vdXFKNARf</id>
+        <link href="https://p.guipulp.top//post/vdXFKNARf">
+        </link>
+        <updated>2019-06-21T02:26:40.000Z</updated>
+        <summary type="html"><![CDATA[<p>使用cfssl生成服务证书,用于kubernetes搭建和etcd集群搭建</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>使用cfssl生成服务证书,用于kubernetes搭建和etcd集群搭建</p>
+<!-- more -->
+<h1 id="证书生成步骤">证书生成步骤</h1>
+<p>主要步骤如下：</p>
+<ul>
+<li>安装证书工具</li>
+<li>创建签名请求文件</li>
+<li>生成相应的ca证书和对应服务证书</li>
+</ul>
+<blockquote>
+<p>下面以为harbor服务为例，生成harbor服务证书</p>
+</blockquote>
+<h1 id="安装证书工具">安装证书工具</h1>
+<pre><code>wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+chmod +x cfssl_linux-amd64
+mv cfssl_linux-amd64 /usr/local/bin/cfssl
+
+wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+chmod +x cfssljson_linux-amd64
+mv cfssljson_linux-amd64 /usr/local/bin/cfssljson
+
+wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64
+chmod +x cfssl-certinfo_linux-amd64
+mv cfssl-certinfo_linux-amd64 /usr/local/bin/cfssl-certinfo
+
+</code></pre>
+<h1 id="创建签名请求文件">创建签名请求文件</h1>
+<ol>
+<li>生成ca配置文件</li>
+</ol>
+<pre><code>mkdir /root/ssl &amp;&amp; cd /root/ssl
+
+cat &gt; ca-config.json &lt;&lt;EOF
+{
+  &quot;signing&quot;: {
+    &quot;default&quot;: {
+      &quot;expiry&quot;: &quot;87600h&quot;
+    },
+    &quot;profiles&quot;: {
+      &quot;harbor&quot;: {
+        &quot;usages&quot;: [
+            &quot;signing&quot;,
+            &quot;key encipherment&quot;,
+            &quot;server auth&quot;,
+            &quot;client auth&quot;
+        ],
+        &quot;expiry&quot;: &quot;87600h&quot;
+      }
+    }
+  }
+}
+EOF
+</code></pre>
+<ul>
+<li>可以定义多个profiles，生成证书时候自动应用定义的profiles属性</li>
+<li>signing 表示该证书可用于签名其它证书；生成的 ca.pem 证书中 CA=TRUE</li>
+<li>server auth 表示client可以用该 CA 对server提供的证书进行验证</li>
+<li>client auth 表示server可以用该CA对client提供的证书进行验证</li>
+</ul>
+<ol start="2">
+<li>生成ca签名请求文件</li>
+</ol>
+<pre><code>cat &gt; ca-csr.json &lt;&lt;EOF
+{
+  &quot;CN&quot;: &quot;harbor&quot;,
+  &quot;key&quot;: {
+    &quot;algo&quot;: &quot;rsa&quot;,
+    &quot;size&quot;: 2048
+  },
+  &quot;names&quot;: [
+    {
+      &quot;C&quot;: &quot;CN&quot;,
+      &quot;ST&quot;: &quot;BeiJing&quot;,
+      &quot;L&quot;: &quot;BeiJing&quot;,
+      &quot;O&quot;: &quot;k8s&quot;,
+      &quot;OU&quot;: &quot;System&quot;
+    }
+  ],
+    &quot;ca&quot;: {
+       &quot;expiry&quot;: &quot;87600h&quot;
+    }
+}
+EOF
+</code></pre>
+<ul>
+<li>可根据自己的需求更改对应的值</li>
+</ul>
+<ol start="3">
+<li>生成服务签名请求文件</li>
+</ol>
+<blockquote>
+<p>创建服务签名文件 servicename-csr.json</p>
+</blockquote>
+<pre><code>cat &gt; harbor-csr.json &lt;&lt;EOF
+{
+    &quot;CN&quot;: &quot;harbor&quot;,
+    &quot;hosts&quot;: [
+      &quot;127.0.0.1&quot;,
+      &quot;100.64.16.179&quot;
+    ],
+    &quot;key&quot;: {
+        &quot;algo&quot;: &quot;rsa&quot;,
+        &quot;size&quot;: 2048
+    },
+    &quot;names&quot;: [
+        {
+            &quot;C&quot;: &quot;CN&quot;,
+            &quot;ST&quot;: &quot;BeiJing&quot;,
+            &quot;L&quot;: &quot;BeiJing&quot;,
+            &quot;O&quot;: &quot;k8s&quot;,
+            &quot;OU&quot;: &quot;System&quot;
+        }
+    ]
+}
+EOF
+</code></pre>
+<ul>
+<li>替换和增加hosts字段为自己服务的ip地址或者域名</li>
+<li>替换CN等字段为自己的服务名</li>
+</ul>
+<h1 id="生成ca和harbor证书">生成ca和harbor证书</h1>
+<pre><code>cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=harbor harbor-csr.json | cfssljson -bare harbor
+</code></pre>
+<ul>
+<li>替换profile为自己在ca-config.json定义的profiles</li>
+<li>替换harbor-csr.json为自己创建的service-csr.json</li>
+<li>替换harbor为自己的服务名</li>
+</ul>
+<h1 id="导入证书到客户端">导入证书到客户端</h1>
+<blockquote>
+<p>拷贝ca.pem证书到客户端节点，区分环境执行以下操作</p>
+</blockquote>
+<ol>
+<li>Red Hat (CentOS etc)</li>
+</ol>
+<pre><code>cat ca.pem &gt;&gt; ca.crt 
+cp ca.crt /etc/pki/ca-trust/source/anchors/ca.crt
+update-ca-trust
+
+</code></pre>
+<ol start="2">
+<li>Ubuntu</li>
+</ol>
+<pre><code>cat ca.pem &gt;&gt; ca.crt 
+cp ca.crt  /usr/local/share/ca-certificates/ca.crt 
+update-ca-certificates
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes 高可用集群版安装]]></title>
         <id>https://p.guipulp.top//post/kubernetes-gao-ke-yong-ji-qun-ban-an-zhuang</id>

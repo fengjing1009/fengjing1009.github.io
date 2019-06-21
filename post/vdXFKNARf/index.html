@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>全手动生成服务证书 | PeterPan</title>
+<meta name="description" content="温故而知新">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://p.guipulp.top//favicon.ico?v=1561084562038">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://p.guipulp.top//styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://p.guipulp.top/">
+        <img src="https://p.guipulp.top//images/avatar.png?v=1561084562038" class="site-logo">
+        <h1 class="site-title">PeterPan</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      温故而知新
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://p.guipulp.top//atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">全手动生成服务证书</h2>
+            <div class="post-date">2019-06-21</div>
+            
+              <div class="feature-container" style="background-image: url('https://p.guipulp.top//post-images/vdXFKNARf.png')">
+              </div>
+            
+            <div class="post-content">
+              <p>使用cfssl生成服务证书,用于kubernetes搭建和etcd集群搭建</p>
+<!-- more -->
+<h1 id="证书生成步骤">证书生成步骤</h1>
+<p>主要步骤如下：</p>
+<ul>
+<li>安装证书工具</li>
+<li>创建签名请求文件</li>
+<li>生成相应的ca证书和对应服务证书</li>
+</ul>
+<blockquote>
+<p>下面以为harbor服务为例，生成harbor服务证书</p>
+</blockquote>
+<h1 id="安装证书工具">安装证书工具</h1>
+<pre><code>wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+chmod +x cfssl_linux-amd64
+mv cfssl_linux-amd64 /usr/local/bin/cfssl
+
+wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+chmod +x cfssljson_linux-amd64
+mv cfssljson_linux-amd64 /usr/local/bin/cfssljson
+
+wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64
+chmod +x cfssl-certinfo_linux-amd64
+mv cfssl-certinfo_linux-amd64 /usr/local/bin/cfssl-certinfo
+
+</code></pre>
+<h1 id="创建签名请求文件">创建签名请求文件</h1>
+<ol>
+<li>生成ca配置文件</li>
+</ol>
+<pre><code>mkdir /root/ssl &amp;&amp; cd /root/ssl
+
+cat &gt; ca-config.json &lt;&lt;EOF
+{
+  &quot;signing&quot;: {
+    &quot;default&quot;: {
+      &quot;expiry&quot;: &quot;87600h&quot;
+    },
+    &quot;profiles&quot;: {
+      &quot;harbor&quot;: {
+        &quot;usages&quot;: [
+            &quot;signing&quot;,
+            &quot;key encipherment&quot;,
+            &quot;server auth&quot;,
+            &quot;client auth&quot;
+        ],
+        &quot;expiry&quot;: &quot;87600h&quot;
+      }
+    }
+  }
+}
+EOF
+</code></pre>
+<ul>
+<li>可以定义多个profiles，生成证书时候自动应用定义的profiles属性</li>
+<li>signing 表示该证书可用于签名其它证书；生成的 ca.pem 证书中 CA=TRUE</li>
+<li>server auth 表示client可以用该 CA 对server提供的证书进行验证</li>
+<li>client auth 表示server可以用该CA对client提供的证书进行验证</li>
+</ul>
+<ol start="2">
+<li>生成ca签名请求文件</li>
+</ol>
+<pre><code>cat &gt; ca-csr.json &lt;&lt;EOF
+{
+  &quot;CN&quot;: &quot;harbor&quot;,
+  &quot;key&quot;: {
+    &quot;algo&quot;: &quot;rsa&quot;,
+    &quot;size&quot;: 2048
+  },
+  &quot;names&quot;: [
+    {
+      &quot;C&quot;: &quot;CN&quot;,
+      &quot;ST&quot;: &quot;BeiJing&quot;,
+      &quot;L&quot;: &quot;BeiJing&quot;,
+      &quot;O&quot;: &quot;k8s&quot;,
+      &quot;OU&quot;: &quot;System&quot;
+    }
+  ],
+    &quot;ca&quot;: {
+       &quot;expiry&quot;: &quot;87600h&quot;
+    }
+}
+EOF
+</code></pre>
+<ul>
+<li>可根据自己的需求更改对应的值</li>
+</ul>
+<ol start="3">
+<li>生成服务签名请求文件</li>
+</ol>
+<blockquote>
+<p>创建服务签名文件 servicename-csr.json</p>
+</blockquote>
+<pre><code>cat &gt; harbor-csr.json &lt;&lt;EOF
+{
+    &quot;CN&quot;: &quot;harbor&quot;,
+    &quot;hosts&quot;: [
+      &quot;127.0.0.1&quot;,
+      &quot;100.64.16.179&quot;
+    ],
+    &quot;key&quot;: {
+        &quot;algo&quot;: &quot;rsa&quot;,
+        &quot;size&quot;: 2048
+    },
+    &quot;names&quot;: [
+        {
+            &quot;C&quot;: &quot;CN&quot;,
+            &quot;ST&quot;: &quot;BeiJing&quot;,
+            &quot;L&quot;: &quot;BeiJing&quot;,
+            &quot;O&quot;: &quot;k8s&quot;,
+            &quot;OU&quot;: &quot;System&quot;
+        }
+    ]
+}
+EOF
+</code></pre>
+<ul>
+<li>替换和增加hosts字段为自己服务的ip地址或者域名</li>
+<li>替换CN等字段为自己的服务名</li>
+</ul>
+<h1 id="生成ca和harbor证书">生成ca和harbor证书</h1>
+<pre><code>cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=harbor harbor-csr.json | cfssljson -bare harbor
+</code></pre>
+<ul>
+<li>替换profile为自己在ca-config.json定义的profiles</li>
+<li>替换harbor-csr.json为自己创建的service-csr.json</li>
+<li>替换harbor为自己的服务名</li>
+</ul>
+<h1 id="导入证书到客户端">导入证书到客户端</h1>
+<blockquote>
+<p>拷贝ca.pem证书到客户端节点，区分环境执行以下操作</p>
+</blockquote>
+<ol>
+<li>Red Hat (CentOS etc)</li>
+</ol>
+<pre><code>cat ca.pem &gt;&gt; ca.crt 
+cp ca.crt /etc/pki/ca-trust/source/anchors/ca.crt
+update-ca-trust
+
+</code></pre>
+<ol start="2">
+<li>Ubuntu</li>
+</ol>
+<pre><code>cat ca.pem &gt;&gt; ca.crt 
+cp ca.crt  /usr/local/share/ca-certificates/ca.crt 
+update-ca-certificates
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://p.guipulp.top//tag/Pz5CsUYAd" class="tag">
+                    ssl
+                  </a>
+                
+                  <a href="https://p.guipulp.top//tag/SnyH8t7rH" class="tag">
+                    证书
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://p.guipulp.top//post/kubernetes-gao-ke-yong-ji-qun-ban-an-zhuang">
+                  <h3 class="post-title">
+                    kubernetes 高可用集群版安装
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
