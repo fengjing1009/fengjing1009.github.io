@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>configmap | PeterPan</title>
+<title>kubernetes配置外网dns | PeterPan</title>
 <meta name="description" content="温故而知新">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -91,29 +91,68 @@
 
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
-          <h2 class="current-tag">标签: configmap</h2>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://p.guipulp.top//post/tong-guo-configmap-kong-zhi-kubelet">
-                  <h2 class="post-title">通过configmap控制kubelet</h2>
+          <div class="post-detail">
+            <h2 class="post-title">kubernetes配置外网dns</h2>
+            <div class="post-date">2019-06-21</div>
+            
+            <div class="post-content">
+              <p>kubernetes默认情况下是不可以解析外网的，有时候pod内的服务可能需要访问外网资源，需要做外网域名解析，为达到目的仅需要更新coredns configmap，设置upstream字段即可。</p>
+<!-- more -->
+<h1 id="编辑coredns-configmap">编辑coredns configmap</h1>
+<pre><code>[root@k8s-node1 ~]# cat setdns.yaml 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+  labels:
+      addonmanager.kubernetes.io/mode: EnsureExists
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+            pods insecure
+            upstream 114.114.114.114
+            fallthrough in-addr.arpa ip6.arpa
+        }
+        prometheus :9153
+        proxy . /etc/resolv.conf
+        cache 30
+        reload
+    }
+</code></pre>
+<h1 id="应用config-map">应用config map</h1>
+<pre><code> kubectl apply -f setdns.yaml
+</code></pre>
+<h1 id="检查外网dns解析">检查外网dns解析</h1>
+<pre><code>
+[root@k8s-node1 ~]# kubectl run -it --rm --restart=Never --image=infoblox/dnstools:latest dnstools
+If you don't see a command prompt, try pressing enter.
+dnstools# host www.baidu.com
+www.baidu.com is an alias for www.a.shifen.com.
+www.a.shifen.com has address 220.181.111.188
+www.a.shifen.com has address 220.181.112.244
+
+</code></pre>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://p.guipulp.top//post/jZoeyPf8e">
+                  <h3 class="post-title">
+                    kubeadm搭建v1.10.3kubernetes集群
+                  </h3>
                 </a>
-                <div class="post-date">
-                  2019-06-20
-                </div>
-                <div class="post-abstract">
-                  <p>在 Kubernetes 1.8 版本上，除了可以通过命令行参数外，还可以通过保存在硬盘的配置文件设置 Kubelet 的配置子集。 将来，大部分现存的命令行参数都将被废弃，取而代之以配置文件的方式提供参数，以简化节点部署过程。另外动态配置kubelet在1.11已进入beta版本</p>
-
-                </div>
               </div>
-              
-            </article>
-          
+            
 
-          <div class="pagination-container">
-  
-  
-</div>
+            
+
+          </div>
 
         </div>
       </div>

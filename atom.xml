@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-06-21T02:36:04.226Z</updated>
+    <updated>2019-06-21T02:37:34.601Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -10,6 +10,56 @@
     <logo>https://p.guipulp.top//images/avatar.png</logo>
     <icon>https://p.guipulp.top//favicon.ico</icon>
     <rights>All rights reserved 2019, PeterPan</rights>
+    <entry>
+        <title type="html"><![CDATA[kubernetes配置外网dns]]></title>
+        <id>https://p.guipulp.top//post/9yPSD7pfq</id>
+        <link href="https://p.guipulp.top//post/9yPSD7pfq">
+        </link>
+        <updated>2019-06-21T02:36:34.000Z</updated>
+        <summary type="html"><![CDATA[<p>kubernetes默认情况下是不可以解析外网的，有时候pod内的服务可能需要访问外网资源，需要做外网域名解析，为达到目的仅需要更新coredns configmap，设置upstream字段即可。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>kubernetes默认情况下是不可以解析外网的，有时候pod内的服务可能需要访问外网资源，需要做外网域名解析，为达到目的仅需要更新coredns configmap，设置upstream字段即可。</p>
+<!-- more -->
+<h1 id="编辑coredns-configmap">编辑coredns configmap</h1>
+<pre><code>[root@k8s-node1 ~]# cat setdns.yaml 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+  labels:
+      addonmanager.kubernetes.io/mode: EnsureExists
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+            pods insecure
+            upstream 114.114.114.114
+            fallthrough in-addr.arpa ip6.arpa
+        }
+        prometheus :9153
+        proxy . /etc/resolv.conf
+        cache 30
+        reload
+    }
+</code></pre>
+<h1 id="应用config-map">应用config map</h1>
+<pre><code> kubectl apply -f setdns.yaml
+</code></pre>
+<h1 id="检查外网dns解析">检查外网dns解析</h1>
+<pre><code>
+[root@k8s-node1 ~]# kubectl run -it --rm --restart=Never --image=infoblox/dnstools:latest dnstools
+If you don't see a command prompt, try pressing enter.
+dnstools# host www.baidu.com
+www.baidu.com is an alias for www.a.shifen.com.
+www.a.shifen.com has address 220.181.111.188
+www.a.shifen.com has address 220.181.112.244
+
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[kubeadm搭建v1.10.3kubernetes集群]]></title>
         <id>https://p.guipulp.top//post/jZoeyPf8e</id>
