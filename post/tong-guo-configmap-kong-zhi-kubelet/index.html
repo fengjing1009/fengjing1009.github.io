@@ -1,0 +1,207 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>通过configmap控制kubelet | PeterPan</title>
+<link rel="shortcut icon" href="https://p.guipulp.top//favicon.ico?v=1561083083471">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://p.guipulp.top//styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://p.guipulp.top/">
+  <img class="avatar" src="https://p.guipulp.top//images/avatar.png?v=1561083083471" alt="">
+  </a>
+  <h1 class="site-title">
+    PeterPan
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              通过configmap控制kubelet
+            </h2>
+            <div class="post-info">
+              <time class="post-time">
+                · 2019-06-20 ·
+              </time>
+              
+                <a href="https://p.guipulp.top//tag/TUmI-_BwQ" class="post-tag">
+                  # kubernetes
+                </a>
+              
+                <a href="https://p.guipulp.top//tag/kubelet" class="post-tag">
+                  # kubelet
+                </a>
+              
+                <a href="https://p.guipulp.top//tag/configmap" class="post-tag">
+                  # configmap
+                </a>
+              
+            </div>
+            
+              <div class="post-feature-image" style="background-image: url('https://p.guipulp.top//post-images/tong-guo-configmap-kong-zhi-kubelet.png')">
+              </div>
+            
+            <div class="post-content">
+              <h2 id="简介">简介</h2>
+<p>在 Kubernetes 1.8 版本上，除了可以通过命令行参数外，还可以通过保存在硬盘的配置文件设置 Kubelet 的配置子集。 将来，大部分现存的命令行参数都将被废弃，取而代之以配置文件的方式提供参数，以简化节点部署过程。
+动态配置kubelet在1.11进入beta版本</p>
+<!-- more -->
+<h2 id="操作">操作</h2>
+<h3 id="配置kubelet">配置kubelet</h3>
+<pre><code># 指定kubelet 保存动态配置文件内容的目录
+--dynamic-config-dir='path/to/kubelet/dynamic-config'
+</code></pre>
+<h3 id="生成kubelet-configmap">生成kubelet  configmap</h3>
+<pre><code># 生成文件
+kubectl proxy --port=8001 &amp;
+
+# 生成节点基准文件,替换NODE_NAME变量
+NODE_NAME=&quot;the-name-of-the-node-you-are-reconfiguring&quot;; curl -sSL &quot;http://localhost:8001/api/v1/nodes/${NODE_NAME}/proxy/configz&quot; | jq '.kubeletconfig|.kind=&quot;KubeletConfiguration&quot;|.apiVersion=&quot;kubelet.config.k8s.io/v1beta1&quot;' &gt; kubelet_configz_${NODE_NAME}
+
+# 编辑文件指定具体参数,如修改忽略swap错误
+&quot;failSwapOn&quot;: false,
+
+# 生成kubelet 的configmap
+kubectl -n kube-system create configmap my-node-config --from-file=kubelet=kubelet_configz_${NODE_NAME} --append-hash -o yaml
+</code></pre>
+<h3 id="应用configmap到node">应用configmap到node</h3>
+<pre><code># 方法一:使用patch方式,替换CONFIG_MAP_NAME为configmap name
+kubectl patch node ${NODE_NAME} -p &quot;{\&quot;spec\&quot;:{\&quot;configSource\&quot;:{\&quot;configMap\&quot;:{\&quot;name\&quot;:\&quot;${CONFIG_MAP_NAME}\&quot;,\&quot;namespace\&quot;:\&quot;kube-system\&quot;,\&quot;kubeletConfigKey\&quot;:\&quot;kubelet\&quot;}}}}&quot;
+
+# 方法二:编辑节点spec部分配置并指定cm
+kubectl edit node ${NODE_NAME}
+configSource:
+    configMap:
+        name: CONFIG_MAP_NAME
+        namespace: kube-system
+        kubeletConfigKey: kubelet
+</code></pre>
+<h3 id="检查配置是否成功">检查配置是否成功</h3>
+<ul>
+<li>The <code>active</code> configuration is the version the Kubelet is currently running with.</li>
+<li>The <code>assigned</code> configuration is the latest version the Kubelet has resolved based on <code>Node.Spec.ConfigSource</code>.</li>
+<li>The <code>lastKnownGood</code> configuration is the version the Kubelet will fall back to if an invalid config is assigned in <code>Node.Spec.ConfigSource</code>.</li>
+</ul>
+<pre><code># 方法一
+kubectl get no ${NODE_NAME} -o json | jq '.status.config'
+
+# 方法二 查看Node.Status.Config部分状态
+kubectl get node ${NODE_NAME} -o yaml 
+</code></pre>
+<h2 id="错误信息说明">错误信息说明</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Error Message</th>
+<th style="text-align:left">Possible Causes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">failed to load config, see Kubelet log for details</td>
+<td style="text-align:left">The Kubelet likely could not parse the downloaded config payload, or encountered a filesystem error attempting to load the payload from disk.</td>
+</tr>
+<tr>
+<td style="text-align:left">failed to validate config, see Kubelet log for details</td>
+<td style="text-align:left">The configuration in the payload, combined with any command-line flag overrides, and the sum of feature gates from flags, the config file, and the remote payload, was determined to be invalid by the Kubelet.</td>
+</tr>
+<tr>
+<td style="text-align:left">invalid NodeConfigSource, exactly one subfield must be non-nil, but all were nil</td>
+<td style="text-align:left">Since Node.Spec.ConfigSource is validated by the API server to contain at least one non-nil subfield, this likely means that the Kubelet is older than the API server and does not recognize a newer source type.</td>
+</tr>
+<tr>
+<td style="text-align:left">failed to sync: failed to download config, see Kubelet log for details</td>
+<td style="text-align:left">The Kubelet could not download the config. It is possible that Node.Spec.ConfigSource could not be resolved to a concrete API object, or that network errors disrupted the download attempt. The Kubelet will retry the download when in this error state.</td>
+</tr>
+<tr>
+<td style="text-align:left">failed to sync: internal failure, see Kubelet log for details</td>
+<td style="text-align:left">The Kubelet encountered some internal problem and failed to update its config as a result. Examples include filesystem errors and reading objects from the internal informer cache.</td>
+</tr>
+<tr>
+<td style="text-align:left">internal failure, see Kubelet log for details</td>
+<td style="text-align:left">The Kubelet encountered some internal problem while manipulating config, outside of the configuration sync loop.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="参考文档">参考文档</h2>
+<p><a href="https://kubernetes.io/zh/docs/tasks/administer-cluster/kubelet-config-file/">https://kubernetes.io/zh/docs/tasks/administer-cluster/kubelet-config-file/</a></p>
+<p><a href="https://kubernetes.io/docs/tasks/administer-cluster/reconfigure-kubelet/">https://kubernetes.io/docs/tasks/administer-cluster/reconfigure-kubelet/</a></p>
+
+            </div>
+          </article>
+        </div>
+
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://p.guipulp.top//atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

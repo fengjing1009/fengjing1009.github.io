@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://p.guipulp.top/</id>
+    <title>PeterPan</title>
+    <updated>2019-06-21T02:11:43.513Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://p.guipulp.top/"/>
+    <link rel="self" href="https://p.guipulp.top//atom.xml"/>
+    <subtitle>温故而知新</subtitle>
+    <logo>https://p.guipulp.top//images/avatar.png</logo>
+    <icon>https://p.guipulp.top//favicon.ico</icon>
+    <rights>All rights reserved 2019, PeterPan</rights>
+    <entry>
+        <title type="html"><![CDATA[kubernetes 高可用集群版安装]]></title>
+        <id>https://p.guipulp.top//post/kubernetes-gao-ke-yong-ji-qun-ban-an-zhuang</id>
+        <link href="https://p.guipulp.top//post/kubernetes-gao-ke-yong-ji-qun-ban-an-zhuang">
+        </link>
+        <updated>2019-06-21T01:44:15.000Z</updated>
+        <summary type="html"><![CDATA[<ol>
+<li>本手册适用于安装kubernetes1.14.x版本</li>
+<li>需要对centos和kubernetes有一定了解</li>
+<li>当然如果你什么都不懂也可以按照手册完成安装</li>
+<li>本文使用kubeadm安装,追求二进制安装的请出门右转打车</li>
+</ol>
+]]></summary>
+        <content type="html"><![CDATA[<ol>
+<li>本手册适用于安装kubernetes1.14.x版本</li>
+<li>需要对centos和kubernetes有一定了解</li>
+<li>当然如果你什么都不懂也可以按照手册完成安装</li>
+<li>本文使用kubeadm安装,追求二进制安装的请出门右转打车</li>
+</ol>
+<!-- more -->
+<h1 id="前置条件">前置条件</h1>
+<ul>
+<li>系统要求:64位centos7.6</li>
+<li>关闭防火墙和selinux</li>
+<li>关闭操作系统swap分区(使用k8s不推荐打开)</li>
+<li>请预配置好每个节点的hostname保证不重名即可</li>
+<li>请配置第一个master能秘钥免密登入所有节点(包括自身)</li>
+</ul>
+<h1 id="环境说明">环境说明</h1>
+<p>本手册安装方式适用于小规模使用</p>
+<p>多主模式(最少三个), 每个master节点上需要安装keepalived</p>
+<h1 id="准备工作每个节点都需要执行">准备工作(每个节点都需要执行)</h1>
+<h2 id="docker和kubernetes软件源配置">Docker和kubernetes软件源配置</h2>
+<pre><code># 切换到配置目录
+cd /etc/yum.repos.d/
+# 配置docker-ce阿里源
+wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+# 配置kubernetes阿里源
+cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
+</code></pre>
+<h2 id="配置内核相关参数">配置内核相关参数</h2>
+<pre><code>cat &lt;&lt;EOF &gt;  /etc/sysctl.d/ceph.conf
+net.ipv4.ip_forward = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sysctl --system
+</code></pre>
+<h2 id="安装相应软件包">安装相应软件包</h2>
+<pre><code># 安装kubeadm kubelet kubectl
+yum install kubeadm kubectl kubelet -y
+
+# 开机启动kubelet和docker
+systemctl enable docker kubelet
+
+# 启动docker
+systemctl start docker
+</code></pre>
+<h1 id="部署">部署</h1>
+<h2 id="安装keepalived在所有master上执行">安装keepalived(在所有master上执行)</h2>
+<pre><code># 此处如果有Lb可省略 直接使用LB地址
+# 安装时候请先在初始化master上执行,保证VIP附着在初始化master上,否则请关闭其他keepalived
+
+# 安装完成后可根据自己业务需要实现健康监测
+yum install keepalived -y
+
+# 备份keepalived原始文件
+mv /etc/keepalived/keepalived.conf /etc/keepalived/keepalived.conf.bak
+
+# 生成新的keepalived配置文件,文中注释部分对每台master请进行修改
+cat &lt;&lt;EOF &gt; /etc/keepalived/keepalived.conf
+! Configuration File for keepalived
+
+global_defs {
+   router_id k8s-master1                      #主调度器的主机名
+   vrrp_mcast_group4 224.26.1.1         
+
+}
+
+vrrp_instance VI_1 {
+    state BACKUP                          
+    interface eth0
+    virtual_router_id 66              
+    nopreempt                             
+    priority 90                         
+    advert_int 1
+    authentication {
+        auth_type PASS                     
+        auth_pass 123456                 
+    }
+    virtual_ipaddress {
+        10.20.1.8                            #VIP地址声明
+    }
+}
+EOF
+
+# 配置keepalived开机启动和启动keepalived
+systemctl enable keepalived
+systemctl start keepalived
+
+</code></pre>
+<h2 id="生成kubeadm-master-配置文件">生成kubeadm master 配置文件</h2>
+<pre><code>cd &amp;&amp; cat &lt;&lt;EOF &gt; kubeadm.yaml
+apiVersion: kubeadm.k8s.io/v1beta1
+kind: ClusterConfiguration
+kubernetesVersion: stable
+apiServer:
+  certSANs:
+  - &quot;172.29.2.188&quot;  #请求改为你的vip地址
+controlPlaneEndpoint: &quot;172.29.2.188:6443&quot;  #请求改为你的vip地址
+imageRepository: registry.cn-hangzhou.aliyuncs.com/peter1009
+networking:
+  dnsDomain: cluster.local
+  podSubnet: &quot;10.244.0.0/16&quot;
+  serviceSubnet: 10.96.0.0/12
+EOF
+</code></pre>
+<h2 id="初始化第一个master">初始化第一个master</h2>
+<pre><code># 使用上一步生成的kubeadm.yaml
+kubeadm init --config kubeadm.yaml
+</code></pre>
+<pre><code># 执行完上一步输出如下
+root@k8s4:~# kubeadm  init --config kubeadm.yaml
+I0522 06:20:13.352644    2622 version.go:96] could not fetch a Kubernetes version from 
+......... 此处省略
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run &quot;kubectl apply -f [podnetwork].yaml&quot; with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+You can now join any number of control-plane nodes by copying certificate authorities
+and service account keys on each node and then running the following as root:
+
+  kubeadm join 172.16.10.114:6443 --token v2lv3k.aysjlmg3ylcl3498 \
+    --discovery-token-ca-cert-hash sha256:87b69e590e9d59055c5a9c6651e333044c402dba877beb29906eddfeb0998d72 \
+    --experimental-control-plane
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 172.16.10.114:6443 --token v2lv3k.aysjlmg3ylcl3498 \
+    --discovery-token-ca-cert-hash sha256:87b69e590e9d59055c5a9c6651e333044c402dba877beb29906eddfeb0998d72
+
+</code></pre>
+<h2 id="安装集群">安装集群</h2>
+<pre><code>cat &lt;&lt;EOF &gt; copy.sh
+CONTROL_PLANE_IPS=&quot;172.16.10.101 172.16.10.102&quot;  # 修改这两个ip地址为你第二/第三masterip地址
+for host in ${CONTROL_PLANE_IPS}; do
+    ssh $host mkdir -p /etc/kubernetes/pki/etcd
+    scp /etc/kubernetes/pki/ca.crt &quot;${USER}&quot;@$host:/etc/kubernetes/pki/
+    scp /etc/kubernetes/pki/ca.key &quot;${USER}&quot;@$host:/etc/kubernetes/pki/
+    scp /etc/kubernetes/pki/sa.key &quot;${USER}&quot;@$host:/etc/kubernetes/pki/
+    scp /etc/kubernetes/pki/sa.pub &quot;${USER}&quot;@$host:/etc/kubernetes/pki/
+    scp /etc/kubernetes/pki/front-proxy-ca.crt &quot;${USER}&quot;@$host:/etc/kubernetes/pki/
+    scp /etc/kubernetes/pki/front-proxy-ca.key &quot;${USER}&quot;@$host:/etc/kubernetes/pki/
+    scp /etc/kubernetes/pki/etcd/ca.crt &quot;${USER}&quot;@$host:/etc/kubernetes/pki/etcd/ca.crt
+    scp /etc/kubernetes/pki/etcd/ca.key &quot;${USER}&quot;@$host:/etc/kubernetes/pki/etcd/ca.key
+    scp /etc/kubernetes/admin.conf &quot;${USER}&quot;@$host:/etc/kubernetes/
+done
+EOF
+
+# 如果未配置免密登录,该步骤讲失败
+bash -x copy.sh
+</code></pre>
+<pre><code># 在当前节点执行init输出第一部分内容,使kubectl能访问集群
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# 在其他master节点上配置执行init输出第二部分内容(必须要copy.sh文件执行成功以后)
+kubeadm join 172.16.10.114:6443 --token v2lv3k.aysjlmg3ylcl3498 \
+    --discovery-token-ca-cert-hash sha256:87b69e590e9d59055c5a9c6651e333044c402dba877beb29906eddfeb0998d72 \
+    --experimental-control-plane
+</code></pre>
+<pre><code># 在其他非master的节点上配置执行init输出第三部分内容
+kubeadm join 172.16.10.114:6443 --token v2lv3k.aysjlmg3ylcl3498 \
+    --discovery-token-ca-cert-hash sha256:87b69e590e9d59055c5a9c6651e333044c402dba877beb29906eddfeb0998d72
+</code></pre>
+<h2 id="安装flannel">安装flannel</h2>
+<pre><code>kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+</code></pre>
+<h2 id="检查是否安装完成">检查是否安装完成</h2>
+<pre><code>root@k8s4:~# kubectl  get nodes
+NAME   STATUS   ROLES    AGE   VERSION
+k8s4   Ready    master   20m   v1.14.2
+root@k8s4:~# kubectl  get nodes
+NAME   STATUS   ROLES    AGE   VERSION
+k8s4   Ready    master   20m   v1.14.2
+root@k8s4:~# kubectl  get pods --all-namespaces
+NAMESPACE     NAME                           READY   STATUS    RESTARTS   AGE
+kube-system   coredns-8cc96f57d-cfr4j        1/1     Running   0          20m
+kube-system   coredns-8cc96f57d-stcz6        1/1     Running   0          20m
+kube-system   etcd-k8s4                      1/1     Running   0          19m
+kube-system   kube-apiserver-k8s4            1/1     Running   0          19m
+kube-system   kube-controller-manager-k8s4   1/1     Running   0          19m
+kube-system   kube-flannel-ds-amd64-k4q6q    1/1     Running   0          50s
+kube-system   kube-proxy-lhjsf               1/1     Running   0          20m
+kube-system   kube-scheduler-k8s4            1/1     Running   0          19m
+</code></pre>
+<h2 id="测试是否能正常使用集群">测试是否能正常使用集群</h2>
+<pre><code># 取消节点污点,使master能被正常调度, k8s4请更改为你自有集群的nodename
+kubectl  taint node k8s4 node-role.kubernetes.io/master:NoSchedule-
+
+# 创建nginx deploy
+root@k8s4:~# kubectl  create deploy nginx --image nginx
+deployment.apps/nginx created
+
+root@k8s4:~# kubectl  get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+nginx-65f88748fd-9sk6z   1/1     Running   0          2m44s
+
+# 暴露nginx到集群外
+root@k8s4:~# kubectl  expose deploy nginx --port=80 --type=NodePort
+service/nginx exposed
+root@k8s4:~# kubectl  get svc
+NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+kubernetes   ClusterIP   10.96.0.1        &lt;none&gt;        443/TCP        25m
+nginx        NodePort    10.104.109.234   &lt;none&gt;        80:32129/TCP   5s
+root@k8s4:~# curl 127.0.0.1:32129
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Welcome to nginx!&lt;/title&gt;
+&lt;style&gt;
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h1&gt;Welcome to nginx!&lt;/h1&gt;
+&lt;p&gt;If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.&lt;/p&gt;
+
+&lt;p&gt;For online documentation and support please refer to
+&lt;a href=&quot;http://nginx.org/&quot;&gt;nginx.org&lt;/a&gt;.&lt;br/&gt;
+Commercial support is available at
+&lt;a href=&quot;http://nginx.com/&quot;&gt;nginx.com&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Thank you for using nginx.&lt;/em&gt;&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[通过configmap控制kubelet]]></title>
+        <id>https://p.guipulp.top//post/tong-guo-configmap-kong-zhi-kubelet</id>
+        <link href="https://p.guipulp.top//post/tong-guo-configmap-kong-zhi-kubelet">
+        </link>
+        <updated>2019-06-20T09:12:04.000Z</updated>
+        <summary type="html"><![CDATA[<h2 id="简介">简介</h2>
+<p>在 Kubernetes 1.8 版本上，除了可以通过命令行参数外，还可以通过保存在硬盘的配置文件设置 Kubelet 的配置子集。 将来，大部分现存的命令行参数都将被废弃，取而代之以配置文件的方式提供参数，以简化节点部署过程。
+动态配置kubelet在1.11进入beta版本</p>
+]]></summary>
+        <content type="html"><![CDATA[<h2 id="简介">简介</h2>
+<p>在 Kubernetes 1.8 版本上，除了可以通过命令行参数外，还可以通过保存在硬盘的配置文件设置 Kubelet 的配置子集。 将来，大部分现存的命令行参数都将被废弃，取而代之以配置文件的方式提供参数，以简化节点部署过程。
+动态配置kubelet在1.11进入beta版本</p>
+<!-- more -->
+<h2 id="操作">操作</h2>
+<h3 id="配置kubelet">配置kubelet</h3>
+<pre><code># 指定kubelet 保存动态配置文件内容的目录
+--dynamic-config-dir='path/to/kubelet/dynamic-config'
+</code></pre>
+<h3 id="生成kubelet-configmap">生成kubelet  configmap</h3>
+<pre><code># 生成文件
+kubectl proxy --port=8001 &amp;
+
+# 生成节点基准文件,替换NODE_NAME变量
+NODE_NAME=&quot;the-name-of-the-node-you-are-reconfiguring&quot;; curl -sSL &quot;http://localhost:8001/api/v1/nodes/${NODE_NAME}/proxy/configz&quot; | jq '.kubeletconfig|.kind=&quot;KubeletConfiguration&quot;|.apiVersion=&quot;kubelet.config.k8s.io/v1beta1&quot;' &gt; kubelet_configz_${NODE_NAME}
+
+# 编辑文件指定具体参数,如修改忽略swap错误
+&quot;failSwapOn&quot;: false,
+
+# 生成kubelet 的configmap
+kubectl -n kube-system create configmap my-node-config --from-file=kubelet=kubelet_configz_${NODE_NAME} --append-hash -o yaml
+</code></pre>
+<h3 id="应用configmap到node">应用configmap到node</h3>
+<pre><code># 方法一:使用patch方式,替换CONFIG_MAP_NAME为configmap name
+kubectl patch node ${NODE_NAME} -p &quot;{\&quot;spec\&quot;:{\&quot;configSource\&quot;:{\&quot;configMap\&quot;:{\&quot;name\&quot;:\&quot;${CONFIG_MAP_NAME}\&quot;,\&quot;namespace\&quot;:\&quot;kube-system\&quot;,\&quot;kubeletConfigKey\&quot;:\&quot;kubelet\&quot;}}}}&quot;
+
+# 方法二:编辑节点spec部分配置并指定cm
+kubectl edit node ${NODE_NAME}
+configSource:
+    configMap:
+        name: CONFIG_MAP_NAME
+        namespace: kube-system
+        kubeletConfigKey: kubelet
+</code></pre>
+<h3 id="检查配置是否成功">检查配置是否成功</h3>
+<ul>
+<li>The <code>active</code> configuration is the version the Kubelet is currently running with.</li>
+<li>The <code>assigned</code> configuration is the latest version the Kubelet has resolved based on <code>Node.Spec.ConfigSource</code>.</li>
+<li>The <code>lastKnownGood</code> configuration is the version the Kubelet will fall back to if an invalid config is assigned in <code>Node.Spec.ConfigSource</code>.</li>
+</ul>
+<pre><code># 方法一
+kubectl get no ${NODE_NAME} -o json | jq '.status.config'
+
+# 方法二 查看Node.Status.Config部分状态
+kubectl get node ${NODE_NAME} -o yaml 
+</code></pre>
+<h2 id="错误信息说明">错误信息说明</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Error Message</th>
+<th style="text-align:left">Possible Causes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">failed to load config, see Kubelet log for details</td>
+<td style="text-align:left">The Kubelet likely could not parse the downloaded config payload, or encountered a filesystem error attempting to load the payload from disk.</td>
+</tr>
+<tr>
+<td style="text-align:left">failed to validate config, see Kubelet log for details</td>
+<td style="text-align:left">The configuration in the payload, combined with any command-line flag overrides, and the sum of feature gates from flags, the config file, and the remote payload, was determined to be invalid by the Kubelet.</td>
+</tr>
+<tr>
+<td style="text-align:left">invalid NodeConfigSource, exactly one subfield must be non-nil, but all were nil</td>
+<td style="text-align:left">Since Node.Spec.ConfigSource is validated by the API server to contain at least one non-nil subfield, this likely means that the Kubelet is older than the API server and does not recognize a newer source type.</td>
+</tr>
+<tr>
+<td style="text-align:left">failed to sync: failed to download config, see Kubelet log for details</td>
+<td style="text-align:left">The Kubelet could not download the config. It is possible that Node.Spec.ConfigSource could not be resolved to a concrete API object, or that network errors disrupted the download attempt. The Kubelet will retry the download when in this error state.</td>
+</tr>
+<tr>
+<td style="text-align:left">failed to sync: internal failure, see Kubelet log for details</td>
+<td style="text-align:left">The Kubelet encountered some internal problem and failed to update its config as a result. Examples include filesystem errors and reading objects from the internal informer cache.</td>
+</tr>
+<tr>
+<td style="text-align:left">internal failure, see Kubelet log for details</td>
+<td style="text-align:left">The Kubelet encountered some internal problem while manipulating config, outside of the configuration sync loop.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="参考文档">参考文档</h2>
+<p><a href="https://kubernetes.io/zh/docs/tasks/administer-cluster/kubelet-config-file/">https://kubernetes.io/zh/docs/tasks/administer-cluster/kubelet-config-file/</a></p>
+<p><a href="https://kubernetes.io/docs/tasks/administer-cluster/reconfigure-kubelet/">https://kubernetes.io/docs/tasks/administer-cluster/reconfigure-kubelet/</a></p>
+]]></content>
+    </entry>
+</feed>
