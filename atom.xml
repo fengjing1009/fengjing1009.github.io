@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-06-21T02:48:18.793Z</updated>
+    <updated>2019-06-24T07:27:22.752Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -10,6 +10,13 @@
     <logo>https://p.guipulp.top//images/avatar.png</logo>
     <icon>https://p.guipulp.top//favicon.ico</icon>
     <rights>All rights reserved 2019, PeterPan</rights>
+    <entry>
+        <title type="html"><![CDATA[kubernetes使用PodPreset特性预设整个集群]]></title>
+        <id>https://p.guipulp.top//post/t-I_dB2CB</id>
+        <link href="https://p.guipulp.top//post/t-I_dB2CB">
+        </link>
+        <updated>2019-06-24T07:25:54.000Z</updated>
+    </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes配置外网dns]]></title>
         <id>https://p.guipulp.top//post/9yPSD7pfq</id>

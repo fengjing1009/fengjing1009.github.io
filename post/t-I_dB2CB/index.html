@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>标签列表 | PeterPan</title>
+<title>kubernetes使用PodPreset特性预设整个集群 | PeterPan</title>
 <meta name="description" content="温故而知新">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -91,26 +91,96 @@
 
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
-          <h2 class="tag-list-title">标签列表</h2>
-          <div class="tags-container">
+          <div class="post-detail">
+            <h2 class="post-title">kubernetes使用PodPreset特性预设整个集群</h2>
+            <div class="post-date">2019-06-24</div>
             
-              <a class="tag" href="https://p.guipulp.top//tag/TUmI-_BwQ">kubernetes</a>
+              <div class="feature-container" style="background-image: url('https://p.guipulp.top//post-images/t-I_dB2CB.png')">
+              </div>
             
-              <a class="tag" href="https://p.guipulp.top//tag/Pz5CsUYAd">ssl</a>
+            <div class="post-content">
+              <h3 id="配置apiserver">配置apiserver</h3>
+<blockquote>
+<p>通过标签选择器完成对特定pod的部分属性预设</p>
+</blockquote>
+<pre><code># 开启settings.k8s.io/v1alpha1api
+- --runtime-config=settings.k8s.io/v1alpha1=true
+# 开启adminssion controller
+- --enable-admission-plugins=PodPreset
+# 可配置选项 Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,Validating
+</code></pre>
+<h3 id="配置测试yaml">配置测试yaml</h3>
+<pre><code>root@ubuntu4:~/podpreset# cat preset-time.yaml
+kind: PodPreset
+apiVersion: settings.k8s.io/v1alpha1
+metadata:
+  name: timezone
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  volumeMounts:
+    - name: host-time
+      mountPath: /etc/localtime
+  volumes:
+    - name: host-time
+      hostPath:
+        path: /etc/localtime
+
+</code></pre>
+<pre><code>root@ubuntu4:~/podpreset# kubectl  create deploy nginx --image nginx -o yaml --dry-run
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: nginx
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources: {}
+status: {}
+
+</code></pre>
+
+            </div>
             
-              <a class="tag" href="https://p.guipulp.top//tag/SnyH8t7rH">证书</a>
+              <div class="tag-container">
+                
+                  <a href="https://p.guipulp.top//tag/TUmI-_BwQ" class="tag">
+                    kubernetes
+                  </a>
+                
+              </div>
             
-              <a class="tag" href="https://p.guipulp.top//tag/TytIFabBZ">kubeadm</a>
             
-              <a class="tag" href="https://p.guipulp.top//tag/_V_n59Vtz">高可用</a>
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://p.guipulp.top//post/9yPSD7pfq">
+                  <h3 class="post-title">
+                    kubernetes配置外网dns
+                  </h3>
+                </a>
+              </div>
             
-              <a class="tag" href="https://p.guipulp.top//tag/rpTFwFxjz">keepalived</a>
+
             
-              <a class="tag" href="https://p.guipulp.top//tag/kubelet">kubelet</a>
-            
-              <a class="tag" href="https://p.guipulp.top//tag/configmap">configmap</a>
-            
+
           </div>
+
         </div>
       </div>
     </div>
