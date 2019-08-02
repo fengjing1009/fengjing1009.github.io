@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-08-02T11:21:00.590Z</updated>
+    <updated>2019-08-02T11:24:09.461Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -10,74 +10,6 @@
     <logo>https://p.guipulp.top//images/avatar.png</logo>
     <icon>https://p.guipulp.top//favicon.ico</icon>
     <rights>All rights reserved 2019, PeterPan</rights>
-    <entry>
-        <title type="html"><![CDATA[kubernetes使用PodPreset特性预设整个集群]]></title>
-        <id>https://p.guipulp.top//post/t-I_dB2CB</id>
-        <link href="https://p.guipulp.top//post/t-I_dB2CB">
-        </link>
-        <updated>2019-06-24T07:25:54.000Z</updated>
-        <summary type="html"><![CDATA[<p>有的时候我们需要根据情况,预先配置集群里面的容器的某些属性,则可以通过podpreset配置实现.</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>有的时候我们需要根据情况,预先配置集群里面的容器的某些属性,则可以通过podpreset配置实现.</p>
-<!-- more -->
-<h3 id="配置apiserver">配置apiserver</h3>
-<blockquote>
-<p>通过标签选择器完成对特定pod的部分属性预设</p>
-</blockquote>
-<pre><code># 开启settings.k8s.io/v1alpha1api
-- --runtime-config=settings.k8s.io/v1alpha1=true
-# 开启adminssion controller
-- --enable-admission-plugins=PodPreset
-# 可配置选项 Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,Validating
-</code></pre>
-<h3 id="配置测试yaml">配置测试yaml</h3>
-<pre><code>root@ubuntu4:~/podpreset# cat preset-time.yaml
-kind: PodPreset
-apiVersion: settings.k8s.io/v1alpha1
-metadata:
-  name: timezone
-spec:
-  selector:
-    matchLabels:
-      app: nginx
-  volumeMounts:
-    - name: host-time
-      mountPath: /etc/localtime
-  volumes:
-    - name: host-time
-      hostPath:
-        path: /etc/localtime
-
-</code></pre>
-<pre><code>root@ubuntu4:~/podpreset# kubectl  create deploy nginx --image nginx -o yaml --dry-run
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  creationTimestamp: null
-  labels:
-    app: nginx
-  name: nginx
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: nginx
-  strategy: {}
-  template:
-    metadata:
-      creationTimestamp: null
-      labels:
-        app: nginx
-    spec:
-      containers:
-      - image: nginx
-        name: nginx
-        resources: {}
-status: {}
-
-</code></pre>
-]]></content>
-    </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes配置外网dns]]></title>
         <id>https://p.guipulp.top//post/9yPSD7pfq</id>
