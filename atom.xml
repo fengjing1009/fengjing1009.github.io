@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-08-02T02:50:08.364Z</updated>
+    <updated>2019-08-02T02:53:42.056Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -71,14 +71,14 @@
         <link href="https://p.guipulp.top//post/kubernetes-gao-ke-yong-ji-qun-ban-an-zhuang">
         </link>
         <updated>2019-06-21T01:44:15.000Z</updated>
-        <summary type="html"><![CDATA[<p>本手册适用于安装kubernetes1.14.x版本
-需要对centos和kubernetes有一定了解
-当然如果你什么都不懂也可以按照手册完成安装
+        <summary type="html"><![CDATA[<p>本手册适用于安装kubernetes1.14.x版本<br>
+需要对centos和kubernetes有一定了解<br>
+当然如果你什么都不懂也可以按照手册完成安装<br>
 本文使用kubeadm安装,追求二进制安装的请出门右转打车</p>
 ]]></summary>
-        <content type="html"><![CDATA[<p>本手册适用于安装kubernetes1.14.x版本
-需要对centos和kubernetes有一定了解
-当然如果你什么都不懂也可以按照手册完成安装
+        <content type="html"><![CDATA[<p>本手册适用于安装kubernetes1.14.x版本<br>
+需要对centos和kubernetes有一定了解<br>
+当然如果你什么都不懂也可以按照手册完成安装<br>
 本文使用kubeadm安装,追求二进制安装的请出门右转打车</p>
 ]]></content>
     </entry>
