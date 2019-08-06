@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-08-06T03:40:37.276Z</updated>
+    <updated>2019-08-06T04:15:36.190Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -11,12 +11,12 @@
     <icon>https://p.guipulp.top//favicon.ico</icon>
     <rights>All rights reserved 2019, PeterPan</rights>
     <entry>
-        <title type="html"><![CDATA[kubernetes配置GPU进行CUDA计算]]></title>
+        <title type="html"><![CDATA[kubernetes GPU 实践]]></title>
         <id>https://p.guipulp.top//post/201986</id>
         <link href="https://p.guipulp.top//post/201986">
         </link>
         <updated>2019-08-06T03:36:20.000Z</updated>
-        <content type="html"><![CDATA[<p>查看此文档时候，内容可能已经过时，但大体过程不会有什么变化，建议按照官网说明进行安装，访问地址见参考资料</p>
+        <content type="html"><![CDATA[<p>查看此文档时候，内容可能已经过时，但大体过程不会有什么变化，建议按照官网说明进行安装。</p>
 <h3 id="前置条件">前置条件</h3>
 <ol>
 <li>GNU/Linux x86_64 with kernel version &gt; 3.10</li>
@@ -27,22 +27,22 @@
 <h3 id="安装nvidia-docker">安装nvidia-docker</h3>
 <h4 id="ubuntu-16041804-debian-jessiestretch">Ubuntu 16.04/18.04, Debian Jessie/Stretch</h4>
 <pre><code># Add the package repositories
-$ distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-$ curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-$ curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
 
-$ sudo apt-get update &amp;&amp; sudo apt-get install -y nvidia-container-toolkit
-$ sudo systemctl restart docker
+sudo apt-get update &amp;&amp; sudo apt-get install -y nvidia-container-toolkit
+sudo systemctl restart docker
 </code></pre>
 <h4 id="centos-7-docker-ce-rhel-7475-docker-ce-amazon-linux-12">CentOS 7 (docker-ce), RHEL 7.4/7.5 (docker-ce), Amazon Linux 1/2</h4>
-<pre><code>$ distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-$ curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.repo | sudo tee /etc/yum.repos.d/nvidia-docker.repo
+<pre><code>distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.repo | sudo tee /etc/yum.repos.d/nvidia-docker.repo
 
-$ sudo yum install -y nvidia-container-toolkit
-$ sudo systemctl restart docker
+sudo yum install -y nvidia-container-toolkit
+sudo systemctl restart docker
 </code></pre>
 <h4 id="设置nvidia-docker-runtime">设置nvidia-docker runtime</h4>
-<pre><code># /etc/docker/daemon.json
+<pre><code># vim /etc/docker/daemon.json
 {
     &quot;default-runtime&quot;: &quot;nvidia&quot;,
     &quot;runtimes&quot;: {
@@ -55,6 +55,7 @@ $ sudo systemctl restart docker
 
 # restart docker
 sudo systemctl restart docker
+sudo systemctl restart kubelet
 </code></pre>
 <h4 id="测试nvidia-docker">测试nvidia-docker</h4>
 <pre><code>#### Test nvidia-smi with the latest official CUDA image
