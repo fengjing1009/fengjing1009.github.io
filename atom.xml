@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-08-05T08:18:32.722Z</updated>
+    <updated>2019-08-06T03:38:44.661Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -10,6 +10,99 @@
     <logo>https://p.guipulp.top//images/avatar.png</logo>
     <icon>https://p.guipulp.top//favicon.ico</icon>
     <rights>All rights reserved 2019, PeterPan</rights>
+    <entry>
+        <title type="html"><![CDATA[kubernetes配置GPU进行CUDA计算]]></title>
+        <id>https://p.guipulp.top//post/201986</id>
+        <link href="https://p.guipulp.top//post/201986">
+        </link>
+        <updated>2019-08-06T03:36:20.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="查看此文档时候内容可能已经过时但大体过程不会有什么变化建议按照官网说明进行安装访问地址见参考资料">查看此文档时候，内容可能已经过时，但大体过程不会有什么变化，建议按照官网说明进行安装，访问地址见参考资料</h2>
+<h3 id="前置条件">前置条件</h3>
+<ol>
+<li>GNU/Linux x86_64 with kernel version &gt; 3.10</li>
+<li>Docker &gt;= 1.12</li>
+<li>NVIDIA GPU with Architecture &gt; Fermi (2.1)</li>
+<li><a href="http://www.nvidia.com/object/unix.html">NVIDIA drivers</a> ~= 361.93 (untested on older versions)</li>
+</ol>
+<h3 id="安装nvidia-docker">安装nvidia-docker</h3>
+<h4 id="ubuntu-16041804-debian-jessiestretch">Ubuntu 16.04/18.04, Debian Jessie/Stretch</h4>
+<pre><code># Add the package repositories
+$ distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+$ curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+$ curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+
+$ sudo apt-get update &amp;&amp; sudo apt-get install -y nvidia-container-toolkit
+$ sudo systemctl restart docker
+</code></pre>
+<h4 id="centos-7-docker-ce-rhel-7475-docker-ce-amazon-linux-12">CentOS 7 (docker-ce), RHEL 7.4/7.5 (docker-ce), Amazon Linux 1/2</h4>
+<pre><code>$ distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+$ curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.repo | sudo tee /etc/yum.repos.d/nvidia-docker.repo
+
+$ sudo yum install -y nvidia-container-toolkit
+$ sudo systemctl restart docker
+</code></pre>
+<h4 id="设置nvidia-docker-runtime">设置nvidia-docker runtime</h4>
+<pre><code># /etc/docker/daemon.json
+{
+    &quot;default-runtime&quot;: &quot;nvidia&quot;,
+    &quot;runtimes&quot;: {
+        &quot;nvidia&quot;: {
+            &quot;path&quot;: &quot;/usr/bin/nvidia-container-runtime&quot;,
+            &quot;runtimeArgs&quot;: []
+        }
+    }
+}
+
+# restart docker
+sudo systemctl restart docker
+</code></pre>
+<h4 id="测试nvidia-docker">测试nvidia-docker</h4>
+<pre><code>#### Test nvidia-smi with the latest official CUDA image
+$ docker run --gpus all nvidia/cuda:9.0-base nvidia-smi
+
+# Start a GPU enabled container on two GPUs
+$ docker run --gpus 2 nvidia/cuda:9.0-base nvidia-smi
+
+# Starting a GPU enabled container on specific GPUs
+$ docker run --gpus '&quot;device=1,2&quot;' nvidia/cuda:9.0-base nvidia-smi
+$ docker run --gpus '&quot;device=UUID-ABCDEF,1'&quot; nvidia/cuda:9.0-base nvidia-smi
+
+# Specifying a capability (graphics, compute, ...) for my container
+# Note this is rarely if ever used this way
+$ docker run --gpus all,capabilities=utility nvidia/cuda:9.0-base nvidia-smi
+</code></pre>
+<h3 id="安装kubernetes-插件">安装kubernetes 插件</h3>
+<pre><code>kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/1.0.0-beta/nvidia-device-plugin.yml
+</code></pre>
+<h3 id="测试运行gpu">测试运行GPU</h3>
+<pre><code># 适用于多GPU核心的带企业显卡的集群测试
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-pod
+spec:
+  containers:
+    - name: cuda-container
+      image: nvidia/cuda:9.0-devel
+      resources:
+        limits:
+          nvidia.com/gpu: 2 # requesting 2 GPUs
+    - name: digits-container
+      image: nvidia/digits:6.0
+      resources:
+        limits:
+          nvidia.com/gpu: 2 # requesting 2 GPUs
+</code></pre>
+<pre><code># 适用于个人GPU测试
+kubectl  create job nvjob --image=nvidia/cuda:9.0-base -- nvidia-smi
+</code></pre>
+<h3 id="参考资料">参考资料</h3>
+<p><a href="https://github.com/NVIDIA/nvidia-docker">https://github.com/NVIDIA/nvidia-docker</a></p>
+<p><a href="https://github.com/NVIDIA/k8s-device-plugin">https://github.com/NVIDIA/k8s-device-plugin</a></p>
+<p><a href="https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/">https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/</a></p>
+<p><a href="https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0)#prerequisites">https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0)#prerequisites</a></p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes配置外网dns]]></title>
         <id>https://p.guipulp.top//post/9yPSD7pfq</id>
