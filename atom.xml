@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-08-07T08:20:46.912Z</updated>
+    <updated>2019-08-07T08:21:35.024Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -10,53 +10,6 @@
     <logo>https://p.guipulp.top//images/avatar.png</logo>
     <icon>https://p.guipulp.top//favicon.ico</icon>
     <rights>All rights reserved 2019, PeterPan</rights>
-    <entry>
-        <title type="html"><![CDATA[centos快速部署kubernetes]]></title>
-        <id>https://p.guipulp.top//post/J9r_59JPq</id>
-        <link href="https://p.guipulp.top//post/J9r_59JPq">
-        </link>
-        <updated>2019-08-07T08:17:05.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="取消节点污点使master能被正常调度-k8s4请更改为你自有集群的nodename">取消节点污点,使master能被正常调度, k8s4请更改为你自有集群的nodename</h1>
-<p>kubectl  taint node k8s4 node-role.kubernetes.io/master:NoSchedule-</p>
-<h1 id="创建nginx-deploy">创建nginx deploy</h1>
-<p>root@k8s4:~# kubectl  create deploy nginx --image nginx<br>
-deployment.apps/nginx created</p>
-<p>root@k8s4:~# kubectl  get pods<br>
-NAME                     READY   STATUS    RESTARTS   AGE<br>
-nginx-65f88748fd-9sk6z   1/1     Running   0          2m44s</p>
-<h1 id="暴露nginx到集群外">暴露nginx到集群外</h1>
-<p>root@k8s4:~# kubectl  expose deploy nginx --port=80 --type=NodePort<br>
-service/nginx exposed<br>
-root@k8s4:~# kubectl  get svc<br>
-NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE<br>
-kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP        25m<br>
-nginx        NodePort    10.104.109.234   <none>        80:32129/TCP   5s<br>
-root@k8s4:~# curl 127.0.0.1:32129</p>
-<!DOCTYPE html>
-<html>
-<head>
-<title>Welcome to nginx!</title>
-<style>
-    body {
-        width: 35em;
-        margin: 0 auto;
-        font-family: Tahoma, Verdana, Arial, sans-serif;
-    }
-</style>
-</head>
-<body>
-<h1>Welcome to nginx!</h1>
-<p>If you see this page, the nginx web server is successfully installed and
-working. Further configuration is required.</p>
-<p>For online documentation and support please refer to
-<a href="http://nginx.org/">nginx.org</a>.<br/>
-Commercial support is available at
-<a href="http://nginx.com/">nginx.com</a>.</p>
-<p><em>Thank you for using nginx.</em></p>
-</body>
-</html>
-]]></content>
-    </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes NVIDIA GPU 实践]]></title>
         <id>https://p.guipulp.top//post/201986</id>
