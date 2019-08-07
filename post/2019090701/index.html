@@ -166,7 +166,7 @@ sysctl --system
 </code></pre>
 <h3 id="安装相应软件包">安装相应软件包</h3>
 <pre><code># 安装kubeadm kubelet kubectl
-yum install kubeadm kubectl kubelet -y
+yum install docker-ce kubeadm kubectl kubelet -y
 
 # 开机启动kubelet和docker
 systemctl enable docker kubelet
