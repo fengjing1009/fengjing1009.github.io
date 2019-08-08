@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-08-08T03:46:00.975Z</updated>
+    <updated>2019-08-08T06:44:57.726Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -10,6 +10,40 @@
     <logo>https://p.guipulp.top//images/avatar.png</logo>
     <icon>https://p.guipulp.top//favicon.ico</icon>
     <rights>All rights reserved 2019, PeterPan</rights>
+    <entry>
+        <title type="html"><![CDATA[kubernetes的国内软件源配置]]></title>
+        <id>https://p.guipulp.top//post/2019080801</id>
+        <link href="https://p.guipulp.top//post/2019080801">
+        </link>
+        <updated>2019-08-08T06:40:52.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="ubuntu-软件源配置">ubuntu 软件源配置</h2>
+<pre><code>add-apt-repository &quot;deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main&quot;
+add-apt-repository &quot;deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable&quot;
+wget -q https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg -O- | sudo apt-key add -
+curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
+apt-get update
+apt-get -y install apt-transport-https ca-certificates curl software-properties-common
+apt-get -y install docker-ce kubeadm kubectl kubelet
+systemctl enable docker kubelet &amp;&amp; systemctl start docker
+</code></pre>
+<h2 id="centos-软件源配置">centos 软件源配置</h2>
+<pre><code># 切换到配置目录
+cd /etc/yum.repos.d/
+# 配置docker-ce阿里源
+wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+# 配置kubernetes阿里源
+cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[centos快速创建kubernetes]]></title>
         <id>https://p.guipulp.top//post/2019090701</id>
