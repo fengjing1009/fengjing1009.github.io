@@ -9917,3 +9917,7 @@ textarea#message {
    header {background-image:url(http://img.7476.com/d/file/bigpic/2019-07-09/14/1403402007.jpg);}
     
     
+    .valine {
+        display: none;
+      }
+    
