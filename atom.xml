@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-08-27T15:40:15.420Z</updated>
+    <updated>2019-08-27T15:42:44.791Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -472,6 +472,159 @@ kubectl  create job nvjob --image=nvidia/cuda:9.0-base -- nvidia-smi
 ]]></content>
     </entry>
     <entry>
+        <title type="html"><![CDATA[使用SRS自建直播服务]]></title>
+        <id>https://p.guipulp.top//post/zi-jian-zhi-bo-fu-wu</id>
+        <link href="https://p.guipulp.top//post/zi-jian-zhi-bo-fu-wu">
+        </link>
+        <updated>2019-08-02T11:16:55.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="直播平台搭建分享">直播平台搭建分享</h2>
+<pre><code># 分享链接
+https://juejin.im/entry/599634d2f265da248a7a66a7
+</code></pre>
+<h2 id="直播服务">直播服务</h2>
+<ul>
+<li><a href="https://github.com/arut/nginx-rtmp-module">nginx-rtmp</a></li>
+<li><a href="http://www.ossrs.net/srs.release/releases/">srs</a></li>
+</ul>
+<p>最终选择srs的原因在于其功能丰富，兼容性更好，且支持多种视频格式，支持多级级联，拥有丰富的接口。具体srs和nginx对比如下：</p>
+<p><a href="https://github.com/ossrs/srs/tree/2.0release#compare">https://github.com/ossrs/srs/tree/2.0release#compare</a></p>
+<p>srs架构：</p>
+<p><a href="https://github.com/ossrs/srs/wiki/v2_CN_Architecture">https://github.com/ossrs/srs/wiki/v2_CN_Architecture</a></p>
+<h2 id="srs">srs</h2>
+<h3 id="srs部署">SRS部署</h3>
+<pre><code># https://github.com/ossrs/srs/wiki/v2_CN_Home
+# http://blog.itpub.net/31559758/viewspace-2220944/
+# https://blog.csdn.net/ai2000ai/article/details/72769961
+# srs 可以分角色进行部署具体查看官方文档，推荐使用的客户端为V2版本，V3暂未进入稳定版
+# 系统建议采用centos6
+
+[root@lab1 ~]# wget https://codeload.github.com/ossrs/srs/tar.gz/v2.0-r6
+[root@lab1 ~]# tar xvf v2.0-r6
+[root@lab1 ~]# cd srs-2.0-r6/trunk/
+[root@lab1 trunk]# ./configure &amp;&amp; make
+[root@lab1 trunk]# ./objs/srs -c conf/http.flv.live.conf （支持输出flv和rtmp）
+
+# 推流地址
+rtmp://172.16.10.101:8080/live/demo
+# 播放地址
+flv: http://172.16.10.101:8080/live/demo.flv
+rtmp: rtmp://172.16.10.101:8080/live/demo
+</code></pre>
+<h3 id="srs热更新">SRS热更新</h3>
+<pre><code>Reload的方法为：killall -1 srs
+使用启动脚本：/etc/init.d/srs reload
+</code></pre>
+<h2 id="nginx-rtmp">nginx-rtmp</h2>
+<h3 id="nginx-rtmp部署">nginx-rtmp部署</h3>
+<pre><code># 部署参考链接
+https://www.cnblogs.com/monjeo/p/8492357.html
+https://wiki.blanc.site/archives/3f439512.html
+https://www.cnblogs.com/Leo_wl/p/5654819.html
+https://www.helplib.com/GitHub/article_145412
+https://smartshitter.com/musings/2017/12/nginx-rtmp-streaming-with-simple-authentication/
+</code></pre>
+<h2 id="直播搭建过程中遇见的问题">直播搭建过程中遇见的问题</h2>
+<pre><code># GOP（关键帧）设置过长导致直播延迟过大或者直播黑屏
+http://blog.itpub.net/31559352/viewspace-2564571/
+https://blog.csdn.net/wishfly/article/details/53079303
+https://blog.csdn.net/lcalqf/article/details/55258929
+https://www.cnblogs.com/suannaibuding/p/6366978.html
+https://www.jianshu.com/p/3a84d0c8f466
+http://blog.chinaunix.net/uid-26000296-id-4932817.html
+https://www.jianshu.com/p/9a0bbe1658eb
+http://www.voidcn.com/article/p-naiixvpv-bnw.html  (解释gop和解决办法)
+
+# 直播出现客户端中断问题
+buffer被清空，需要检查源流
+
+# 直播无法播放出http流检查
+检查流文件是否生成，流路径为 objs/nginx/html/live/
+</code></pre>
+<h2 id="直播延迟和推流设置">直播延迟和推流设置</h2>
+<pre><code>https://developer.qiniu.com/pili/kb/1722/server-live-on-delay
+https://cloud.tencent.com/document/product/267/32726
+</code></pre>
+<h2 id="更优秀的直播方案">更优秀的直播方案</h2>
+<pre><code># SD-RTN
+https://blog.csdn.net/wolf09311/article/details/52680170
+</code></pre>
+<h2 id="ffmpeg推流方式">ffmpeg推流方式</h2>
+<pre><code>docker run --name  test1 --restart=always -d -v $(pwd):/temp/ jrottenberg/ffmpeg -re  -stream_loop -1 -i /temp/war.mp4 -vcodec libx264 -acodec libfdk_aac \
+      -metadata service_name=&quot;Channel 1&quot; -metadata service_provider=&quot;PBS&quot; \
+      -b 1.5M\
+      -f flv rtmp://172.16.10.101:1935/live/demo
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[kubernetes使用PodPreset特性预设整个集群]]></title>
+        <id>https://p.guipulp.top//post/t-I_dB2CB</id>
+        <link href="https://p.guipulp.top//post/t-I_dB2CB">
+        </link>
+        <updated>2019-06-24T07:25:54.000Z</updated>
+        <summary type="html"><![CDATA[<p>有的时候我们需要根据情况,预先配置集群里面的容器的某些属性,则可以通过podpreset配置实现.</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>有的时候我们需要根据情况,预先配置集群里面的容器的某些属性,则可以通过podpreset配置实现.</p>
+<!-- more -->
+<h3 id="配置apiserver">配置apiserver</h3>
+<blockquote>
+<p>通过标签选择器完成对特定pod的部分属性预设</p>
+</blockquote>
+<pre><code># 开启settings.k8s.io/v1alpha1api
+- --runtime-config=settings.k8s.io/v1alpha1=true
+# 开启adminssion controller
+- --enable-admission-plugins=PodPreset
+# 可配置选项 Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,Validating
+</code></pre>
+<h3 id="配置测试yaml">配置测试yaml</h3>
+<pre><code>root@ubuntu4:~/podpreset# cat preset-time.yaml
+kind: PodPreset
+apiVersion: settings.k8s.io/v1alpha1
+metadata:
+  name: timezone
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  volumeMounts:
+    - name: host-time
+      mountPath: /etc/localtime
+  volumes:
+    - name: host-time
+      hostPath:
+        path: /etc/localtime
+
+</code></pre>
+<pre><code>root@ubuntu4:~/podpreset# kubectl  create deploy nginx --image nginx -o yaml --dry-run
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: nginx
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources: {}
+status: {}
+
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[kubernetes配置外网dns]]></title>
         <id>https://p.guipulp.top//post/9yPSD7pfq</id>
         <link href="https://p.guipulp.top//post/9yPSD7pfq">
@@ -845,422 +998,6 @@ systemctl restart rpcbind.service &amp;&amp; systemctl restart nfs.service
 <li>sync:资料会先暂存于内存中，而非直接写入硬盘。</li>
 <li>no_root_squash:当登录NFS主机使用共享目录的使用者是root时，其权限将被转换成为匿名使用者，通常它的UID与GID都会变成nobody身份。</li>
 </ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[全手动生成服务证书]]></title>
-        <id>https://p.guipulp.top//post/vdXFKNARf</id>
-        <link href="https://p.guipulp.top//post/vdXFKNARf">
-        </link>
-        <updated>2019-06-21T02:26:40.000Z</updated>
-        <summary type="html"><![CDATA[<p>使用cfssl生成服务证书,用于kubernetes搭建和etcd集群搭建</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>使用cfssl生成服务证书,用于kubernetes搭建和etcd集群搭建</p>
-<!-- more -->
-<h1 id="证书生成步骤">证书生成步骤</h1>
-<p>主要步骤如下：</p>
-<ul>
-<li>安装证书工具</li>
-<li>创建签名请求文件</li>
-<li>生成相应的ca证书和对应服务证书</li>
-</ul>
-<blockquote>
-<p>下面以为harbor服务为例，生成harbor服务证书</p>
-</blockquote>
-<h1 id="安装证书工具">安装证书工具</h1>
-<pre><code>wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
-chmod +x cfssl_linux-amd64
-mv cfssl_linux-amd64 /usr/local/bin/cfssl
-
-wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
-chmod +x cfssljson_linux-amd64
-mv cfssljson_linux-amd64 /usr/local/bin/cfssljson
-
-wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64
-chmod +x cfssl-certinfo_linux-amd64
-mv cfssl-certinfo_linux-amd64 /usr/local/bin/cfssl-certinfo
-
-</code></pre>
-<h1 id="创建签名请求文件">创建签名请求文件</h1>
-<ol>
-<li>生成ca配置文件</li>
-</ol>
-<pre><code>mkdir /root/ssl &amp;&amp; cd /root/ssl
-
-cat &gt; ca-config.json &lt;&lt;EOF
-{
-  &quot;signing&quot;: {
-    &quot;default&quot;: {
-      &quot;expiry&quot;: &quot;87600h&quot;
-    },
-    &quot;profiles&quot;: {
-      &quot;harbor&quot;: {
-        &quot;usages&quot;: [
-            &quot;signing&quot;,
-            &quot;key encipherment&quot;,
-            &quot;server auth&quot;,
-            &quot;client auth&quot;
-        ],
-        &quot;expiry&quot;: &quot;87600h&quot;
-      }
-    }
-  }
-}
-EOF
-</code></pre>
-<ul>
-<li>可以定义多个profiles，生成证书时候自动应用定义的profiles属性</li>
-<li>signing 表示该证书可用于签名其它证书；生成的 ca.pem 证书中 CA=TRUE</li>
-<li>server auth 表示client可以用该 CA 对server提供的证书进行验证</li>
-<li>client auth 表示server可以用该CA对client提供的证书进行验证</li>
-</ul>
-<ol start="2">
-<li>生成ca签名请求文件</li>
-</ol>
-<pre><code>cat &gt; ca-csr.json &lt;&lt;EOF
-{
-  &quot;CN&quot;: &quot;harbor&quot;,
-  &quot;key&quot;: {
-    &quot;algo&quot;: &quot;rsa&quot;,
-    &quot;size&quot;: 2048
-  },
-  &quot;names&quot;: [
-    {
-      &quot;C&quot;: &quot;CN&quot;,
-      &quot;ST&quot;: &quot;BeiJing&quot;,
-      &quot;L&quot;: &quot;BeiJing&quot;,
-      &quot;O&quot;: &quot;k8s&quot;,
-      &quot;OU&quot;: &quot;System&quot;
-    }
-  ],
-    &quot;ca&quot;: {
-       &quot;expiry&quot;: &quot;87600h&quot;
-    }
-}
-EOF
-</code></pre>
-<ul>
-<li>可根据自己的需求更改对应的值</li>
-</ul>
-<ol start="3">
-<li>生成服务签名请求文件</li>
-</ol>
-<blockquote>
-<p>创建服务签名文件 servicename-csr.json</p>
-</blockquote>
-<pre><code>cat &gt; harbor-csr.json &lt;&lt;EOF
-{
-    &quot;CN&quot;: &quot;harbor&quot;,
-    &quot;hosts&quot;: [
-      &quot;127.0.0.1&quot;,
-      &quot;100.64.16.179&quot;
-    ],
-    &quot;key&quot;: {
-        &quot;algo&quot;: &quot;rsa&quot;,
-        &quot;size&quot;: 2048
-    },
-    &quot;names&quot;: [
-        {
-            &quot;C&quot;: &quot;CN&quot;,
-            &quot;ST&quot;: &quot;BeiJing&quot;,
-            &quot;L&quot;: &quot;BeiJing&quot;,
-            &quot;O&quot;: &quot;k8s&quot;,
-            &quot;OU&quot;: &quot;System&quot;
-        }
-    ]
-}
-EOF
-</code></pre>
-<ul>
-<li>替换和增加hosts字段为自己服务的ip地址或者域名</li>
-<li>替换CN等字段为自己的服务名</li>
-</ul>
-<h1 id="生成ca和harbor证书">生成ca和harbor证书</h1>
-<pre><code>cfssl gencert -initca ca-csr.json | cfssljson -bare ca
-cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=harbor harbor-csr.json | cfssljson -bare harbor
-</code></pre>
-<ul>
-<li>替换profile为自己在ca-config.json定义的profiles</li>
-<li>替换harbor-csr.json为自己创建的service-csr.json</li>
-<li>替换harbor为自己的服务名</li>
-</ul>
-<h1 id="导入证书到客户端">导入证书到客户端</h1>
-<blockquote>
-<p>拷贝ca.pem证书到客户端节点，区分环境执行以下操作</p>
-</blockquote>
-<ol>
-<li>Red Hat (CentOS etc)</li>
-</ol>
-<pre><code>cat ca.pem &gt;&gt; ca.crt 
-cp ca.crt /etc/pki/ca-trust/source/anchors/ca.crt
-update-ca-trust
-
-</code></pre>
-<ol start="2">
-<li>Ubuntu</li>
-</ol>
-<pre><code>cat ca.pem &gt;&gt; ca.crt 
-cp ca.crt  /usr/local/share/ca-certificates/ca.crt 
-update-ca-certificates
-</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[kubernetes 高可用集群版安装]]></title>
-        <id>https://p.guipulp.top//post/kubernetes-gao-ke-yong-ji-qun-ban-an-zhuang</id>
-        <link href="https://p.guipulp.top//post/kubernetes-gao-ke-yong-ji-qun-ban-an-zhuang">
-        </link>
-        <updated>2019-06-21T01:44:15.000Z</updated>
-        <summary type="html"><![CDATA[<p>本手册适用于安装kubernetes1.14.x版本<br>
-需要对centos和kubernetes有一定了解<br>
-当然如果你什么都不懂也可以按照手册完成安装<br>
-本文使用kubeadm安装,追求二进制安装的请出门右转打车</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>本手册适用于安装kubernetes1.14.x版本<br>
-需要对centos和kubernetes有一定了解<br>
-当然如果你什么都不懂也可以按照手册完成安装<br>
-本文使用kubeadm安装,追求二进制安装的请出门右转打车</p>
-<!-- more -->
-<h1 id="前置条件">前置条件</h1>
-<ul>
-<li>系统要求:64位centos7.6</li>
-<li>关闭防火墙和selinux</li>
-<li>关闭操作系统swap分区(使用k8s不推荐打开)</li>
-<li>请预配置好每个节点的hostname保证不重名即可</li>
-<li>请配置第一个master能秘钥免密登入所有节点(包括自身)</li>
-</ul>
-<h1 id="环境说明">环境说明</h1>
-<p>本手册安装方式适用于小规模使用</p>
-<p>多主模式(最少三个), 每个master节点上需要安装keepalived</p>
-<h1 id="准备工作每个节点都需要执行">准备工作(每个节点都需要执行)</h1>
-<h2 id="docker和kubernetes软件源配置">Docker和kubernetes软件源配置</h2>
-<pre><code># 切换到配置目录
-cd /etc/yum.repos.d/
-# 配置docker-ce阿里源
-wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
-# 配置kubernetes阿里源
-cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
-EOF
-</code></pre>
-<h2 id="配置内核相关参数">配置内核相关参数</h2>
-<pre><code>cat &lt;&lt;EOF &gt;  /etc/sysctl.d/ceph.conf
-net.ipv4.ip_forward = 1
-net.bridge.bridge-nf-call-ip6tables = 1
-net.bridge.bridge-nf-call-iptables = 1
-EOF
-sysctl --system
-</code></pre>
-<h2 id="安装相应软件包">安装相应软件包</h2>
-<pre><code># 安装kubeadm kubelet kubectl
-yum install docker-ce kubeadm kubectl kubelet -y
-
-# 开机启动kubelet和docker
-systemctl enable docker kubelet
-
-# 启动docker
-systemctl start docker
-</code></pre>
-<h1 id="部署">部署</h1>
-<h2 id="安装keepalived在所有master上执行">安装keepalived(在所有master上执行)</h2>
-<pre><code># 此处如果有Lb可省略 直接使用LB地址
-# 安装时候请先在初始化master上执行,保证VIP附着在初始化master上,否则请关闭其他keepalived
-
-# 安装完成后可根据自己业务需要实现健康监测
-yum install keepalived -y
-
-# 备份keepalived原始文件
-mv /etc/keepalived/keepalived.conf /etc/keepalived/keepalived.conf.bak
-
-# 生成新的keepalived配置文件,文中注释部分对每台master请进行修改
-cat &lt;&lt;EOF &gt; /etc/keepalived/keepalived.conf
-! Configuration File for keepalived
-
-global_defs {
-   router_id k8s-master1                      #主调度器的主机名
-   vrrp_mcast_group4 224.26.1.1         
-
-}
-
-vrrp_instance VI_1 {
-    state BACKUP                          
-    interface eth0
-    virtual_router_id 66              
-    nopreempt                             
-    priority 90                         
-    advert_int 1
-    authentication {
-        auth_type PASS                     
-        auth_pass 123456                 
-    }
-    virtual_ipaddress {
-        10.20.1.8                            #VIP地址声明
-    }
-}
-EOF
-
-# 配置keepalived开机启动和启动keepalived
-systemctl enable keepalived
-systemctl start keepalived
-
-</code></pre>
-<h2 id="生成kubeadm-master-配置文件">生成kubeadm master 配置文件</h2>
-<pre><code>cd &amp;&amp; cat &lt;&lt;EOF &gt; kubeadm.yaml
-apiVersion: kubeadm.k8s.io/v1beta1
-kind: ClusterConfiguration
-kubernetesVersion: stable
-apiServer:
-  certSANs:
-  - &quot;172.29.2.188&quot;  #请求改为你的vip地址
-controlPlaneEndpoint: &quot;172.29.2.188:6443&quot;  #请求改为你的vip地址
-imageRepository: registry.cn-hangzhou.aliyuncs.com/peter1009
-networking:
-  dnsDomain: cluster.local
-  podSubnet: &quot;10.244.0.0/16&quot;
-  serviceSubnet: 10.96.0.0/12
-EOF
-</code></pre>
-<h2 id="初始化第一个master">初始化第一个master</h2>
-<pre><code># 使用上一步生成的kubeadm.yaml
-kubeadm init --config kubeadm.yaml
-</code></pre>
-<pre><code># 执行完上一步输出如下
-root@k8s4:~# kubeadm  init --config kubeadm.yaml
-I0522 06:20:13.352644    2622 version.go:96] could not fetch a Kubernetes version from 
-......... 此处省略
-Your Kubernetes control-plane has initialized successfully!
-
-To start using your cluster, you need to run the following as a regular user:
-
-  mkdir -p $HOME/.kube
-  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-  sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-You should now deploy a pod network to the cluster.
-Run &quot;kubectl apply -f [podnetwork].yaml&quot; with one of the options listed at:
-  https://kubernetes.io/docs/concepts/cluster-administration/addons/
-
-You can now join any number of control-plane nodes by copying certificate authorities
-and service account keys on each node and then running the following as root:
-
-  kubeadm join 172.16.10.114:6443 --token v2lv3k.aysjlmg3ylcl3498 \
-    --discovery-token-ca-cert-hash sha256:87b69e590e9d59055c5a9c6651e333044c402dba877beb29906eddfeb0998d72 \
-    --experimental-control-plane
-
-Then you can join any number of worker nodes by running the following on each as root:
-
-kubeadm join 172.16.10.114:6443 --token v2lv3k.aysjlmg3ylcl3498 \
-    --discovery-token-ca-cert-hash sha256:87b69e590e9d59055c5a9c6651e333044c402dba877beb29906eddfeb0998d72
-
-</code></pre>
-<h2 id="安装集群">安装集群</h2>
-<pre><code>cat &lt;&lt;EOF &gt; copy.sh
-CONTROL_PLANE_IPS=&quot;172.16.10.101 172.16.10.102&quot;  # 修改这两个ip地址为你第二/第三masterip地址
-for host in ${CONTROL_PLANE_IPS}; do
-    ssh $host mkdir -p /etc/kubernetes/pki/etcd
-    scp /etc/kubernetes/pki/ca.crt &quot;${USER}&quot;@$host:/etc/kubernetes/pki/
-    scp /etc/kubernetes/pki/ca.key &quot;${USER}&quot;@$host:/etc/kubernetes/pki/
-    scp /etc/kubernetes/pki/sa.key &quot;${USER}&quot;@$host:/etc/kubernetes/pki/
-    scp /etc/kubernetes/pki/sa.pub &quot;${USER}&quot;@$host:/etc/kubernetes/pki/
-    scp /etc/kubernetes/pki/front-proxy-ca.crt &quot;${USER}&quot;@$host:/etc/kubernetes/pki/
-    scp /etc/kubernetes/pki/front-proxy-ca.key &quot;${USER}&quot;@$host:/etc/kubernetes/pki/
-    scp /etc/kubernetes/pki/etcd/ca.crt &quot;${USER}&quot;@$host:/etc/kubernetes/pki/etcd/ca.crt
-    scp /etc/kubernetes/pki/etcd/ca.key &quot;${USER}&quot;@$host:/etc/kubernetes/pki/etcd/ca.key
-    scp /etc/kubernetes/admin.conf &quot;${USER}&quot;@$host:/etc/kubernetes/
-done
-EOF
-
-# 如果未配置免密登录,该步骤讲失败
-bash -x copy.sh
-</code></pre>
-<pre><code># 在当前节点执行init输出第一部分内容,使kubectl能访问集群
-  mkdir -p $HOME/.kube
-  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-  sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-# 在其他master节点上配置执行init输出第二部分内容(必须要copy.sh文件执行成功以后)
-kubeadm join 172.16.10.114:6443 --token v2lv3k.aysjlmg3ylcl3498 \
-    --discovery-token-ca-cert-hash sha256:87b69e590e9d59055c5a9c6651e333044c402dba877beb29906eddfeb0998d72 \
-    --experimental-control-plane
-</code></pre>
-<pre><code># 在其他非master的节点上配置执行init输出第三部分内容
-kubeadm join 172.16.10.114:6443 --token v2lv3k.aysjlmg3ylcl3498 \
-    --discovery-token-ca-cert-hash sha256:87b69e590e9d59055c5a9c6651e333044c402dba877beb29906eddfeb0998d72
-</code></pre>
-<h2 id="安装flannel">安装flannel</h2>
-<pre><code>kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-</code></pre>
-<h2 id="检查是否安装完成">检查是否安装完成</h2>
-<pre><code>root@k8s4:~# kubectl  get nodes
-NAME   STATUS   ROLES    AGE   VERSION
-k8s4   Ready    master   20m   v1.14.2
-root@k8s4:~# kubectl  get nodes
-NAME   STATUS   ROLES    AGE   VERSION
-k8s4   Ready    master   20m   v1.14.2
-root@k8s4:~# kubectl  get pods --all-namespaces
-NAMESPACE     NAME                           READY   STATUS    RESTARTS   AGE
-kube-system   coredns-8cc96f57d-cfr4j        1/1     Running   0          20m
-kube-system   coredns-8cc96f57d-stcz6        1/1     Running   0          20m
-kube-system   etcd-k8s4                      1/1     Running   0          19m
-kube-system   kube-apiserver-k8s4            1/1     Running   0          19m
-kube-system   kube-controller-manager-k8s4   1/1     Running   0          19m
-kube-system   kube-flannel-ds-amd64-k4q6q    1/1     Running   0          50s
-kube-system   kube-proxy-lhjsf               1/1     Running   0          20m
-kube-system   kube-scheduler-k8s4            1/1     Running   0          19m
-</code></pre>
-<h2 id="测试是否能正常使用集群">测试是否能正常使用集群</h2>
-<pre><code># 取消节点污点,使master能被正常调度, k8s4请更改为你自有集群的nodename
-kubectl  taint node k8s4 node-role.kubernetes.io/master:NoSchedule-
-
-# 创建nginx deploy
-root@k8s4:~# kubectl  create deploy nginx --image nginx
-deployment.apps/nginx created
-
-root@k8s4:~# kubectl  get pods
-NAME                     READY   STATUS    RESTARTS   AGE
-nginx-65f88748fd-9sk6z   1/1     Running   0          2m44s
-
-# 暴露nginx到集群外
-root@k8s4:~# kubectl  expose deploy nginx --port=80 --type=NodePort
-service/nginx exposed
-root@k8s4:~# kubectl  get svc
-NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
-kubernetes   ClusterIP   10.96.0.1        &lt;none&gt;        443/TCP        25m
-nginx        NodePort    10.104.109.234   &lt;none&gt;        80:32129/TCP   5s
-root@k8s4:~# curl 127.0.0.1:32129
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-&lt;title&gt;Welcome to nginx!&lt;/title&gt;
-&lt;style&gt;
-    body {
-        width: 35em;
-        margin: 0 auto;
-        font-family: Tahoma, Verdana, Arial, sans-serif;
-    }
-&lt;/style&gt;
-&lt;/head&gt;
-&lt;body&gt;
-&lt;h1&gt;Welcome to nginx!&lt;/h1&gt;
-&lt;p&gt;If you see this page, the nginx web server is successfully installed and
-working. Further configuration is required.&lt;/p&gt;
-
-&lt;p&gt;For online documentation and support please refer to
-&lt;a href=&quot;http://nginx.org/&quot;&gt;nginx.org&lt;/a&gt;.&lt;br/&gt;
-Commercial support is available at
-&lt;a href=&quot;http://nginx.com/&quot;&gt;nginx.com&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Thank you for using nginx.&lt;/em&gt;&lt;/p&gt;
-&lt;/body&gt;
-&lt;/html&gt;
-
-</code></pre>
 ]]></content>
     </entry>
 </feed>
