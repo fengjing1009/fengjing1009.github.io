@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-08-27T15:36:53.269Z</updated>
+    <updated>2019-08-27T15:38:18.815Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -30,8 +30,8 @@
 <h3 id="双网卡实现snat">双网卡实现SNAT</h3>
 <p><strong>示例一</strong></p>
 <p><img src="https://img-blog.csdn.net/20171117145802662?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvd2hlYXRfZ3JvdW5k/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="è¿éåå¾çæè¿°"></p>
-<p>左边的机器为A，右边的机器为B ，A和B在同一个自网路，B有两个网卡。一个网卡和A同在一个网络，另外一个网卡可以连接外网。</p>
-<pre><code># 配置方式
+<pre><code># 左边的机器为A，右边的机器为B ，A和B在同一个自网路，B有两个网卡。一个网卡和A同在一个网络，另外一个网卡可以连接外网。 
+# 配置方式
 [root@xuegod63 ~]# iptables -t nat -A POSTROUTING -s 192.168.240.0/24   -j  SNAT  --to 192.168.1.250
 或：
 [root@xuegod63 ~]#iptables -t nat -A POSTROUTING -s 192.168.2.0/24  -o eth0  -j MASQUERADE
