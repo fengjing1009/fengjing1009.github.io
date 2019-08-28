@@ -437,10 +437,9 @@ iptables -A POSTROUTING -o eth0 -s 192.168.1.200 -j SNAT --to 202.110.123.200
 这样，所有目的ip为202.110.123.100和202.110.123.200的数据包都将分别被转发给192.168.1.100和192.168.1.200;而所有来自192.168.1.100和192.168.1.200的数据包都将分 别被伪装成由202.110.123.100和202.110.123.200，从而也就实现了ip映射。
 </code></pre>
 <h2 id="参考文档">参考文档</h2>
-<pre><code>https://www.cnblogs.com/zejin2008/p/5919550.html
-https://blog.csdn.net/skc361/article/details/20481521
-https://www.cnblogs.com/zhujingzhi/p/9706664.html
-</code></pre>
+<p>https://www.cnblogs.com/zejin2008/p/5919550.html<br>
+https://blog.csdn.net/skc361/article/details/20481521<br>
+https://www.cnblogs.com/zhujingzhi/p/9706664.html</p>
 </p>
 							</div>
 	<div class="wow bounceInDown vt-post-tags">
