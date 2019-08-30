@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-08-30T09:35:33.942Z</updated>
+    <updated>2019-08-30T09:37:50.992Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -86,6 +86,7 @@ EnforceNodeAllocatable:
 
 </code></pre>
 <p><strong>配置软驱逐（默认为硬驱逐）</strong></p>
+<p>软驱逐有资源驱逐等待时间，硬驱逐为立刻驱逐。</p>
 <pre><code># evictionHard 注释掉，并在后面新增以下内容
 
 #evictionHard:
@@ -149,6 +150,7 @@ Allocatable:
 <p>https://kubernetes.io/docs/tasks/administer-cluster/reconfigure-kubelet/</p>
 <p>https://kubernetes.io/zh/docs/tasks/administer-cluster/kubelet-config-file/</p>
 <p>https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/kubelet/config/v1beta1/types.go</p>
+<p>https://www.bladewan.com/2018/01/26/k8s_resource_resver/</p>
 ]]></content>
     </entry>
     <entry>
