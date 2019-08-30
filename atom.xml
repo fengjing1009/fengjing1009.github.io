@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-08-28T05:04:52.804Z</updated>
+    <updated>2019-08-30T09:13:59.365Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -10,6 +10,100 @@
     <logo>https://p.guipulp.top//images/avatar.png</logo>
     <icon>https://p.guipulp.top//favicon.ico</icon>
     <rights>All rights reserved 2019, PeterPan</rights>
+    <entry>
+        <title type="html"><![CDATA[修改kubernetes证书过期时间的骚操作]]></title>
+        <id>https://p.guipulp.top//post/2019083001</id>
+        <link href="https://p.guipulp.top//post/2019083001">
+        </link>
+        <updated>2019-08-28T08:50:14.000Z</updated>
+        <content type="html"><![CDATA[<blockquote>
+<p>简单验证（随机修改系统时间）是有效的（10年内），具体用起来怎样，自己去测试吧。</p>
+</blockquote>
+<p>最近公司早期部署的kubernetes的集群证书过期，研究了下kubernetes的证书时间，大致上是说修改kubeadm的源代码，自己编译kubeadm，实现证书99年。</p>
+<p>kubernetes默认CA证书10年，很少有企业的一个服务能跑10年不更换，因此想到以下方法进行了以下实验。测试暂时没发现什么问题。</p>
+<p>如果有多master，需要在每个master上进行以下操作。</p>
+<pre><code>[root@m2 pki]# date -s 8/30/2028
+2028年 08月 30日 星期三 00:00:00 EDT
+[root@m2 pki]# kubectl get pods
+Unable to connect to the server: x509: certificate has expired or is not yet valid
+[root@m2 pki]# kubectl get pods
+Unable to connect to the server: x509: certificate has expired or is not yet valid
+[root@m2 pki]# kubeadm alpha certs renew all
+certificate embedded in the kubeconfig file for the admin to use and for kubeadm itself renewed
+certificate for serving the Kubernetes API renewed
+certificate the apiserver uses to access etcd renewed
+certificate for the API server to connect to kubelet renewed
+certificate embedded in the kubeconfig file for the controller manager to use renewed
+certificate for liveness probes to healtcheck etcd renewed
+certificate for etcd nodes to communicate with each other renewed
+certificate for serving etcd renewed
+certificate for the front proxy client renewed
+certificate embedded in the kubeconfig file for the scheduler manager to use renewed
+[root@m2 pki]# ntpdate 0.cn.pool.ntp.org
+30 Aug 04:51:35 ntpdate[9983]: step time server 203.107.6.88 offset -284065763.328437 sec
+[root@m2 pki]# cp /etc/kubernetes/admin.conf ~/.kube/config
+cp：是否覆盖&quot;/root/.kube/config&quot;？ y
+[root@m2 pki]# openssl x509 -in apiserver.crt -noout -text
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 6495439138002669247 (0x5a246f7b50d18ebf)
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN=kubernetes
+        Validity
+            Not Before: Aug 27 00:34:59 2019 GMT
+            Not After : Aug 30 04:00:30 2029 GMT
+        Subject: CN=kube-apiserver
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:d5:c5:1a:60:e3:dd:5c:68:c6:a0:38:df:06:54:
+                    7b:87:73:3f:6d:1b:bc:65:4e:8e:1a:e0:a7:13:a9:
+                    df:a6:67:65:13:cb:c6:e7:c8:5e:60:3e:14:7d:c4:
+                    e0:91:d5:de:8b:91:bd:9c:59:2b:35:87:62:87:c9:
+                    97:c4:f6:c6:41:b4:6a:80:25:34:1a:d2:b4:ad:e0:
+                    bc:d0:af:18:35:68:b9:46:7b:1e:af:da:24:ce:79:
+                    94:75:77:3d:ae:67:ac:b9:08:5a:74:87:fd:c0:33:
+                    ec:d9:d5:ba:71:ee:23:9e:39:69:fa:2f:76:3f:e1:
+                    80:a4:89:a3:39:40:f9:ef:a6:f5:4c:27:3a:7c:60:
+                    aa:83:ce:cf:48:2a:e9:6c:15:88:21:8b:fb:53:f8:
+                    05:15:bf:35:10:9d:4e:63:f9:09:ae:9c:45:b2:75:
+                    4f:8f:4e:a9:9f:bc:f8:c0:9f:29:bc:5d:a3:8f:a9:
+                    c7:d1:ea:85:d4:79:32:e1:e3:b7:2f:08:eb:47:99:
+                    af:db:b4:5d:a7:d9:c0:7f:29:63:ec:f4:bb:ba:9b:
+                    16:f4:c1:11:28:37:7c:c8:f9:13:7b:38:86:83:ba:
+                    f7:e8:dd:fd:05:9e:7c:46:4a:1e:d9:9e:8e:0c:ad:
+                    86:09:70:da:40:46:e7:e8:5c:82:26:08:3a:4e:ad:
+                    8a:a3
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Key Usage: critical
+                Digital Signature, Key Encipherment
+            X509v3 Extended Key Usage:
+                TLS Web Server Authentication
+            X509v3 Subject Alternative Name:
+                DNS:m2, DNS:kubernetes, DNS:kubernetes.default, DNS:kubernetes.default.svc, DNS:kubernetes.default.svc.cluster.local, IP Address:10.96.0.1, IP Address:172.27.100.14, IP Address:172.27.100.211, IP Address:172.29.100.211
+    Signature Algorithm: sha256WithRSAEncryption
+         ab:31:c7:2a:a2:52:40:e2:b5:c6:a4:fc:d7:f5:35:2c:c9:28:
+         8d:ba:6a:1d:c3:06:d0:85:4e:bf:43:0c:27:a2:2f:13:62:97:
+         89:cc:4e:0c:17:86:11:ef:21:2a:01:9d:1c:25:f2:48:c5:31:
+         95:63:41:2c:57:2a:1c:1f:40:00:2f:1a:b1:90:7b:3d:6a:2b:
+         7c:6f:33:9a:c8:09:44:4d:a4:ff:fa:06:de:77:66:e1:0f:59:
+         29:bd:76:d1:52:b9:63:81:b4:ae:27:0f:ed:54:93:b1:21:8b:
+         bf:4f:16:9e:b2:4d:dd:2f:ac:81:e8:86:38:c8:2d:d9:38:1b:
+         ac:56:23:5e:8c:dc:96:ae:24:3f:dd:7f:ce:ba:97:b5:e7:07:
+         05:df:f2:fd:ba:51:6d:94:13:c5:2d:a8:75:32:21:ad:e9:07:
+         13:04:64:e9:c5:f9:3c:46:39:9a:16:59:3b:ff:91:af:7b:fb:
+         14:6d:2e:66:2d:52:0d:1b:45:ba:e4:0c:42:23:1c:2c:ea:53:
+         6a:20:88:87:24:b1:55:39:d0:93:7b:44:46:bc:46:16:37:d6:
+         ff:e6:2f:dd:05:53:03:bc:d6:ba:32:1c:8a:7c:74:4b:cc:4d:
+         3b:20:b6:80:a0:a8:28:a5:da:fb:0b:3a:43:c3:b7:79:86:a8:
+         2e:cc:91:48
+
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[iptables的四表五链]]></title>
         <id>https://p.guipulp.top//post/2019082802</id>
@@ -990,296 +1084,6 @@ www.baidu.com is an alias for www.a.shifen.com.
 www.a.shifen.com has address 220.181.111.188
 www.a.shifen.com has address 220.181.112.244
 
-</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[kubeadm搭建v1.10.3kubernetes集群]]></title>
-        <id>https://p.guipulp.top//post/jZoeyPf8e</id>
-        <link href="https://p.guipulp.top//post/jZoeyPf8e">
-        </link>
-        <updated>2019-06-21T02:33:01.000Z</updated>
-        <summary type="html"><![CDATA[<p>本文使用kubeadm和容器化etcd安装kubernetes集群用于poc</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>本文使用kubeadm和容器化etcd安装kubernetes集群用于poc</p>
-<!-- more -->
-<blockquote>
-<p>lab 说明：<br>
-1.此lab手册不需要越过长城<br>
-2.100.64.16.176 为master地址，配置时候需要替换该地址为新环境的master地址<br>
-3.lab环境为单节点master环境<br>
-4.lab环境etcd访问方式为http方式</p>
-</blockquote>
-<table>
-<thead>
-<tr>
-<th>clusterinfo</th>
-<th>ip</th>
-<th>package</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>k8s-node1(master)</td>
-<td>100.64.16.176</td>
-<td>kubeadm, etcd, kubelet, kubectl, docker</td>
-</tr>
-<tr>
-<td>k8s-node2(node)</td>
-<td>100.64.16.177</td>
-<td>kubeadm, kubelet, kubectl, docker</td>
-</tr>
-<tr>
-<td>k8s-node3(node)</td>
-<td>100.64.16.178</td>
-<td>kubeadm, kubelet, kubectl, docker</td>
-</tr>
-</tbody>
-</table>
-<h3 id="环境准备">环境准备</h3>
-<h4 id="注意事项">注意事项</h4>
-<p>该部分内容需要在所有节点执行</p>
-<h4 id="关闭防火墙">关闭防火墙</h4>
-<pre><code>systemctl stop firewalld &amp;&amp; systemctl disable firewalld
-</code></pre>
-<h4 id="关闭交换">关闭交换</h4>
-<pre><code>swapoff -a
-</code></pre>
-<h4 id="设置系统路由参数">设置系统路由参数</h4>
-<p>系统路由参数,防止kubeadm报路由警告</p>
-<pre><code>cat &lt;&lt;EOF &gt;  /etc/sysctl.d/k8s.conf
-net.bridge.bridge-nf-call-ip6tables = 1
-net.bridge.bridge-nf-call-iptables = 1
-vm.swappiness=0
-EOF
-sysctl --system
-</code></pre>
-<h4 id="关闭selinux">关闭selinux</h4>
-<pre><code>sed -i 's/SELINUX=permissive/SELINUX=disabled/' /etc/sysconfig/selinux
-setenforce 0
-</code></pre>
-<h4 id="安装docker">安装docker</h4>
-<ol>
-<li>安装</li>
-</ol>
-<pre><code>yum install -y docker
-systemctl enable docker
-systemctl start docker
-</code></pre>
-<ol start="2">
-<li>配置docker daemon(不需要加速器可省略)</li>
-</ol>
-<pre><code>vim /etc/docker/daemon.json 
-{
-  &quot;registry-mirrors&quot;: [&quot;https://v5d7kh0f.mirror.aliyuncs.com&quot;]
-}
-</code></pre>
-<ol start="3">
-<li>修改docker启动文件</li>
-</ol>
-<pre><code>vim /usr/lib/systemd/system/docker.service
-# 添加下面行
-ExecStartPost=/sbin/iptables -P FORWARD ACCEPT
-</code></pre>
-<ol start="4">
-<li>重新加载docker服务</li>
-</ol>
-<pre><code>systemctl daemon-reload
-service docker restart
-</code></pre>
-<h3 id="安装k8s">安装k8s</h3>
-<h4 id="软件包准备">软件包准备</h4>
-<p><strong>注意：该部分内容所有节点都需要执行</strong></p>
-<ol>
-<li>上传软件包到所有节点</li>
-</ol>
-<p><a href="https://pan.baidu.com/s/1LPDoy5QHan77QKj8s8nz1w">软件包下载地址</a></p>
-<blockquote>
-<p>若提示资源不存在，请复制浏览器里的地址，重新访问。</p>
-</blockquote>
-<pre><code># 所有节点解压并安装软件包
-tar xf k8s-*.tgz &amp;&amp; cd k8s-* &amp;&amp; yum localinstall -y *.rpm
-</code></pre>
-<ol start="2">
-<li>配置所有节点的kubelet</li>
-</ol>
-<pre><code># 修改/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-# 添加如下配置 
-Environment=&quot;KUBELET_EXTRA_ARGS=--pod-infra-container-image=registry.cn-shanghai.aliyuncs.com/gcr-k8s/pause-amd64:3.0&quot;
-</code></pre>
-<ol start="3">
-<li>所有节点重新载入配置</li>
-</ol>
-<pre><code>systemctl daemon-reload
-systemctl enable kubelet
-</code></pre>
-<h4 id="master安装">master安装</h4>
-<h5 id="安装etcd">安装etcd</h5>
-<ol>
-<li>配置启动etcd</li>
-</ol>
-<pre><code>docker stop etcd &amp;&amp; docker rm etcd
-rm -rf /data/etcd
-mkdir -p /data/etcd
-docker run -d \
---restart always \
--v /etc/etcd/ssl/certs:/etc/ssl/certs \
--v /data/etcd:/var/lib/etcd \
--p 2380:2380 \
--p 2379:2379 \
---name etcd \
-registry.cn-hangzhou.aliyuncs.com/google_containers/etcd-amd64:3.1.12 \
-etcd --name=etcd0 \
---advertise-client-urls=http://100.64.16.176:2379 \
---listen-client-urls=http://0.0.0.0:2379 \
---initial-advertise-peer-urls=http://100.64.16.176:2380 \
---listen-peer-urls=http://0.0.0.0:2380 \
---initial-cluster-token=9477af68bbee1b9ae037d6fd9e7efefd \
---initial-cluster=etcd0=http://100.64.16.176:2380 \
---initial-cluster-state=new \
---auto-tls \
---peer-auto-tls \
---data-dir=/var/lib/etcd
-</code></pre>
-<ol start="2">
-<li>验证etcd</li>
-</ol>
-<pre><code>docker exec -ti etcd ash
-etcdctl member list
-etcdctl cluster-health
-exit
-</code></pre>
-<h5 id="生成kubeadmin文件">生成kubeadmin文件</h5>
-<pre><code># 生成token
-# 保留token后面还要使用
-token=$(kubeadm token generate)
-echo $token
-
-# 生成配置文件
-# advertiseAddress 配置为master地址
-cat &gt;kubeadm-master.config&lt;&lt;EOF
-apiVersion: kubeadm.k8s.io/v1alpha1
-kind: MasterConfiguration
-kubernetesVersion: v1.10.3
-imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
-
-api:
-  advertiseAddress: 100.64.16.176
-
-apiServerExtraArgs:
-  endpoint-reconciler-type: lease
-
-controllerManagerExtraArgs:
-  node-monitor-grace-period: 10s
-  pod-eviction-timeout: 10s
-
-networking:
-  podSubnet: 10.244.0.0/16
-
-etcd:
-  endpoints:
-  - &quot;http://100.64.16.176:2379&quot;
-
-apiServerCertSANs:
-- &quot;node1&quot;
-- &quot;100.64.16.176&quot;
-- &quot;127.0.0.1&quot;
-
-token: $token
-tokenTTL: &quot;0&quot;
-
-featureGates:
-  CoreDNS: true
-EOF
-</code></pre>
-<h5 id="初始化master节点">初始化master节点</h5>
-<pre><code>kubeadm init --config kubeadm-master.config
-systemctl enable kubelet
-</code></pre>
-<h5 id="配置kubectl">配置kubectl</h5>
-<pre><code>mkdir -p $HOME/.kube
-sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-sudo chown $(id -u):$(id -g) $HOME/.kube/config
-</code></pre>
-<h5 id="安装网络插件">安装网络插件</h5>
-<ol>
-<li>下载配置</li>
-</ol>
-<pre><code>mkdir flannel &amp;&amp; cd flannel
-wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-</code></pre>
-<ol start="2">
-<li>修改配置</li>
-</ol>
-<pre><code># 此处的ip配置要与上面kubeadm的pod-network一致
-  net-conf.json: |
-    {
-      &quot;Network&quot;: &quot;10.244.0.0/16&quot;,
-      &quot;Backend&quot;: {
-        &quot;Type&quot;: &quot;vxlan&quot;
-      }
-    }
-
-# 修改镜像
-image: registry.cn-shanghai.aliyuncs.com/gcr-k8s/flannel:v0.10.0-amd64
-</code></pre>
-<ol start="3">
-<li>启动</li>
-</ol>
-<pre><code>kubectl apply -f kube-flannel.yml
-</code></pre>
-<ol start="4">
-<li>检查master</li>
-</ol>
-<pre><code>kubectl get pods -n kube-system
-kubectl get svc -n kube-system
-</code></pre>
-<h4 id="node节点安装">node节点安装</h4>
-<ol>
-<li>配置node kubelet开机启动</li>
-</ol>
-<pre><code>systemctl enable kubelet
-systemctl start kubelet
-</code></pre>
-<ol start="2">
-<li>初始化node</li>
-</ol>
-<pre><code># 这个命令是之前初始化master完成时，输出的命令
-kubeadm join 100.64.16.176:6443 --token i2ha18.euygiv9g922b5fkf --discovery-token-ca-cert-hash sha256:1c8fe595a95e2daed035ba89f9604ef6ad5fb0d589b89adbff80ea8c09db567e
-</code></pre>
-<ol start="3">
-<li>在master上检查集群状态</li>
-</ol>
-<pre><code>kubectl get nodes
-</code></pre>
-<h3 id="k8s集群检查">k8s集群检查</h3>
-<pre><code>kubectl run nginx --replicas=2 --labels=&quot;run=load-balancer-example&quot; --image=nginx  --port=80
-kubectl get pods --all-namespaces -o wide 
-</code></pre>
-<p><a href="https://asciinema.org/a/bnyI5J6IcupDM5SV2eglMtJKu"><img src="https://asciinema.org/a/bnyI5J6IcupDM5SV2eglMtJKu.png" alt="asciicast"></a></p>
-<h3 id="总结">总结</h3>
-<p>经过这篇博客, 我们成功部署了一个3个节点的kubernetes 1.10.3的集群, 但是此时集群DashBoard, 监控都还没完成, 在接下来的<a href="https://p.fengjingblog.top/2018/06/11/kubernetes-Addons%E5%AE%89%E8%A3%85/">kubernetes Addons安装</a>中将进行这些组件的部署。</p>
-<h3 id="排错">排错</h3>
-<p>如果出现如下错误：</p>
-<pre><code>Jun 14 12:33:30 k8s-node1 kubelet: E0614 12:33:30.265135   12998 summary.go:102] Failed to get system container stats for &quot;/system.slice/kubelet.service&quot;: failed to get cgroup stats for &quot;/system.slice/kubelet.service&quot;: failed to get container info for &quot;/system.slice/kubelet.service&quot;: unknown container &quot;/system.slice/kubelet.service&quot;
-Jun 14 12:33:30 k8s-node1 etcd: rejected connection from &quot;100.64.16.176:54174&quot; (error &quot;EOF&quot;, ServerName &quot;&quot;)
-</code></pre>
-<ul>
-<li>针对etcd的报错可以尝试降低etcd的版本，本人使用<code>https://github.com/coreos/etcd/releases/download/v3.1.15/etcd-v3.1.15-linux-amd64.tar.gz</code>该版本的etcd后解决。</li>
-<li>针对kubelet的错误可以在<code>/etc/systemd/system/kubelet.service.d/10-kubeadm.conf</code> 文件最后一行末尾追加<code>--runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice</code>,完整文档如下：</li>
-</ul>
-<pre><code>[Service]
-Environment=&quot;KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf&quot;
-Environment=&quot;KUBELET_SYSTEM_PODS_ARGS=--pod-manifest-path=/etc/kubernetes/manifests --allow-privileged=true&quot;
-Environment=&quot;KUBELET_NETWORK_ARGS=--network-plugin=cni --cni-conf-dir=/etc/cni/net.d --cni-bin-dir=/opt/cni/bin&quot;
-Environment=&quot;KUBELET_DNS_ARGS=--cluster-dns=10.96.0.10 --cluster-domain=cluster.local&quot;
-Environment=&quot;KUBELET_AUTHZ_ARGS=--authorization-mode=Webhook --client-ca-file=/etc/kubernetes/pki/ca.crt&quot;
-Environment=&quot;KUBELET_CADVISOR_ARGS=--cadvisor-port=0&quot;
-Environment=&quot;KUBELET_CGROUP_ARGS=--cgroup-driver=systemd&quot;
-Environment=&quot;KUBELET_CERTIFICATE_ARGS=--rotate-certificates=true --cert-dir=/var/lib/kubelet/pki&quot;
-Environment=&quot;KUBELET_EXTRA_ARGS=--pod-infra-container-image=registry.cn-shanghai.aliyuncs.com/gcr-k8s/pause-amd64:3.0&quot;
-ExecStart=
-ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_AUTHZ_ARGS $KUBELET_CADVISOR_ARGS $KUBELET_CGROUP_ARGS $KUBELET_CERTIFICATE_ARGS $KUBELET_EXTRA_ARGS --runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice
 </code></pre>
 ]]></content>
     </entry>
