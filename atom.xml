@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-09-05T03:28:36.341Z</updated>
+    <updated>2019-09-05T03:48:52.147Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -10,6 +10,101 @@
     <logo>https://p.guipulp.top//images/avatar.png</logo>
     <icon>https://p.guipulp.top//favicon.ico</icon>
     <rights>All rights reserved 2019, PeterPan</rights>
+    <entry>
+        <title type="html"><![CDATA[etcd数据备份和恢复]]></title>
+        <id>https://p.guipulp.top//post/2019090503</id>
+        <link href="https://p.guipulp.top//post/2019090503">
+        </link>
+        <updated>2019-09-05T03:46:23.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="对于-etcd-api-v3数据备份与恢复方法">对于 etcd api v3数据备份与恢复方法</h3>
+<pre><code> # export ETCDCTL_API=3
+</code></pre>
+<pre><code> # etcdctl --endpoints localhost:2379 snapshot save snapshot.db （备份）
+</code></pre>
+<pre><code> # etcdctl snapshot restore snapshot.db --name m3 --data-dir=/home/etcd_data （还原）
+</code></pre>
+<blockquote>
+<p>恢复后的文件需要修改权限为 etcd:etcd<br>
+–name:重新指定一个数据目录，可以不指定，默认为 default.etcd<br>
+–data-dir：指定数据目录<br>
+建议使用时不指定 name 但指定 data-dir，并将 data-dir 对应于 etcd 服务中配置的 data-dir</p>
+</blockquote>
+<h2 id="实践方法">实践方法</h2>
+<p><strong>单机备份</strong></p>
+<pre><code>[root@k8s-master1 ~]# etcdctl --endpoints 127.0.0.1:2379 snapshot save snashot.db
+Snapshot saved at snashot.db
+[root@k8s-master1 ~]# ll
+-rw-r--r--   1 root root 3756064 Apr 18 10:38 snashot.db
+[root@k8s-master1 ~]#
+</code></pre>
+<p><strong>集群备份</strong></p>
+<pre><code>[root@k8s-master1 ~]# etcdctl --endpoints=&quot;https://192.168.32.129:2379,https://192.168.32.130:2379,192.168.32.128:2379&quot; --cacert=/etc/kubernetes/cert/ca.pem --key=/etc/etcd/cert/etcd-key.pem --cert=/etc/etcd/cert/etcd.pem  snapshot save snashot1.db
+Snapshot saved at snashot1.db
+[root@k8s-master1 ~]#
+[root@k8s-master1 ~]# ll
+-rw-r--r--   1 root root 3756064 Apr 18 10:53 snashot1.db
+-rw-r--r--   1 root root 3756064 Apr 18 10:38 snashot.db
+</code></pre>
+<p><strong>数据恢复</strong></p>
+<p>做下面的操作,请慎重,有可能造成集群崩溃数据丢失.请在实验环境测试.</p>
+<p>执行命令:systemctl stop etcd<br>
+所有节点的etcd服务全部停止.</p>
+<p>执行命令:rm -rf /var/lib/etcd/<br>
+所有节点删除etcd的数据</p>
+<p><strong>恢复v3的数据</strong></p>
+<pre><code>[root@k8s-master1 ~]#  etcdctl --name=k8s-master1 --endpoints=&quot;https://192.168.32.128:2379&quot; --cacert=/etc/kubernetes/cert/ca.pem --key=/etc/etcd/cert/etcd-key.pem --cert=/etc/etcd/cert/etcd.pem --initial-cluster-token=etcd-cluster-1 --initial-advertise-peer-urls=https://192.168.32.128:2380 --initial-cluster=k8s-master1=https://192.168.32.128:2380,k8s-master2=https://192.168.32.129:2380,k8s-master3=https://192.168.32.130:2380 --data-dir=/var/lib/etcd snapshot restore snashot1.db
+2019-04-18 13:43:42.570882 I | mvcc: restore compact to 148651
+2019-04-18 13:43:42.584194 I | etcdserver/membership: added member 4c99f52323a3e391 [https://192.168.32.129:2380] to cluster 2a0978507970d828
+2019-04-18 13:43:42.584224 I | etcdserver/membership: added member 5a74b01f28ece933 [https://192.168.32.128:2380] to cluster 2a0978507970d828
+2019-04-18 13:43:42.584234 I | etcdserver/membership: added member b29b94ace458096d [https://192.168.32.130:2380] to cluster 2a0978507970d828
+</code></pre>
+<pre><code>[root@k8s-master2 ~]# etcdctl --name=k8s-master2 --endpoints=&quot;https://192.168.32.129:2379&quot; --cacert=/etc/kubernetes/cert/ca.pem --key=/etc/etcd/cert/etcd-key.pem --cert=/etc/etcd/cert/etcd.pem --initial-cluster-token=etcd-cluster-1 --initial-advertise-peer-urls=https://192.168.32.129:2380 --initial-cluster=k8s-master1=https://192.168.32.128:2380,k8s-master2=https://192.168.32.129:2380,k8s-master3=https://192.168.32.130:2380 --data-dir=/var/lib/etcd snapshot restore snashot1.db
+2019-04-18 13:43:56.313096 I | mvcc: restore compact to 148651
+2019-04-18 13:43:56.324779 I | etcdserver/membership: added member 4c99f52323a3e391 [https://192.168.32.129:2380] to cluster 2a0978507970d828
+2019-04-18 13:43:56.324806 I | etcdserver/membership: added member 5a74b01f28ece933 [https://192.168.32.128:2380] to cluster 2a0978507970d828
+2019-04-18 13:43:56.324819 I | etcdserver/membership: added member b29b94ace458096d [https://192.168.32.130:2380] to cluster 2a0978507970d828
+</code></pre>
+<pre><code>[root@k8s-master3 ~]# etcdctl --name=k8s-master3 --endpoints=&quot;https://192.168.32.130:2379&quot; --cacert=/etc/kubernetes/cert/ca.pem --key=/etc/etcd/cert/etcd-key.pem --cert=/etc/etcd/cert/etcd.pem --initial-cluster-token=etcd-cluster-1 --initial-advertise-peer-urls=https://192.168.32.130:2380 --initial-cluster=k8s-master1=https://192.168.32.128:2380,k8s-master2=https://192.168.32.129:2380,k8s-master3=https://192.168.32.130:2380 --data-dir=/var/lib/etcd snapshot restore snashot1.db
+2019-04-18 13:44:10.643115 I | mvcc: restore compact to 148651
+2019-04-18 13:44:10.649920 I | etcdserver/membership: added member 4c99f52323a3e391 [https://192.168.32.129:2380] to cluster 2a0978507970d828
+2019-04-18 13:44:10.649957 I | etcdserver/membership: added member 5a74b01f28ece933 [https://192.168.32.128:2380] to cluster 2a0978507970d828
+2019-04-18 13:44:10.649973 I | etcdserver/membership: added member b29b94ace458096d [https://192.168.32.130:2380] to cluster 2a0978507970d828
+</code></pre>
+<p>服务起不来</p>
+<pre><code>[root@k8s-master1 ~]# tail -n 30 /var/log/messages
+Apr 18 13:46:41 k8s-master1 systemd: Starting Etcd Server...
+Apr 18 13:46:41 k8s-master1 etcd: etcd Version: 3.3.7
+Apr 18 13:46:41 k8s-master1 etcd: Git SHA: 56536de55
+Apr 18 13:46:41 k8s-master1 etcd: Go Version: go1.9.6
+Apr 18 13:46:41 k8s-master1 etcd: Go OS/Arch: linux/amd64
+Apr 18 13:46:41 k8s-master1 etcd: setting maximum number of CPUs to 1, total number of available CPUs is 1
+Apr 18 13:46:41 k8s-master1 etcd: error listing data dir: /var/lib/etcd
+Apr 18 13:46:41 k8s-master1 systemd: etcd.service: main process exited, code=exited, status=1/FAILURE
+Apr 18 13:46:41 k8s-master1 systemd: Failed to start Etcd Server.
+Apr 18 13:46:41 k8s-master1 systemd: Unit etcd.service entered failed state.
+Apr 18 13:46:41 k8s-master1 systemd: etcd.service failed.
+Apr 18 13:46:41 k8s-master1 flanneld: timed out
+Apr 18 13:46:41 k8s-master1 flanneld: E0418 13:46:41.858283   63943 main.go:349] Couldn't fetch network config: client: etcd cluster is unavailable or misconfigured; error #0: EOF
+Apr 18 13:46:41 k8s-master1 flanneld: ; error #1: EOF
+Apr 18 13:46:41 k8s-master1 flanneld: ; error #2: EOF
+[root@k8s-master1 ~]#
+</code></pre>
+<p>修改数据目录权限,默认是root:root<br>
+chown -R etcd:etcd /var/lib/etcd<br>
+恢复正常.</p>
+<pre><code>[root@k8s-master1 ~]# etcdctl member list
+4c99f52323a3e391, started, k8s-master2, https://192.168.32.129:2380, https://192.168.32.129:2379
+5a74b01f28ece933, started, k8s-master1, https://192.168.32.128:2380, https://192.168.32.128:2379
+b29b94ace458096d, started, k8s-master3, https://192.168.32.130:2380, https://192.168.32.130:2379
+[root@k8s-master1 ~]#
+</code></pre>
+<p>可以看到v3的数据恢复成功.</p>
+<h2 id="参考地址">参考地址</h2>
+<p>https://blog.csdn.net/liukuan73/article/details/78986652</p>
+<p>https://blog.51cto.com/goome/2380854</p>
+<p>https://yq.aliyun.com/articles/336781</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Centos7下的日志切割]]></title>
         <id>https://p.guipulp.top//post/2019090502</id>
@@ -959,40 +1054,6 @@ mode: ipvs  # kube-proxy 模式
 <h3 id="参考地址">参考地址</h3>
 <p>https://mp.weixin.qq.com/s/vnriX2bTtnkv8i2UpLeNnA</p>
 <p>https://www.qikqiak.com/post/use-kubeadm-install-kubernetes-1.15.3/</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[kubernetes的国内软件源配置]]></title>
-        <id>https://p.guipulp.top//post/2019080801</id>
-        <link href="https://p.guipulp.top//post/2019080801">
-        </link>
-        <updated>2019-08-08T06:40:52.000Z</updated>
-        <content type="html"><![CDATA[<h2 id="ubuntu-软件源配置">ubuntu 软件源配置</h2>
-<pre><code>add-apt-repository &quot;deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main&quot;
-add-apt-repository &quot;deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable&quot;
-wget -q https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg -O- | sudo apt-key add -
-curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
-apt-get update
-apt-get -y install apt-transport-https ca-certificates curl software-properties-common
-apt-get -y install docker-ce kubeadm kubectl kubelet
-systemctl enable docker kubelet &amp;&amp; systemctl start docker
-</code></pre>
-<h2 id="centos-软件源配置">centos 软件源配置</h2>
-<pre><code># 切换到配置目录
-cd /etc/yum.repos.d/
-# 配置docker-ce阿里源
-wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
-# 配置kubernetes阿里源
-cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
-EOF
-</code></pre>
 ]]></content>
     </entry>
 </feed>
