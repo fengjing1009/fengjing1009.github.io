@@ -6,7 +6,7 @@
 <meta HTTP-EQUIV="pragma" CONTENT="no-cache"> 
 <meta HTTP-EQUIV="Cache-Control" CONTENT="no-cache, must-revalidate"> 
 <meta HTTP-EQUIV="expires" CONTENT="0"> 
-<title>linux cgroups简介 | PeterPan</title>	
+<title>kubernetes里面的GC | PeterPan</title>	
 
 <link rel="stylesheet" href="https://p.guipulp.top//styles/main.css">
 <script type="text/javascript">
@@ -118,10 +118,10 @@ function getCSS(){datetoday=new Date();timenow=datetoday.getTime();datetoday.set
 	
 	                      
 		<div class="entry-content">
-			<h1 class="wow swing entry-title">linux cgroups简介</h1>
+			<h1 class="wow swing entry-title">kubernetes里面的GC</h1>
 <div class="entry-meta">
 <div class="wow bounce">
-	<i class="iconfont icon-rili"> <time class="lately-a" datetime="2019-09-02 15:54:27" itemprop="datePublished" pubdate="">2019-09-02</time></i>
+	<i class="iconfont icon-rili"> <time class="lately-a" datetime="2019-09-05 11:02:08" itemprop="datePublished" pubdate="">2019-09-05</time></i>
 	          </div>
 			
 </span>
@@ -129,21 +129,110 @@ function getCSS(){datetoday=new Date();timenow=datetoday.getTime();datetoday.set
 		</div>
                   
 			<div class="wow slideInLeft entry-summary song">
-				<p><p>https://blog.csdn.net/ahilll/article/details/82109008<br>
-https://blog.csdn.net/chenleiking/article/details/87988851</p>
+				<p><h2 id="什么是gc">什么是GC</h2>
+<p>GC 是 Garbage Collector 的简称。从功能层面上来说，它和编程语言当中的「GC」 基本上是一样的。它清理 Kubernetes 中「符合特定条件」的 Resource Object。</p>
+<p>Kubelet的GC功能将清理未使用的image和container。Kubelet每分钟对container执行一次GC，每5分钟对image执行一次GC。不建议使用外部垃圾收集工具，因为这些工具可能破坏Kubelet。</p>
+<h2 id="kubernetes里面的基本常识">kubernetes里面的基本常识</h2>
+<ul>
+<li>在 k8s 中，你可以认为万物皆资源，很多逻辑的操作对象都是 Resource Object。</li>
+<li>Kubernetes 在不同的 Resource Objects 中维护一定的「从属关系」。内置的 Resource Objects 一般会默认在一个 Resource Object 和它的创建者之间建立一个「从属关系」。</li>
+<li>你也可以利用<code>ObjectMeta.OwnerReferences</code>自由的去给两个 Resource Object 建立关系，前提是被建立关系的两个对象必须在一个 Namespace 下。</li>
+<li>K8s 实现了一种「Cascading deletion」（级联删除）的机制，它利用已经建立的「从属关系」进行资源对象的清理工作。例如，当一个 dependent 资源的 owner 已经被删除或者不存在的时候，从某种角度就可以判定，这个 dependent 的对象已经是异常（无人管辖）的了，需要进行清理。而 「cascading deletion」则是被 k8s 中的一个 controller 组件实现的：<code>Garbage Collector</code></li>
+<li>k8s 是通过 <code>Garbage Collector</code> 和 <code>ownerReference</code> 一起配合实现了「垃圾回收」的功能。</li>
+</ul>
+<h2 id="kubernetes的gc组成">kubernetes的gc组成</h2>
+<p><img src="http://img.blog.csdn.net/20161225115013410?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvV2FsdG9uV2FuZw==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="kubernetes GC architecture in v1.3"></p>
+<p>一个 Garbage Collector 通常由三部分实现：</p>
+<ul>
+<li>
+<p>Scanner： 它负责收集目前系统中已存在的 Resource，并且周期性的将这些资源对象放入一个队列中，等待处理（检测是否要对某一个Resource Object 进行 GC 操作）</p>
+</li>
+<li>
+<p>Garbage Processor: Garbage Processor 由两部分组成</p>
+</li>
+<li>
+<ul>
+<li>
+<p>Dirty Queue： Scanner 会将周期性扫描到的 Resource Object 放入这个队列中等待处理</p>
+</li>
+<li>
+<p>Worker：worker 负责从这个队列中取出元素进行处理</p>
+</li>
+<li>
+<ul>
+<li>
+<p>检查 Object 的 metaData 部分，查看<code>ownerReference</code>字段是否为空</p>
+</li>
+<li>
+<ul>
+<li>
+<p>如果为空，则本次处理结束</p>
+</li>
+<li>
+<p>如果不为空，检测<code>ownerReference</code>字段内标识的 Owner Resource Object是否存在</p>
+</li>
+<li>
+<ul>
+<li>存在：则本次处理结束</li>
+<li>不存在：删除这个 Object</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Propagator： Propagator 由三个部分构成</p>
+</li>
+<li>
+<ul>
+<li>
+<p>EventQueue：负责存储 k8s 中资源对象的事件（Eg：ADD，UPDATE，DELETE）</p>
+</li>
+<li>
+<p>DAG(有向无环图)：负责存储 k8s 中所有资源对象的「owner-dependent」 关系</p>
+</li>
+<li>
+<p>Worker：从 EventQueue 中，取出资源对象的事件，根据事件的类型会采取以下两种操作</p>
+</li>
+<li>
+<ul>
+<li>ADD/UPDATE: 将该事件对应的资源对象加入 DAG，且如果该对象有 owner 且 owner 不在 DAG 中，将它同时加入 Garbage Processor 的 Dirty Queue 中</li>
+<li>DELETE：将该事件对应的资源对象从 DAG 中删除，并且将其「管辖」的对象（只向下寻找一级，如删除 Deployment，那么只操作 ReplicaSet ）加入 Garbage Processor 的 Dirty Queue 中</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>其实，在有了 Scanner 和 Garbage Processor 之后，Garbage Collector 就已经能够实现「垃圾回收」的功能了。但是有一个明显的问题：Scanner 的扫描频率设置多少好呢？太长了，k8s 内部就会积累过多的「废弃资源」；太短了，尤其是在集群内部资源对象较多的时候，频繁的拉取信息对 API-Server 也是一个不小的压力。</p>
+<p>k8s 作为一个分布式的服务编排系统，其内部执行任何一项逻辑或者行为，都依赖一种机制：「事件驱动」。说的简单点，k8s 中一些看起来「自动」的行为，其实都是由一些神秘的「力量」在驱动着。而这个「力量」就是我们所说的「Event」。任意一个 Resource Object 发生变动的时候（新建，更新，删除），都会触发一个 k8s 的事件（Event），这个事件在 k8s 的内部是公开的，也就是说，我们可以在任意一个地方监听这些事件。</p>
+<p>总的来说，无论是「事件的监听机制」还是「周期性访问 API-Server 批量获取 Resource Object 信息」，其目的都是为了能够掌握 Resource Object 的最新信息。两者是各有优势的：</p>
+<ol>
+<li>批量拉取：一次性拉取所有的 Resource Object，全面</li>
+<li>监听 Resource 的 Event：实时性强， 且对 API—SERVER 不会造成太大的压力</li>
+</ol>
+<p>综上所述，在实现 Garbage Collector 的过程中，k8s 向其添加了一个「增强型」的组件：Propagator</p>
+<p>在有了 Propagator 的加入之后，我们完全可以仅在 GC 开始运行的时候，让 Scanner 扫描一下系统中所有的 Object，然后将这些信息传递给 Propagator 和 Dirty Queue。只要 DAG 一建立起来之后，那么 Scanner 其实就没有再工作的必要了。「事件驱动」的机制提供了一种增量的方式让 GC 来监控 k8s 集群内部的资源对象变化情况。</p>
+<h2 id="参考地址">参考地址</h2>
+<p>https://mp.weixin.qq.com/s/6b5jdDkvmtywvcRa4MMjQA</p>
+<p>https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/kubelet/config/v1beta1/types.go</p>
+<p>https://yq.aliyun.com/articles/679728</p>
+<p>https://zhuanlan.zhihu.com/p/50101300</p>
 </p>
 							</div>
 	<div class="wow bounceInDown vt-post-tags">
  
+				<a href="https://p.guipulp.top//tag/OzrDk-wrZ" rel="tag">kubernetes</a>	
+				 
 					</div>						
 <nav class="navigation3 post-navigation3" role="navigation">
 		
 		<div class="nav-links3">
       
-		<div class="wow bounceInLeft nav-previous3"><a href="https://p.guipulp.top//post/2019090501" rel="prev"> kubernetes里面的GC</a></div>
 		 
-		 
-		<div class="wow bounceInRight nav-next3"><a href="https://p.guipulp.top//post/2019090201" rel="next"> kubernetes 清理孤儿POD</a></div>
+		<div class="wow bounceInRight nav-next3"><a href="https://p.guipulp.top//post/2019090202" rel="next"> linux cgroups简介</a></div>
 		
 		</div>
 	</nav>
