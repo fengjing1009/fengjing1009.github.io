@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-09-05T03:49:56.768Z</updated>
+    <updated>2019-09-09T10:17:03.533Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -10,6 +10,88 @@
     <logo>https://p.guipulp.top//images/avatar.png</logo>
     <icon>https://p.guipulp.top//favicon.ico</icon>
     <rights>All rights reserved 2019, PeterPan</rights>
+    <entry>
+        <title type="html"><![CDATA[kubernetes1.15.3离线安装]]></title>
+        <id>https://p.guipulp.top//post/2019090901</id>
+        <link href="https://p.guipulp.top//post/2019090901">
+        </link>
+        <updated>2019-09-09T10:09:51.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="kubeadm-k8s集群离线安装">kubeadm k8s集群离线安装</h1>
+<h2 id="下载软件包">下载软件包</h2>
+<pre><code>yum install --downloadonly --downloaddir=./  kubeadm-1.15.3-0 kubelet-1.15.3-0 kubectl-1.15.3-0 docker-ce-18.06.3.ce-3.el7 keepalived ipset ipvsadm   
+</code></pre>
+<h2 id="下载镜像并打包">下载镜像并打包</h2>
+<pre><code>kubeadm  config images pull --image-repository=registry.cn-hangzhou.aliyuncs.com/google_conta iners
+
+for x in $(docker images |awk  '{print $1&quot;:&quot;$2}'|grep -v REP);do docker save -o $(echo $x|awk -F '/' '{print $3}').tar $x;done
+
+</code></pre>
+<h2 id="恢复镜像">恢复镜像</h2>
+<pre><code>cd images;for x in `ls`;do docker load -i $x;done
+</code></pre>
+<h2 id="安装脚本">安装脚本</h2>
+<p>软件包下载地址：</p>
+<pre><code>链接:https://pan.baidu.com/s/1Vw0geL4Pn9_cq0rLxw7dRQ  密码:3v4g
+</code></pre>
+<pre><code># hostname
+#hostnamectl set-hostname $HOSTNAME
+
+# disable swap
+swapoff -a
+
+# disable selinux
+sed -i &quot;s/SELINUX=enforcing/SELINUX=disabled/g&quot; /etc/selinux/config
+setenforce 0
+
+# stop and disable firewalld
+systemctl stop firewalld ; systemctl disable firewalld
+
+# add ipvs modules
+cat &gt; /etc/sysconfig/modules/ipvs.modules &lt;&lt;EOF
+#!/bin/bash
+modprobe -- ip_vs
+modprobe -- ip_vs_rr
+modprobe -- ip_vs_wrr
+modprobe -- ip_vs_sh
+modprobe -- nf_conntrack_ipv4
+EOF
+chmod 755 /etc/sysconfig/modules/ipvs.modules &amp;&amp; bash /etc/sysconfig/modules/ipvs.modules &amp;&amp; lsmod | grep -e ip_vs -e nf_conntrack_ipv4
+
+# change node kernel
+cat &lt;&lt;EOF &gt;  /etc/sysctl.d/ceph.conf
+net.ipv4.ip_forward = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sysctl --system
+
+# install rpm
+cd /root/local/rpm ; yum localinstall ./*
+
+# load images
+systemctl start docker 
+systemctl enable docker kubelet
+cd /root/local/images ; for x in `ls`;do docker load -i $x;done
+
+# install kubernetes
+# kubeadm init --apiserver-advertise-address 172.16.10.101 --pod-network-cidr=10.244.0.0/16 --image-repository=registry.cn-hangzhou.aliyuncs.com/google_containers
+echo &quot;172.16.10.101 api.k8s.com&quot; &gt;&gt; /etc/hosts
+kubeadm init --config /root/local/kubeadm.conf
+
+# install client env
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# install addons
+cd /root/local/yaml; kubectl apply -f .
+
+# remove taint
+#kubectl  taint node lab1 node-role.kubernetes.io/master:NoSchedule-
+kubectl  get nodes |grep master |awk '{print $1}' |xargs -i kubectl  taint node {} node-role.kubernetes.io/master:NoSchedule-
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[etcd数据备份和恢复]]></title>
         <id>https://p.guipulp.top//post/2019090503</id>
@@ -967,93 +1049,6 @@ service iptables start
 <p>http://www.flynoc.com/help/helpview_390.html</p>
 <p>https://blog.51cto.com/2333657/2157070?source=dra</p>
 <p>https://blog.csdn.net/weixin_42537861/article/details/81195070</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[使用ipvs模式安装kubernetes]]></title>
-        <id>https://p.guipulp.top//post/2019082701</id>
-        <link href="https://p.guipulp.top//post/2019082701">
-        </link>
-        <updated>2019-08-27T07:11:33.000Z</updated>
-        <content type="html"><![CDATA[<h3 id="安装ipvs">安装ipvs</h3>
-<pre><code>cat &gt; /etc/sysconfig/modules/ipvs.modules &lt;&lt;EOF
-#!/bin/bash
-modprobe -- ip_vs
-modprobe -- ip_vs_rr
-modprobe -- ip_vs_wrr
-modprobe -- ip_vs_sh
-modprobe -- nf_conntrack_ipv4
-EOF
-$ chmod 755 /etc/sysconfig/modules/ipvs.modules &amp;&amp; bash /etc/sysconfig/modules/ipvs.modules &amp;&amp; lsmod | grep -e ip_vs -e nf_conntrack_ipv4
-
-</code></pre>
-<h3 id="安装ipset和ipvsadm">安装ipset和ipvsadm</h3>
-<pre><code>yum install ipset
-yum install ipvsadm
-</code></pre>
-<h3 id="安装时间服务">安装时间服务</h3>
-<pre><code>$ yum install chrony -y
-$ systemctl enable chronyd
-$ systemctl start chronyd
-$ chronyc sources
-210 Number of sources = 4
-MS Name/IP address         Stratum Poll Reach LastRx Last sample
-===============================================================================
-^+ sv1.ggsrv.de                  2   6    17    32   -823us[-1128us] +/-   98ms
-^- montreal.ca.logiplex.net      2   6    17    32    -17ms[  -17ms] +/-  179ms
-^- ntp6.flashdance.cx            2   6    17    32    -32ms[  -32ms] +/-  161ms
-^* 119.28.183.184                2   6    33    32   +661us[ +357us] +/-   38ms
-$ date
-Tue Aug 27 09:28:41 CST 2019
-</code></pre>
-<h3 id="安装ipvs模式的kubernetes集群模板">安装ipvs模式的kubernetes集群模板</h3>
-<pre><code>apiVersion: kubeadm.k8s.io/v1beta2
-bootstrapTokens:
-- groups:
-  - system:bootstrappers:kubeadm:default-node-token
-  token: abcdef.0123456789abcdef
-  ttl: 24h0m0s
-  usages:
-  - signing
-  - authentication
-kind: InitConfiguration
-localAPIEndpoint:
-  advertiseAddress: 10.151.30.11  # apiserver 节点内网IP
-  bindPort: 6443
-nodeRegistration:
-  criSocket: /var/run/dockershim.sock
-  name: ydzs-master
-  taints:
-  - effect: NoSchedule
-    key: node-role.kubernetes.io/master
----
-apiServer:
-  timeoutForControlPlane: 4m0s
-apiVersion: kubeadm.k8s.io/v1beta2
-certificatesDir: /etc/kubernetes/pki
-clusterName: kubernetes
-controllerManager: {}
-dns:
-  type: CoreDNS  # dns类型
-etcd:
-  local:
-    dataDir: /var/lib/etcd
-imageRepository: gcr.azk8s.cn/google_containers
-kind: ClusterConfiguration
-kubernetesVersion: v1.15.3  # k8s版本
-networking:
-  dnsDomain: cluster.local
-  podSubnet: 192.168.0.0/16
-  serviceSubnet: 10.96.0.0/12
-scheduler: {}
----
-apiVersion: kubeproxy.config.k8s.io/v1alpha1
-kind: KubeProxyConfiguration
-mode: ipvs  # kube-proxy 模式
-</code></pre>
-<h3 id="参考地址">参考地址</h3>
-<p>https://mp.weixin.qq.com/s/vnriX2bTtnkv8i2UpLeNnA</p>
-<p>https://www.qikqiak.com/post/use-kubeadm-install-kubernetes-1.15.3/</p>
 ]]></content>
     </entry>
 </feed>
