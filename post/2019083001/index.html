@@ -1,0 +1,398 @@
+
+<html>
+  <head lang="zh">
+        <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+        <meta content="yes" name="apple-mobile-web-app-capable"/>
+        <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+        <meta content="telephone=no" name="format-detection"/>
+        <meta name="renderer" content="webkit">
+    <title>修改kubernetes证书过期时间的骚操作 | PeterPan</title>
+<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://p.guipulp.top//media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://p.guipulp.top//media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+  </head>
+
+  <body>
+     <div class="header">
+      <div class="logo_title">
+		  
+        <div class="title animated fadeInDown"><img src="https://p.guipulp.top//images/avatar.png?v=1568264384711"/>
+
+          <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
+
+          </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="https://p.guipulp.top//post/about/" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="https://p.guipulp.top//post/about/" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+
+<div class="content">
+
+
+
+
+
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>修改kubernetes证书过期时间的骚操作</a>
+
+
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-08-30</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> Views</span>
+
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+	<a href="https://p.guipulp.top//tag/OzrDk-wrZ" class="tag">kubernetes</a>
+
+	<a href="https://p.guipulp.top//tag/NWZdNyt2H6" class="tag">证书</a>
+
+
+</span>
+
+
+    </div>
+
+  </div>
+
+
+
+
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><blockquote>
+<p>简单验证（随机修改系统时间）是有效的（10年内），具体用起来怎样，自己去测试吧。</p>
+</blockquote>
+<p>最近公司早期部署的kubernetes的集群证书过期，研究了下kubernetes的证书时间，大致上是说修改kubeadm的源代码，自己编译kubeadm，实现证书99年。</p>
+<p>kubernetes默认CA证书10年，很少有企业的一个服务能跑10年不更换，因此想到以下方法进行了以下实验。测试暂时没发现什么问题。</p>
+<p>如果有多master，需要在每个master上进行以下操作。</p>
+<pre><code>[root@m2 pki]# date -s 8/30/2028
+2028年 08月 30日 星期三 00:00:00 EDT
+[root@m2 pki]# kubectl get pods
+Unable to connect to the server: x509: certificate has expired or is not yet valid
+[root@m2 pki]# kubectl get pods
+Unable to connect to the server: x509: certificate has expired or is not yet valid
+[root@m2 pki]# kubeadm alpha certs renew all
+certificate embedded in the kubeconfig file for the admin to use and for kubeadm itself renewed
+certificate for serving the Kubernetes API renewed
+certificate the apiserver uses to access etcd renewed
+certificate for the API server to connect to kubelet renewed
+certificate embedded in the kubeconfig file for the controller manager to use renewed
+certificate for liveness probes to healtcheck etcd renewed
+certificate for etcd nodes to communicate with each other renewed
+certificate for serving etcd renewed
+certificate for the front proxy client renewed
+certificate embedded in the kubeconfig file for the scheduler manager to use renewed
+[root@m2 pki]# ntpdate 0.cn.pool.ntp.org
+30 Aug 04:51:35 ntpdate[9983]: step time server 203.107.6.88 offset -284065763.328437 sec
+[root@m2 pki]# cp /etc/kubernetes/admin.conf ~/.kube/config
+cp：是否覆盖&quot;/root/.kube/config&quot;？ y
+[root@m2 pki]# openssl x509 -in apiserver.crt -noout -text
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 6495439138002669247 (0x5a246f7b50d18ebf)
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN=kubernetes
+        Validity
+            Not Before: Aug 27 00:34:59 2019 GMT
+            Not After : Aug 30 04:00:30 2029 GMT
+        Subject: CN=kube-apiserver
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:d5:c5:1a:60:e3:dd:5c:68:c6:a0:38:df:06:54:
+                    7b:87:73:3f:6d:1b:bc:65:4e:8e:1a:e0:a7:13:a9:
+                    df:a6:67:65:13:cb:c6:e7:c8:5e:60:3e:14:7d:c4:
+                    e0:91:d5:de:8b:91:bd:9c:59:2b:35:87:62:87:c9:
+                    97:c4:f6:c6:41:b4:6a:80:25:34:1a:d2:b4:ad:e0:
+                    bc:d0:af:18:35:68:b9:46:7b:1e:af:da:24:ce:79:
+                    94:75:77:3d:ae:67:ac:b9:08:5a:74:87:fd:c0:33:
+                    ec:d9:d5:ba:71:ee:23:9e:39:69:fa:2f:76:3f:e1:
+                    80:a4:89:a3:39:40:f9:ef:a6:f5:4c:27:3a:7c:60:
+                    aa:83:ce:cf:48:2a:e9:6c:15:88:21:8b:fb:53:f8:
+                    05:15:bf:35:10:9d:4e:63:f9:09:ae:9c:45:b2:75:
+                    4f:8f:4e:a9:9f:bc:f8:c0:9f:29:bc:5d:a3:8f:a9:
+                    c7:d1:ea:85:d4:79:32:e1:e3:b7:2f:08:eb:47:99:
+                    af:db:b4:5d:a7:d9:c0:7f:29:63:ec:f4:bb:ba:9b:
+                    16:f4:c1:11:28:37:7c:c8:f9:13:7b:38:86:83:ba:
+                    f7:e8:dd:fd:05:9e:7c:46:4a:1e:d9:9e:8e:0c:ad:
+                    86:09:70:da:40:46:e7:e8:5c:82:26:08:3a:4e:ad:
+                    8a:a3
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Key Usage: critical
+                Digital Signature, Key Encipherment
+            X509v3 Extended Key Usage:
+                TLS Web Server Authentication
+            X509v3 Subject Alternative Name:
+                DNS:m2, DNS:kubernetes, DNS:kubernetes.default, DNS:kubernetes.default.svc, DNS:kubernetes.default.svc.cluster.local, IP Address:10.96.0.1, IP Address:172.27.100.14, IP Address:172.27.100.211, IP Address:172.29.100.211
+    Signature Algorithm: sha256WithRSAEncryption
+         ab:31:c7:2a:a2:52:40:e2:b5:c6:a4:fc:d7:f5:35:2c:c9:28:
+         8d:ba:6a:1d:c3:06:d0:85:4e:bf:43:0c:27:a2:2f:13:62:97:
+         89:cc:4e:0c:17:86:11:ef:21:2a:01:9d:1c:25:f2:48:c5:31:
+         95:63:41:2c:57:2a:1c:1f:40:00:2f:1a:b1:90:7b:3d:6a:2b:
+         7c:6f:33:9a:c8:09:44:4d:a4:ff:fa:06:de:77:66:e1:0f:59:
+         29:bd:76:d1:52:b9:63:81:b4:ae:27:0f:ed:54:93:b1:21:8b:
+         bf:4f:16:9e:b2:4d:dd:2f:ac:81:e8:86:38:c8:2d:d9:38:1b:
+         ac:56:23:5e:8c:dc:96:ae:24:3f:dd:7f:ce:ba:97:b5:e7:07:
+         05:df:f2:fd:ba:51:6d:94:13:c5:2d:a8:75:32:21:ad:e9:07:
+         13:04:64:e9:c5:f9:3c:46:39:9a:16:59:3b:ff:91:af:7b:fb:
+         14:6d:2e:66:2d:52:0d:1b:45:ba:e4:0c:42:23:1c:2c:ea:53:
+         6a:20:88:87:24:b1:55:39:d0:93:7b:44:46:bc:46:16:37:d6:
+         ff:e6:2f:dd:05:53:03:bc:d6:ba:32:1c:8a:7c:74:4b:cc:4d:
+         3b:20:b6:80:a0:a8:28:a5:da:fb:0b:3a:43:c3:b7:79:86:a8:
+         2e:cc:91:48
+
+</code></pre>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://p.guipulp.top//media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://p.guipulp.top//media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+
+
+<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+</div>
+
+
+
+  </div>
+</div>
+
+
+
+      </div>
+
+
+
+
+    </div>
+
+   <div class="footer">
+<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright"><ul class="links">
+<li><a href="/" target="_blank" rel="noopener noreferrer">小飞侠的飞行日记</a></li>
+</ul>
+      </div>
+
+</div></div>
+
+    </div>
+
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://p.guipulp.top//media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>

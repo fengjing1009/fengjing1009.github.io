@@ -1,0 +1,398 @@
+
+<html>
+  <head lang="zh">
+        <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+        <meta content="yes" name="apple-mobile-web-app-capable"/>
+        <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+        <meta content="telephone=no" name="format-detection"/>
+        <meta name="renderer" content="webkit">
+    <title>kubernetes NVIDIA GPU 实践 | PeterPan</title>
+<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://p.guipulp.top//media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://p.guipulp.top//media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+  </head>
+
+  <body>
+     <div class="header">
+      <div class="logo_title">
+		  
+        <div class="title animated fadeInDown"><img src="https://p.guipulp.top//images/avatar.png?v=1568264384711"/>
+
+          <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
+
+          </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="https://p.guipulp.top//post/about/" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="https://p.guipulp.top//post/about/" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+
+<div class="content">
+
+
+
+
+
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>kubernetes NVIDIA GPU 实践</a>
+
+
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-08-06</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> Views</span>
+
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+	<a href="https://p.guipulp.top//tag/pj8GUpobW" class="tag">GPU</a>
+
+	<a href="https://p.guipulp.top//tag/OzrDk-wrZ" class="tag">kubernetes</a>
+
+
+</span>
+
+
+    </div>
+
+  </div>
+
+
+
+
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><p>查看此文档时候，内容可能已经过时，但大体过程不会有什么变化，建议按照官网说明进行安装。</p>
+<h3 id="前置条件">前置条件</h3>
+<ol>
+<li>GNU/Linux x86_64 with kernel version &gt; 3.10</li>
+<li>Docker &gt;= 1.12</li>
+<li>NVIDIA GPU with Architecture &gt; Fermi (2.1)</li>
+<li><a href="http://www.nvidia.com/object/unix.html">NVIDIA drivers</a> ~= 361.93 (untested on older versions)</li>
+</ol>
+<h3 id="安装nvidia-docker">安装nvidia-docker</h3>
+<h4 id="ubuntu-16041804-debian-jessiestretch">Ubuntu 16.04/18.04, Debian Jessie/Stretch</h4>
+<pre><code># Add the package repositories
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+
+sudo apt-get update &amp;&amp; sudo apt-get install -y nvidia-container-toolkit
+sudo systemctl restart docker
+</code></pre>
+<h4 id="centos-7-docker-ce-rhel-7475-docker-ce-amazon-linux-12">CentOS 7 (docker-ce), RHEL 7.4/7.5 (docker-ce), Amazon Linux 1/2</h4>
+<pre><code>distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.repo | sudo tee /etc/yum.repos.d/nvidia-docker.repo
+
+sudo yum install -y nvidia-container-toolkit
+sudo systemctl restart docker
+</code></pre>
+<h4 id="设置nvidia-docker-runtime">设置nvidia-docker runtime</h4>
+<pre><code># vim /etc/docker/daemon.json
+{
+    &quot;default-runtime&quot;: &quot;nvidia&quot;,
+    &quot;runtimes&quot;: {
+        &quot;nvidia&quot;: {
+            &quot;path&quot;: &quot;/usr/bin/nvidia-container-runtime&quot;,
+            &quot;runtimeArgs&quot;: []
+        }
+    }
+}
+
+# restart docker
+sudo systemctl restart docker
+sudo systemctl restart kubelet
+</code></pre>
+<h4 id="测试nvidia-docker">测试nvidia-docker</h4>
+<pre><code>#### Test nvidia-smi with the latest official CUDA image
+$ docker run --gpus all nvidia/cuda:9.0-base nvidia-smi
+
+# Start a GPU enabled container on two GPUs
+$ docker run --gpus 2 nvidia/cuda:9.0-base nvidia-smi
+
+# Starting a GPU enabled container on specific GPUs
+$ docker run --gpus '&quot;device=1,2&quot;' nvidia/cuda:9.0-base nvidia-smi
+$ docker run --gpus '&quot;device=UUID-ABCDEF,1'&quot; nvidia/cuda:9.0-base nvidia-smi
+
+# Specifying a capability (graphics, compute, ...) for my container
+# Note this is rarely if ever used this way
+$ docker run --gpus all,capabilities=utility nvidia/cuda:9.0-base nvidia-smi
+</code></pre>
+<h3 id="安装kubernetes-插件">安装kubernetes 插件</h3>
+<pre><code>kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/1.0.0-beta/nvidia-device-plugin.yml
+</code></pre>
+<h3 id="测试运行gpu">测试运行GPU</h3>
+<pre><code># 适用于多GPU核心的带企业显卡的集群测试
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-pod
+spec:
+  containers:
+    - name: cuda-container
+      image: nvidia/cuda:9.0-devel
+      resources:
+        limits:
+          nvidia.com/gpu: 2 # requesting 2 GPUs
+    - name: digits-container
+      image: nvidia/digits:6.0
+      resources:
+        limits:
+          nvidia.com/gpu: 2 # requesting 2 GPUs
+</code></pre>
+<pre><code># 适用于个人GPU测试
+kubectl  create job nvjob --image=nvidia/cuda:9.0-base -- nvidia-smi
+</code></pre>
+<h3 id="参考资料">参考资料</h3>
+<p><a href="https://github.com/NVIDIA/nvidia-docker">https://github.com/NVIDIA/nvidia-docker</a></p>
+<p><a href="https://github.com/NVIDIA/k8s-device-plugin">https://github.com/NVIDIA/k8s-device-plugin</a></p>
+<p><a href="https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/">https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/</a></p>
+<p><a href="https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0)#prerequisites">https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0)#prerequisites</a></p>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://p.guipulp.top//media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://p.guipulp.top//media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+
+
+<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+</div>
+
+
+
+  </div>
+</div>
+
+
+
+      </div>
+
+
+
+
+    </div>
+
+   <div class="footer">
+<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright"><ul class="links">
+<li><a href="/" target="_blank" rel="noopener noreferrer">小飞侠的飞行日记</a></li>
+</ul>
+      </div>
+
+</div></div>
+
+    </div>
+
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://p.guipulp.top//media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>
