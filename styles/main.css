@@ -32,7 +32,7 @@ a:active {
 .weaklink a {
   text-decoration: none;
   color: #444;
-  border: none !important;
+  border: none!important;
   margin: 0;
   cursor: pointer;
 }
@@ -46,6 +46,18 @@ a:active {
 }
 .reward {
   padding: 5px 0;
+}
+.toc-container {
+  position: fixed;
+  top: 32px;
+  width: 200px;
+  right: 32px;
+  font-size: 12px;
+}
+@media (max-width: 1150px) {
+  .toc-container {
+    display: none;
+  }
 }
 .reward .reward-notice {
   font-size: 14px;
@@ -213,13 +225,13 @@ a:active {
   padding: 0.5em;
   margin: 4.5em auto -4em;
   background-color: #fff;
-  box-shadow: 0px 10px 20px 0px rgba(236, 236, 236, 0.86);
+  box-shadow: 0 10px 20px 0 rgba(236, 236, 236, 0.86);
 }
 .header .hidden_nav a {
   font-size: 14px;
   font-weight: 400;
   color: #666;
-  border: none;
+  border: 0;
 }
 .header .hidden_nav a:hover,
 .header .hidden_nav a:active {
@@ -242,8 +254,8 @@ a:active {
   max-width: 800px;
   padding: 3.3em 0 2.7em;
   margin: 3.3em auto 0;
-  box-shadow: 0px 10px 20px 0px rgba(236, 236, 236, 0.86);
-  background: #ffffff;
+  box-shadow: 0 10px 20px 0 rgba(236, 236, 236, 0.86);
+  background: #fff;
 }
 .main-inner .content {
   padding: 0 3.3em;
@@ -270,7 +282,7 @@ a:active {
   font-size: 1em;
   color: #555;
   line-height: 2em;
-  margin-bottom: 0px !important;
+  margin-bottom: 0 !important;
 }
 .post .post_footer {
   padding: 0 0 45px;
@@ -279,7 +291,7 @@ a:active {
 .post .post_footer .info {
   max-width: 100%;
   height: 25px;
-  color: #aaaaaa;
+  color: #aaa;
   font-size: 12px;
   margin-top: 10px;
 }
@@ -301,7 +313,7 @@ a:active {
 }
 .post .post_footer .info a {
   text-decoration: none;
-  color: #bbbbbb;
+  color: #bbb;
 }
 .post .post_footer .info i {
   margin-right: 3px;
@@ -312,7 +324,7 @@ a:active {
 .post .post_details .info {
   max-width: 100%;
   height: 25px;
-  color: #bbbbbb;
+  color: #bbb;
   font-size: 12px;
   margin-top: 10px;
 }
@@ -334,7 +346,7 @@ a:active {
 }
 .post .post_details .info a {
   text-decoration: none;
-  color: #bbbbbb;
+  color: #bbb;
 }
 .post .post_details .info i {
   margin-right: 3px;
@@ -350,7 +362,7 @@ a:active {
 .paginator a {
   color: #888;
   font-size: 13px;
-  border: none;
+  border: 0;
 }
 .paginator a:hover,
 .paginator a:active {
@@ -370,7 +382,7 @@ a:active {
   margin: 0 auto;
 }
 .footer .site_footer_wrap .site_footer {
-  border-top: none;
+  border-top: 0;
   margin-top: 0 !important;
 }
 .footer .copyright {
@@ -382,13 +394,13 @@ a:active {
 }
 .footer .copyright div a {
   color: #d6d6d6;
-  border: none;
+  border: 0;
 }
 .footer .copyright div a:hover,
 .footer .copyright div a:active {
   color: #333;
   text-decoration: none;
-  border: none;
+  border: 0;
 }
 .footer .mysocials {
   list-style: none;
@@ -403,7 +415,7 @@ a:active {
 .footer .mysocials a:hover,
 .footer .mysocials a:active {
   color: #333 !important;
-  text-decoration: none !important;
+  text-decoration: none!important;
   border: none !important;
 }
 .tags-container .tag {
@@ -444,33 +456,13 @@ a:active {
 }
 .list_with_title .listing .listing_post a {
   color: #666;
-  border: none;
+  border: 0;
 }
 .list_with_title .listing .listing_post a:hover {
   color: #e42b2b;
 }
 .markdown a {
   margin: 0 0.2em;
-}
-.markdown h2 {
-  color: #444;
-  font-size: 1.4em;
-  border-image: url('https://i.loli.net/2018/10/01/5bb0fd8197c74.png') 0 100 0 0;
-  border-right: 1.33em solid;
-  margin-left: -0.1em;
-  display: inline;
-  padding-right: 0.28em;
-  line-height: 2;
-}
-.markdown h3 {
-  color: #444;
-  font-size: 1.2em;
-  border-image: url('https://i.loli.net/2018/10/01/5bb0fe403b964.png') 0 100 0 0;
-  border-right: 1.33em solid;
-  margin-left: -0.1em;
-  display: inline;
-  padding-right: 0.28em;
-  line-height: 1.5;
 }
 .markdown h3::before {
   content: '\a\
@@ -691,8 +683,8 @@ a:active {
   text-decoration: underline;
 }
 .markdown pre code {
-  border: none;
-  background: none;
+  border: 0;
+  background: 0;
   padding: 0;
   margin: 0;
 }
@@ -721,19 +713,19 @@ a:active {
   margin: 1em 0;
 }
 .markdown h2 {
-  font-size: 1.65em;
+  font-size: 1.3em;
   line-height: 1.2em;
   margin: 1em 0 1em 0;
 }
 .markdown h3 {
-  font-size: 1.35em;
+  font-size: 1.2em;
   margin: 1em 0 1em 0;
 }
 .markdown h4 {
-  font-size: 1.2em;
+  font-size: 1.1em;
 }
 .markdown h5 {
-  font-size: 1.1em;
+  font-size: 1.05em;
   font-weight: bold;
 }
 .markdown h6 {
@@ -768,7 +760,7 @@ a:active {
   overflow: visible;
 }
 .markdown a img {
-  border: none;
+  border: 0;
 }
 .markdown dl dt {
   float: left;
@@ -859,7 +851,7 @@ a:active {
   padding: 1px 3px;
   font-family: Inconsolata, monospace, sans-serif;
   white-space: pre-wrap;
-  border: 1px solid #E3EDF3;
+  border: 1px solid #e3edf3;
   background: #f7f7f9;
   color: #222;
   border-radius: 2px;
@@ -871,14 +863,14 @@ a:active {
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   margin: 1.6em 0;
-  border: 1px solid #E3EDF3;
+  border: 1px solid #e3edf3;
   width: 100%;
   padding: 10px;
   font-family: Inconsolata, monospace, sans-serif;
   font-size: 0.9em;
   white-space: pre;
   overflow: auto;
-  background: #F7FAFB;
+  background: #f7fafb;
   border-radius: 3px;
 }
 .markdown pre::-webkit-scrollbar {
@@ -907,7 +899,7 @@ a:active {
   white-space: -moz-pre-wrap;
   white-space: pre-wrap;
   background: transparent;
-  border: none;
+  border: 0;
   color: #333;
   padding: 0;
   margin: 0;
@@ -942,11 +934,11 @@ a:active {
 .markdown table tr,
 .markdown table tr td,
 .markdown table tr th {
-  border-color: #E6E6E6;
+  border-color: #e6e6e6;
 }
 .markdown table th {
   font-weight: bold;
-  background-color: #FDFDFD;
+  background-color: #fdfdfd;
 }
 .markdown tr th {
   border-bottom-width: 1px;
@@ -957,7 +949,7 @@ a:active {
 .markdown tr td {
   padding: 10px 20px;
   border-right: 1px solid;
-  border-bottom: 1px solid #E6E6E6;
+  border-bottom: 1px solid #e6e6e6;
 }
 .markdown tbody tr:last-child td {
   border-bottom: 0;
@@ -968,7 +960,7 @@ a:active {
 }
 .markdown table tbody > tr:nth-child(odd) > td,
 .markdown table tbody > tr:nth-child(odd) > th {
-  background-color: #F9F9F9;
+  background-color: #f9f9f9;
 }
 .markdown .gist {
   font-size: 12px;
@@ -1006,7 +998,7 @@ a:active {
   color: #3c3c3c;
 }
 .markdown .with_lines pre {
-  border: none;
+  border: 0;
   margin-top: 0.2em;
   margin-bottom: 0.2em;
 }
@@ -1021,7 +1013,7 @@ a:active {
   margin-left: auto;
 }
 .markdown .todo_done_item {
-  color: #999999;
+  color: #999;
 }
 .markdown .todo_undone_item {
   color: #c85a57;
@@ -1031,11 +1023,11 @@ a:active {
 }
 .markdown .linenos pre {
   background: transparent;
-  border: none;
+  border: 0;
   padding: 0;
 }
 .markdown .highlighttable {
-  width: auto !important;
+  width: auto!important;
   background: transparent !important;
 }
 .markdown .highlighttable pre,
@@ -1058,65 +1050,65 @@ a:active {
   display: none;
 }
 .markdown .codehilite .hll {
-  background-color: #ffffcc;
+  background-color: #ffc;
 }
 .markdown .codehilite {
-  background: #eeeedd;
+  background: #eed;
 }
 .markdown .codehilite .c {
-  color: #999999;
+  color: #999;
 }
 .markdown .codehilite .err {
   color: #a61717;
   background-color: #e3d2d2;
 }
 .markdown .codehilite .k {
-  color: #8B008B;
+  color: #8b008b;
   font-weight: bold;
 }
 .markdown .codehilite .n {
-  color: #555555;
+  color: #555;
 }
 .markdown .codehilite .o {
-  color: #555555;
+  color: #555;
 }
 .markdown .codehilite .p {
-  color: #555555;
+  color: #555;
 }
 .markdown .codehilite .cm {
-  color: #999999;
+  color: #999;
 }
 .markdown .codehilite .cp {
   color: #1e889b;
 }
 .markdown .codehilite .c1 {
-  color: #999999;
+  color: #999;
 }
 .markdown .codehilite .cs {
-  color: #8B008B;
+  color: #8b008b;
   font-weight: bold;
 }
 .markdown .codehilite .gd {
-  color: #aa0000;
+  color: #a00;
 }
 .markdown .codehilite .ge {
   font-style: italic;
 }
 .markdown .codehilite .gr {
-  color: #aa0000;
+  color: #a00;
 }
 .markdown .codehilite .gh {
   color: #000080;
   font-weight: bold;
 }
 .markdown .codehilite .gi {
-  color: #00aa00;
+  color: #0a0;
 }
 .markdown .codehilite .go {
-  color: #888888;
+  color: #888;
 }
 .markdown .codehilite .gp {
-  color: #555555;
+  color: #555;
 }
 .markdown .codehilite .gs {
   font-weight: bold;
@@ -1126,26 +1118,26 @@ a:active {
   font-weight: bold;
 }
 .markdown .codehilite .gt {
-  color: #aa0000;
+  color: #a00;
 }
 .markdown .codehilite .kc {
-  color: #8B008B;
+  color: #8b008b;
   font-weight: bold;
 }
 .markdown .codehilite .kd {
-  color: #8B008B;
+  color: #8b008b;
   font-weight: bold;
 }
 .markdown .codehilite .kn {
-  color: #8B008B;
+  color: #8b008b;
   font-weight: bold;
 }
 .markdown .codehilite .kp {
-  color: #8B008B;
+  color: #8b008b;
   font-weight: bold;
 }
 .markdown .codehilite .kr {
-  color: #8B008B;
+  color: #8b008b;
   font-weight: bold;
 }
 .markdown .codehilite .kt {
@@ -1153,10 +1145,10 @@ a:active {
   font-weight: bold;
 }
 .markdown .codehilite .m {
-  color: #B452CD;
+  color: #b452cd;
 }
 .markdown .codehilite .s {
-  color: #CD5555;
+  color: #cd5555;
 }
 .markdown .codehilite .na {
   color: #658b00;
@@ -1169,13 +1161,13 @@ a:active {
   font-weight: bold;
 }
 .markdown .codehilite .no {
-  color: #00688B;
+  color: #00688b;
 }
 .markdown .codehilite .nd {
   color: #707a7c;
 }
 .markdown .codehilite .ni {
-  color: #555555;
+  color: #555;
 }
 .markdown .codehilite .ne {
   color: #008b45;
@@ -1185,67 +1177,67 @@ a:active {
   color: #008b45;
 }
 .markdown .codehilite .nl {
-  color: #555555;
+  color: #555;
 }
 .markdown .codehilite .nn {
   color: #008b45;
   text-decoration: underline;
 }
 .markdown .codehilite .nx {
-  color: #555555;
+  color: #555;
 }
 .markdown .codehilite .py {
-  color: #555555;
+  color: #555;
 }
 .markdown .codehilite .nt {
-  color: #8B008B;
+  color: #8b008b;
   font-weight: bold;
 }
 .markdown .codehilite .nv {
-  color: #00688B;
+  color: #00688b;
 }
 .markdown .codehilite .ow {
-  color: #8B008B;
+  color: #8b008b;
 }
 .markdown .codehilite .w {
-  color: #bbbbbb;
+  color: #bbb;
 }
 .markdown .codehilite .mb {
-  color: #B452CD;
+  color: #b452cd;
 }
 .markdown .codehilite .mf {
-  color: #B452CD;
+  color: #b452cd;
 }
 .markdown .codehilite .mh {
-  color: #B452CD;
+  color: #b452cd;
 }
 .markdown .codehilite .mi {
-  color: #B452CD;
+  color: #b452cd;
 }
 .markdown .codehilite .mo {
-  color: #B452CD;
+  color: #b452cd;
 }
 .markdown .codehilite .sb {
-  color: #CD5555;
+  color: #cd5555;
 }
 .markdown .codehilite .sc {
-  color: #CD5555;
+  color: #cd5555;
 }
 .markdown .codehilite .sd {
-  color: #CD5555;
+  color: #cd5555;
 }
 .markdown .codehilite .s2 {
-  color: #CD5555;
+  color: #cd5555;
 }
 .markdown .codehilite .se {
-  color: #CD5555;
+  color: #cd5555;
 }
 .markdown .codehilite .sh {
   color: #1c7e71;
   font-style: italic;
 }
 .markdown .codehilite .si {
-  color: #CD5555;
+  color: #cd5555;
 }
 .markdown .codehilite .sx {
   color: #cb6c20;
@@ -1254,25 +1246,25 @@ a:active {
   color: #1c7e71;
 }
 .markdown .codehilite .s1 {
-  color: #CD5555;
+  color: #cd5555;
 }
 .markdown .codehilite .ss {
-  color: #CD5555;
+  color: #cd5555;
 }
 .markdown .codehilite .bp {
   color: #658b00;
 }
 .markdown .codehilite .vc {
-  color: #00688B;
+  color: #00688b;
 }
 .markdown .codehilite .vg {
-  color: #00688B;
+  color: #00688b;
 }
 .markdown .codehilite .vi {
-  color: #00688B;
+  color: #00688b;
 }
 .markdown .codehilite .il {
-  color: #B452CD;
+  color: #b452cd;
 }
 @media (max-width: 480px) {
   .markdown code {
@@ -1299,10 +1291,6 @@ a:active {
   color: #333;
   border-bottom: 1px dashed #ccc;
 }
-/*!
- *  Font Awesome 4.6.2 by @davegandy - http://fontawesome.io - @fontawesome
- *  License - http://fontawesome.io/license (Font: SIL OFL 1.1, CSS: MIT License)
- */
 @font-face {
   font-family: 'FontAwesome';
   src: url('../media/fonts/fontawesome-webfont.eot');
