@@ -1,0 +1,385 @@
+
+<html>
+  <head lang="zh">
+        <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+        <meta content="yes" name="apple-mobile-web-app-capable"/>
+        <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+        <meta content="telephone=no" name="format-detection"/>
+        <meta name="renderer" content="webkit">
+    <title>使用SRS自建直播服务 | PeterPan</title>
+<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://p.guipulp.top//media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://p.guipulp.top//media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+  </head>
+
+  <body>
+     <div class="header">
+      <div class="logo_title">
+		  
+        <div class="title animated fadeInDown"><img src="https://p.guipulp.top//images/avatar.png?v=1568266525476"/>
+
+          <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
+
+          </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="https://p.guipulp.top//post/about/" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="https://p.guipulp.top//post/about/" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+
+<div class="content">
+
+
+
+
+
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>使用SRS自建直播服务</a>
+
+
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-08-02</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> Views</span>
+
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+
+</span>
+
+
+    </div>
+
+  </div>
+
+
+
+
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><h2 id="直播平台搭建分享">直播平台搭建分享</h2>
+<pre><code># 分享链接
+https://juejin.im/entry/599634d2f265da248a7a66a7
+</code></pre>
+<h2 id="直播服务">直播服务</h2>
+<ul>
+<li><a href="https://github.com/arut/nginx-rtmp-module">nginx-rtmp</a></li>
+<li><a href="http://www.ossrs.net/srs.release/releases/">srs</a></li>
+</ul>
+<p>最终选择srs的原因在于其功能丰富，兼容性更好，且支持多种视频格式，支持多级级联，拥有丰富的接口。具体srs和nginx对比如下：</p>
+<p><a href="https://github.com/ossrs/srs/tree/2.0release#compare">https://github.com/ossrs/srs/tree/2.0release#compare</a></p>
+<p>srs架构：</p>
+<p><a href="https://github.com/ossrs/srs/wiki/v2_CN_Architecture">https://github.com/ossrs/srs/wiki/v2_CN_Architecture</a></p>
+<h2 id="srs">srs</h2>
+<h3 id="srs部署">SRS部署</h3>
+<pre><code># https://github.com/ossrs/srs/wiki/v2_CN_Home
+# http://blog.itpub.net/31559758/viewspace-2220944/
+# https://blog.csdn.net/ai2000ai/article/details/72769961
+# srs 可以分角色进行部署具体查看官方文档，推荐使用的客户端为V2版本，V3暂未进入稳定版
+# 系统建议采用centos6
+
+[root@lab1 ~]# wget https://codeload.github.com/ossrs/srs/tar.gz/v2.0-r6
+[root@lab1 ~]# tar xvf v2.0-r6
+[root@lab1 ~]# cd srs-2.0-r6/trunk/
+[root@lab1 trunk]# ./configure &amp;&amp; make
+[root@lab1 trunk]# ./objs/srs -c conf/http.flv.live.conf （支持输出flv和rtmp）
+
+# 推流地址
+rtmp://172.16.10.101:8080/live/demo
+# 播放地址
+flv: http://172.16.10.101:8080/live/demo.flv
+rtmp: rtmp://172.16.10.101:8080/live/demo
+</code></pre>
+<h3 id="srs热更新">SRS热更新</h3>
+<pre><code>Reload的方法为：killall -1 srs
+使用启动脚本：/etc/init.d/srs reload
+</code></pre>
+<h2 id="nginx-rtmp">nginx-rtmp</h2>
+<h3 id="nginx-rtmp部署">nginx-rtmp部署</h3>
+<pre><code># 部署参考链接
+https://www.cnblogs.com/monjeo/p/8492357.html
+https://wiki.blanc.site/archives/3f439512.html
+https://www.cnblogs.com/Leo_wl/p/5654819.html
+https://www.helplib.com/GitHub/article_145412
+https://smartshitter.com/musings/2017/12/nginx-rtmp-streaming-with-simple-authentication/
+</code></pre>
+<h2 id="直播搭建过程中遇见的问题">直播搭建过程中遇见的问题</h2>
+<pre><code># GOP（关键帧）设置过长导致直播延迟过大或者直播黑屏
+http://blog.itpub.net/31559352/viewspace-2564571/
+https://blog.csdn.net/wishfly/article/details/53079303
+https://blog.csdn.net/lcalqf/article/details/55258929
+https://www.cnblogs.com/suannaibuding/p/6366978.html
+https://www.jianshu.com/p/3a84d0c8f466
+http://blog.chinaunix.net/uid-26000296-id-4932817.html
+https://www.jianshu.com/p/9a0bbe1658eb
+http://www.voidcn.com/article/p-naiixvpv-bnw.html  (解释gop和解决办法)
+
+# 直播出现客户端中断问题
+buffer被清空，需要检查源流
+
+# 直播无法播放出http流检查
+检查流文件是否生成，流路径为 objs/nginx/html/live/
+</code></pre>
+<h2 id="直播延迟和推流设置">直播延迟和推流设置</h2>
+<pre><code>https://developer.qiniu.com/pili/kb/1722/server-live-on-delay
+https://cloud.tencent.com/document/product/267/32726
+</code></pre>
+<h2 id="更优秀的直播方案">更优秀的直播方案</h2>
+<pre><code># SD-RTN
+https://blog.csdn.net/wolf09311/article/details/52680170
+</code></pre>
+<h2 id="ffmpeg推流方式">ffmpeg推流方式</h2>
+<pre><code>docker run --name  test1 --restart=always -d -v $(pwd):/temp/ jrottenberg/ffmpeg -re  -stream_loop -1 -i /temp/war.mp4 -vcodec libx264 -acodec libfdk_aac \
+      -metadata service_name=&quot;Channel 1&quot; -metadata service_provider=&quot;PBS&quot; \
+      -b 1.5M\
+      -f flv rtmp://172.16.10.101:1935/live/demo
+</code></pre>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://p.guipulp.top//media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://p.guipulp.top//media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+
+
+<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+</div>
+
+
+
+  </div>
+</div>
+
+
+
+      </div>
+
+
+
+
+    </div>
+
+   <div class="footer">
+<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright"><ul class="links">
+<li><a href="/" target="_blank" rel="noopener noreferrer">小飞侠的飞行日记</a></li>
+</ul>
+      </div>
+
+</div></div>
+
+    </div>
+
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://p.guipulp.top//media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>
