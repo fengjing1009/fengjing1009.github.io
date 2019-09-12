@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-09-12T04:59:48.764Z</updated>
+    <updated>2019-09-12T05:01:13.496Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -68,7 +68,7 @@ kubeadm token create $token --print-join-command --ttl=0
 <pre><code>yum install --downloadonly --downloaddir=./  kubeadm-1.15.3-0 kubelet-1.15.3-0 kubectl-1.15.3-0 docker-ce-18.06.3.ce-3.el7 keepalived ipset ipvsadm   
 </code></pre>
 <h2 id="下载镜像并打包">下载镜像并打包</h2>
-<pre><code>kubeadm  config images pull --image-repository=registry.cn-hangzhou.aliyuncs.com/google_conta iners
+<pre><code>kubeadm  config images pull --image-repository=registry.cn-hangzhou.aliyuncs.com/google_containers
 
 for x in $(docker images |awk  '{print $1&quot;:&quot;$2}'|grep -v REP);do docker save -o $(echo $x|awk -F '/' '{print $3}').tar $x;done
 

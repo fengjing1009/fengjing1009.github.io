@@ -19,7 +19,7 @@
      <div class="header">
       <div class="logo_title">
 		  
-        <div class="title animated fadeInDown"><img src="https://p.guipulp.top//images/avatar.png?v=1568264384711"/>
+        <div class="title animated fadeInDown"><img src="https://p.guipulp.top//images/avatar.png?v=1568264470544"/>
 
           <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
 
@@ -185,7 +185,7 @@
 <pre><code>yum install --downloadonly --downloaddir=./  kubeadm-1.15.3-0 kubelet-1.15.3-0 kubectl-1.15.3-0 docker-ce-18.06.3.ce-3.el7 keepalived ipset ipvsadm   
 </code></pre>
 <h2 id="下载镜像并打包">下载镜像并打包</h2>
-<pre><code>kubeadm  config images pull --image-repository=registry.cn-hangzhou.aliyuncs.com/google_conta iners
+<pre><code>kubeadm  config images pull --image-repository=registry.cn-hangzhou.aliyuncs.com/google_containers
 
 for x in $(docker images |awk  '{print $1&quot;:&quot;$2}'|grep -v REP);do docker save -o $(echo $x|awk -F '/' '{print $3}').tar $x;done
 
