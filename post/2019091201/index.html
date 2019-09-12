@@ -6,7 +6,7 @@
 <meta HTTP-EQUIV="pragma" CONTENT="no-cache"> 
 <meta HTTP-EQUIV="Cache-Control" CONTENT="no-cache, must-revalidate"> 
 <meta HTTP-EQUIV="expires" CONTENT="0"> 
-<title>kubernetes1.15.3离线安装 | PeterPan</title>	
+<title>使用kubeadm 新加入节点（原始token过期后） | PeterPan</title>	
 
 <link rel="stylesheet" href="https://p.guipulp.top//styles/main.css">
 <script type="text/javascript">
@@ -118,10 +118,10 @@ function getCSS(){datetoday=new Date();timenow=datetoday.getTime();datetoday.set
 	
 	                      
 		<div class="entry-content">
-			<h1 class="wow swing entry-title">kubernetes1.15.3离线安装</h1>
+			<h1 class="wow swing entry-title">使用kubeadm 新加入节点（原始token过期后）</h1>
 <div class="entry-meta">
 <div class="wow bounce">
-	<i class="iconfont icon-rili"> <time class="lately-a" datetime="2019-09-09 18:09:51" itemprop="datePublished" pubdate="">2019-09-09</time></i>
+	<i class="iconfont icon-rili"> <time class="lately-a" datetime="2019-09-12 12:47:00" itemprop="datePublished" pubdate="">2019-09-12</time></i>
 	          </div>
 			
 </span>
@@ -129,95 +129,56 @@ function getCSS(){datetoday=new Date();timenow=datetoday.getTime();datetoday.set
 		</div>
                   
 			<div class="wow slideInLeft entry-summary song">
-				<p><h1 id="kubeadm-k8s集群离线安装">kubeadm k8s集群离线安装</h1>
-<h2 id="下载软件包">下载软件包</h2>
-<pre><code>yum install --downloadonly --downloaddir=./  kubeadm-1.15.3-0 kubelet-1.15.3-0 kubectl-1.15.3-0 docker-ce-18.06.3.ce-3.el7 keepalived ipset ipvsadm   
+				<p><h2 id="kubeadm-join">kubeadm join</h2>
+<blockquote>
+<p>kubeadm init 安装完成后你会得到以下的输出，使用join指令可以新增节点到集群,此token 有效期为24小时</p>
+</blockquote>
+<pre><code>You should now deploy a pod network to the cluster.
+Run &quot;kubectl apply -f [podnetwork].yaml&quot; with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+You can now join any number of machines by running the following on each node
+as root:
+
+  kubeadm join 18.16.202.35:6443 --token zr8n5j.yfkanjio0lfsupc0 --discovery-token-ca-cert-hash sha256:380b775b7f9ea362d45e4400be92adc4f71d86793ba6aae091ddb53c489d218c
 </code></pre>
-<h2 id="下载镜像并打包">下载镜像并打包</h2>
-<pre><code>kubeadm  config images pull --image-repository=registry.cn-hangzhou.aliyuncs.com/google_conta iners
-
-for x in $(docker images |awk  '{print $1&quot;:&quot;$2}'|grep -v REP);do docker save -o $(echo $x|awk -F '/' '{print $3}').tar $x;done
-
+<h2 id="kubeadm-token">kubeadm token</h2>
+<blockquote>
+<p>在新节点没有拿到证书以前，新节点和api server的通信是通过token和ca的签名完成的，具体的步骤如下</p>
+</blockquote>
+<pre><code># 生成token
+[root@node1 flannel]# kubeadm  token create
+kiyfhw.xiacqbch8o8fa8qj
+[root@node1 flannel]# kubeadm  token list
+TOKEN                     TTL         EXPIRES                     USAGES                   DESCRIPTION   EXTRA GROUPS
+gvvqwk.hn56nlsgsv11mik6   &lt;invalid&gt;   2018-10-25T14:16:06+08:00   authentication,signing   &lt;none&gt;        system:bootstrappers:kubeadm:default-node-token
+kiyfhw.xiacqbch8o8fa8qj   23h         2018-10-27T06:39:24+08:00   authentication,signing   &lt;none&gt;        system:bootstrappers:kubeadm:default-node-token
 </code></pre>
-<h2 id="恢复镜像">恢复镜像</h2>
-<pre><code>cd images;for x in `ls`;do docker load -i $x;done
+<pre><code># 生成ca的sha256 hash值
+[root@node1 flannel]# openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2&gt;/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'
+5417eb1b68bd4e7a4c82aded83abc55ec91bd601e45734d6aba85de8b1ebb057
 </code></pre>
-<h2 id="安装脚本">安装脚本</h2>
-<p>软件包下载地址：</p>
-<pre><code>链接:https://pan.baidu.com/s/1Vw0geL4Pn9_cq0rLxw7dRQ  密码:3v4g
+<pre><code># 组装join命令
+kubeadm join 18.16.202.35:6443 --token kiyfhw.xiacqbch8o8fa8qj --discovery-token-ca-cert-hash sha256:5417eb1b68bd4e7a4c82aded83abc55ec91bd601e45734d6aba85de8b1ebb057
 </code></pre>
-<pre><code># hostname
-#hostnamectl set-hostname $HOSTNAME
-
-# disable swap
-swapoff -a
-
-# disable selinux
-sed -i &quot;s/SELINUX=enforcing/SELINUX=disabled/g&quot; /etc/selinux/config
-setenforce 0
-
-# stop and disable firewalld
-systemctl stop firewalld ; systemctl disable firewalld
-
-# add ipvs modules
-cat &gt; /etc/sysconfig/modules/ipvs.modules &lt;&lt;EOF
-#!/bin/bash
-modprobe -- ip_vs
-modprobe -- ip_vs_rr
-modprobe -- ip_vs_wrr
-modprobe -- ip_vs_sh
-modprobe -- nf_conntrack_ipv4
-EOF
-chmod 755 /etc/sysconfig/modules/ipvs.modules &amp;&amp; bash /etc/sysconfig/modules/ipvs.modules &amp;&amp; lsmod | grep -e ip_vs -e nf_conntrack_ipv4
-
-# change node kernel
-cat &lt;&lt;EOF &gt;  /etc/sysctl.d/ceph.conf
-net.ipv4.ip_forward = 1
-net.bridge.bridge-nf-call-ip6tables = 1
-net.bridge.bridge-nf-call-iptables = 1
-EOF
-sysctl --system
-
-# install rpm
-cd /root/local/rpm ; yum localinstall ./*
-
-# load images
-systemctl start docker 
-systemctl enable docker kubelet
-cd /root/local/images ; for x in `ls`;do docker load -i $x;done
-
-# install kubernetes
-# kubeadm init --apiserver-advertise-address 172.16.10.101 --pod-network-cidr=10.244.0.0/16 --image-repository=registry.cn-hangzhou.aliyuncs.com/google_containers
-echo &quot;172.16.10.101 api.k8s.com&quot; &gt;&gt; /etc/hosts
-kubeadm init --config /root/local/kubeadm.conf
-
-# install client env
-mkdir -p $HOME/.kube
-sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-# install addons
-cd /root/local/yaml; kubectl apply -f .
-
-# remove taint
-#kubectl  taint node lab1 node-role.kubernetes.io/master:NoSchedule-
-kubectl  get nodes |grep master |awk '{print $1}' |xargs -i kubectl  taint node {} node-role.kubernetes.io/master:NoSchedule-
+<pre><code># 一步完成以上步骤
+kubeadm token create --print-join-command
+</code></pre>
+<pre><code># 手动生成token，完成命令打印
+token=$(kubeadm token generate)
+kubeadm token create $token --print-join-command --ttl=0
 </code></pre>
 </p>
 							</div>
 	<div class="wow bounceInDown vt-post-tags">
  
-				<a href="https://p.guipulp.top//tag/OzrDk-wrZ" rel="tag">kubernetes</a>	
-				 
 					</div>						
 <nav class="navigation3 post-navigation3" role="navigation">
 		
 		<div class="nav-links3">
       
-		<div class="wow bounceInLeft nav-previous3"><a href="https://p.guipulp.top//post/2019091201" rel="prev"> 使用kubeadm 新加入节点（原始token过期后）</a></div>
 		 
-		 
-		<div class="wow bounceInRight nav-next3"><a href="https://p.guipulp.top//post/2019090503" rel="next"> etcd数据备份和恢复</a></div>
+		<div class="wow bounceInRight nav-next3"><a href="https://p.guipulp.top//post/2019090901" rel="next"> kubernetes1.15.3离线安装</a></div>
 		
 		</div>
 	</nav>
