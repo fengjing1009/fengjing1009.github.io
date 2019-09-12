@@ -1,0 +1,652 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+ <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta HTTP-EQUIV="pragma" CONTENT="no-cache"> 
+<meta HTTP-EQUIV="Cache-Control" CONTENT="no-cache, must-revalidate"> 
+<meta HTTP-EQUIV="expires" CONTENT="0"> 
+<title>kubeadm搭建v1.10.3kubernetes集群 | PeterPan</title>	
+
+<link rel="stylesheet" href="https://p.guipulp.top//styles/main.css">
+<script type="text/javascript">
+function getCSS(){datetoday=new Date();timenow=datetoday.getTime();datetoday.setTime(timenow);thehour=datetoday.getHours();if(thehour<1)display="https://p.guipulp.top//media/scripts/dark.css";else if(thehour>23)display="https://p.guipulp.top//media/scripts/dark.css";var css='<';css+='link rel="stylesheet" href='+display+' \/';css+='>';document.write(css)}
+</script>
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<script type='text/javascript' src='https://p.guipulp.top//media/scripts/script.js'></script>
+<link href="https://cdn.bootcss.com/animate.css/3.5.2/animate.min.css" rel="stylesheet" />
+  <script src="https://cdn.bootcss.com/wow/1.1.2/wow.min.js"></script>
+  <script src="https://cdn.bootcss.com/highlight.js/9.15.8/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <script>wow=new WOW({boxClass:'wow',animateClass:'animated',offset:0,mobile:true,live:true});wow.init();</script>
+
+
+
+
+ 	
+</head>
+<body class="post-template-default single single-post postid-70 single-format-standard">
+    <div id="wrapper">
+        
+			
+		<header id="header" class="site-header" 
+		
+		>
+			<div class="site-branding">
+									<h1 class="site-title"><a href="https://p.guipulp.top/" rel="home">PeterPan</a></h1>
+										
+					<h2 class="site-description">贵有恒，何必三更起五更睡；最无益，只怕一日暴十寒。</h2>
+										
+							</div>
+			<nav id="nav-wrapper">
+				<div class="container">
+					<div class="nav-toggle">
+						<div class="bars">
+							<div class="bar"></div>
+							<div class="bar"></div>
+							<div class="bar"></div>
+						</div>
+					</div><!-- /nav-toggle -->
+					<div class="clear"></div>
+					<ul id="" class="dove">
+		 
+     			
+<li>
+	 
+	<a  href="/"> 首页</a></li>
+	
+    
+     			
+<li>
+	 
+	<a  href="/archives"> 归档</a></li>
+	
+    
+     			
+<li>
+	 
+	<a  href="/tags"> 标签</a></li>
+	
+    
+     			
+<li>
+	 
+	<a  href="https://p.guipulp.top//post/about/"> 关于</a></li>
+	
+    
+
+</ul>
+</li>		
+		
+</ul>				</div>
+			</nav><!-- #navigation -->
+						<div class="jingge">
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        </header><!-- #masthead -->
+
+		<div id="content" class="container">
+			<div class="row">
+	<div class="col-md-8 site-main">
+				
+<article id="post-70" class="post-70 post type-post status-publish format-standard hentry category-5 tag-10 tag-9 tag-11">
+
+	
+	                      
+		<div class="entry-content">
+			<h1 class="wow swing entry-title">kubeadm搭建v1.10.3kubernetes集群</h1>
+<div class="entry-meta">
+<div class="wow bounce">
+	<i class="iconfont icon-rili"> <time class="lately-a" datetime="2019-06-21 10:33:01" itemprop="datePublished" pubdate="">2019-06-21</time></i>
+	          </div>
+			
+</span>
+													 
+		</div>
+                  
+			<div class="wow slideInLeft entry-summary song">
+				<p><p>本文使用kubeadm和容器化etcd安装kubernetes集群用于poc</p>
+<!-- more -->
+<blockquote>
+<p>lab 说明：<br>
+1.此lab手册不需要越过长城<br>
+2.100.64.16.176 为master地址，配置时候需要替换该地址为新环境的master地址<br>
+3.lab环境为单节点master环境<br>
+4.lab环境etcd访问方式为http方式</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>clusterinfo</th>
+<th>ip</th>
+<th>package</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>k8s-node1(master)</td>
+<td>100.64.16.176</td>
+<td>kubeadm, etcd, kubelet, kubectl, docker</td>
+</tr>
+<tr>
+<td>k8s-node2(node)</td>
+<td>100.64.16.177</td>
+<td>kubeadm, kubelet, kubectl, docker</td>
+</tr>
+<tr>
+<td>k8s-node3(node)</td>
+<td>100.64.16.178</td>
+<td>kubeadm, kubelet, kubectl, docker</td>
+</tr>
+</tbody>
+</table>
+<h3 id="环境准备">环境准备</h3>
+<h4 id="注意事项">注意事项</h4>
+<p>该部分内容需要在所有节点执行</p>
+<h4 id="关闭防火墙">关闭防火墙</h4>
+<pre><code>systemctl stop firewalld &amp;&amp; systemctl disable firewalld
+</code></pre>
+<h4 id="关闭交换">关闭交换</h4>
+<pre><code>swapoff -a
+</code></pre>
+<h4 id="设置系统路由参数">设置系统路由参数</h4>
+<p>系统路由参数,防止kubeadm报路由警告</p>
+<pre><code>cat &lt;&lt;EOF &gt;  /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+vm.swappiness=0
+EOF
+sysctl --system
+</code></pre>
+<h4 id="关闭selinux">关闭selinux</h4>
+<pre><code>sed -i 's/SELINUX=permissive/SELINUX=disabled/' /etc/sysconfig/selinux
+setenforce 0
+</code></pre>
+<h4 id="安装docker">安装docker</h4>
+<ol>
+<li>安装</li>
+</ol>
+<pre><code>yum install -y docker
+systemctl enable docker
+systemctl start docker
+</code></pre>
+<ol start="2">
+<li>配置docker daemon(不需要加速器可省略)</li>
+</ol>
+<pre><code>vim /etc/docker/daemon.json 
+{
+  &quot;registry-mirrors&quot;: [&quot;https://v5d7kh0f.mirror.aliyuncs.com&quot;]
+}
+</code></pre>
+<ol start="3">
+<li>修改docker启动文件</li>
+</ol>
+<pre><code>vim /usr/lib/systemd/system/docker.service
+# 添加下面行
+ExecStartPost=/sbin/iptables -P FORWARD ACCEPT
+</code></pre>
+<ol start="4">
+<li>重新加载docker服务</li>
+</ol>
+<pre><code>systemctl daemon-reload
+service docker restart
+</code></pre>
+<h3 id="安装k8s">安装k8s</h3>
+<h4 id="软件包准备">软件包准备</h4>
+<p><strong>注意：该部分内容所有节点都需要执行</strong></p>
+<ol>
+<li>上传软件包到所有节点</li>
+</ol>
+<p><a href="https://pan.baidu.com/s/1LPDoy5QHan77QKj8s8nz1w">软件包下载地址</a></p>
+<blockquote>
+<p>若提示资源不存在，请复制浏览器里的地址，重新访问。</p>
+</blockquote>
+<pre><code># 所有节点解压并安装软件包
+tar xf k8s-*.tgz &amp;&amp; cd k8s-* &amp;&amp; yum localinstall -y *.rpm
+</code></pre>
+<ol start="2">
+<li>配置所有节点的kubelet</li>
+</ol>
+<pre><code># 修改/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+# 添加如下配置 
+Environment=&quot;KUBELET_EXTRA_ARGS=--pod-infra-container-image=registry.cn-shanghai.aliyuncs.com/gcr-k8s/pause-amd64:3.0&quot;
+</code></pre>
+<ol start="3">
+<li>所有节点重新载入配置</li>
+</ol>
+<pre><code>systemctl daemon-reload
+systemctl enable kubelet
+</code></pre>
+<h4 id="master安装">master安装</h4>
+<h5 id="安装etcd">安装etcd</h5>
+<ol>
+<li>配置启动etcd</li>
+</ol>
+<pre><code>docker stop etcd &amp;&amp; docker rm etcd
+rm -rf /data/etcd
+mkdir -p /data/etcd
+docker run -d \
+--restart always \
+-v /etc/etcd/ssl/certs:/etc/ssl/certs \
+-v /data/etcd:/var/lib/etcd \
+-p 2380:2380 \
+-p 2379:2379 \
+--name etcd \
+registry.cn-hangzhou.aliyuncs.com/google_containers/etcd-amd64:3.1.12 \
+etcd --name=etcd0 \
+--advertise-client-urls=http://100.64.16.176:2379 \
+--listen-client-urls=http://0.0.0.0:2379 \
+--initial-advertise-peer-urls=http://100.64.16.176:2380 \
+--listen-peer-urls=http://0.0.0.0:2380 \
+--initial-cluster-token=9477af68bbee1b9ae037d6fd9e7efefd \
+--initial-cluster=etcd0=http://100.64.16.176:2380 \
+--initial-cluster-state=new \
+--auto-tls \
+--peer-auto-tls \
+--data-dir=/var/lib/etcd
+</code></pre>
+<ol start="2">
+<li>验证etcd</li>
+</ol>
+<pre><code>docker exec -ti etcd ash
+etcdctl member list
+etcdctl cluster-health
+exit
+</code></pre>
+<h5 id="生成kubeadmin文件">生成kubeadmin文件</h5>
+<pre><code># 生成token
+# 保留token后面还要使用
+token=$(kubeadm token generate)
+echo $token
+
+# 生成配置文件
+# advertiseAddress 配置为master地址
+cat &gt;kubeadm-master.config&lt;&lt;EOF
+apiVersion: kubeadm.k8s.io/v1alpha1
+kind: MasterConfiguration
+kubernetesVersion: v1.10.3
+imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
+
+api:
+  advertiseAddress: 100.64.16.176
+
+apiServerExtraArgs:
+  endpoint-reconciler-type: lease
+
+controllerManagerExtraArgs:
+  node-monitor-grace-period: 10s
+  pod-eviction-timeout: 10s
+
+networking:
+  podSubnet: 10.244.0.0/16
+
+etcd:
+  endpoints:
+  - &quot;http://100.64.16.176:2379&quot;
+
+apiServerCertSANs:
+- &quot;node1&quot;
+- &quot;100.64.16.176&quot;
+- &quot;127.0.0.1&quot;
+
+token: $token
+tokenTTL: &quot;0&quot;
+
+featureGates:
+  CoreDNS: true
+EOF
+</code></pre>
+<h5 id="初始化master节点">初始化master节点</h5>
+<pre><code>kubeadm init --config kubeadm-master.config
+systemctl enable kubelet
+</code></pre>
+<h5 id="配置kubectl">配置kubectl</h5>
+<pre><code>mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+</code></pre>
+<h5 id="安装网络插件">安装网络插件</h5>
+<ol>
+<li>下载配置</li>
+</ol>
+<pre><code>mkdir flannel &amp;&amp; cd flannel
+wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+</code></pre>
+<ol start="2">
+<li>修改配置</li>
+</ol>
+<pre><code># 此处的ip配置要与上面kubeadm的pod-network一致
+  net-conf.json: |
+    {
+      &quot;Network&quot;: &quot;10.244.0.0/16&quot;,
+      &quot;Backend&quot;: {
+        &quot;Type&quot;: &quot;vxlan&quot;
+      }
+    }
+
+# 修改镜像
+image: registry.cn-shanghai.aliyuncs.com/gcr-k8s/flannel:v0.10.0-amd64
+</code></pre>
+<ol start="3">
+<li>启动</li>
+</ol>
+<pre><code>kubectl apply -f kube-flannel.yml
+</code></pre>
+<ol start="4">
+<li>检查master</li>
+</ol>
+<pre><code>kubectl get pods -n kube-system
+kubectl get svc -n kube-system
+</code></pre>
+<h4 id="node节点安装">node节点安装</h4>
+<ol>
+<li>配置node kubelet开机启动</li>
+</ol>
+<pre><code>systemctl enable kubelet
+systemctl start kubelet
+</code></pre>
+<ol start="2">
+<li>初始化node</li>
+</ol>
+<pre><code># 这个命令是之前初始化master完成时，输出的命令
+kubeadm join 100.64.16.176:6443 --token i2ha18.euygiv9g922b5fkf --discovery-token-ca-cert-hash sha256:1c8fe595a95e2daed035ba89f9604ef6ad5fb0d589b89adbff80ea8c09db567e
+</code></pre>
+<ol start="3">
+<li>在master上检查集群状态</li>
+</ol>
+<pre><code>kubectl get nodes
+</code></pre>
+<h3 id="k8s集群检查">k8s集群检查</h3>
+<pre><code>kubectl run nginx --replicas=2 --labels=&quot;run=load-balancer-example&quot; --image=nginx  --port=80
+kubectl get pods --all-namespaces -o wide 
+</code></pre>
+<p><a href="https://asciinema.org/a/bnyI5J6IcupDM5SV2eglMtJKu"><img src="https://asciinema.org/a/bnyI5J6IcupDM5SV2eglMtJKu.png" alt="asciicast"></a></p>
+<h3 id="总结">总结</h3>
+<p>经过这篇博客, 我们成功部署了一个3个节点的kubernetes 1.10.3的集群, 但是此时集群DashBoard, 监控都还没完成, 在接下来的<a href="https://p.fengjingblog.top/2018/06/11/kubernetes-Addons%E5%AE%89%E8%A3%85/">kubernetes Addons安装</a>中将进行这些组件的部署。</p>
+<h3 id="排错">排错</h3>
+<p>如果出现如下错误：</p>
+<pre><code>Jun 14 12:33:30 k8s-node1 kubelet: E0614 12:33:30.265135   12998 summary.go:102] Failed to get system container stats for &quot;/system.slice/kubelet.service&quot;: failed to get cgroup stats for &quot;/system.slice/kubelet.service&quot;: failed to get container info for &quot;/system.slice/kubelet.service&quot;: unknown container &quot;/system.slice/kubelet.service&quot;
+Jun 14 12:33:30 k8s-node1 etcd: rejected connection from &quot;100.64.16.176:54174&quot; (error &quot;EOF&quot;, ServerName &quot;&quot;)
+</code></pre>
+<ul>
+<li>针对etcd的报错可以尝试降低etcd的版本，本人使用<code>https://github.com/coreos/etcd/releases/download/v3.1.15/etcd-v3.1.15-linux-amd64.tar.gz</code>该版本的etcd后解决。</li>
+<li>针对kubelet的错误可以在<code>/etc/systemd/system/kubelet.service.d/10-kubeadm.conf</code> 文件最后一行末尾追加<code>--runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice</code>,完整文档如下：</li>
+</ul>
+<pre><code>[Service]
+Environment=&quot;KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf&quot;
+Environment=&quot;KUBELET_SYSTEM_PODS_ARGS=--pod-manifest-path=/etc/kubernetes/manifests --allow-privileged=true&quot;
+Environment=&quot;KUBELET_NETWORK_ARGS=--network-plugin=cni --cni-conf-dir=/etc/cni/net.d --cni-bin-dir=/opt/cni/bin&quot;
+Environment=&quot;KUBELET_DNS_ARGS=--cluster-dns=10.96.0.10 --cluster-domain=cluster.local&quot;
+Environment=&quot;KUBELET_AUTHZ_ARGS=--authorization-mode=Webhook --client-ca-file=/etc/kubernetes/pki/ca.crt&quot;
+Environment=&quot;KUBELET_CADVISOR_ARGS=--cadvisor-port=0&quot;
+Environment=&quot;KUBELET_CGROUP_ARGS=--cgroup-driver=systemd&quot;
+Environment=&quot;KUBELET_CERTIFICATE_ARGS=--rotate-certificates=true --cert-dir=/var/lib/kubelet/pki&quot;
+Environment=&quot;KUBELET_EXTRA_ARGS=--pod-infra-container-image=registry.cn-shanghai.aliyuncs.com/gcr-k8s/pause-amd64:3.0&quot;
+ExecStart=
+ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_AUTHZ_ARGS $KUBELET_CADVISOR_ARGS $KUBELET_CGROUP_ARGS $KUBELET_CERTIFICATE_ARGS $KUBELET_EXTRA_ARGS --runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice
+</code></pre>
+</p>
+							</div>
+	<div class="wow bounceInDown vt-post-tags">
+ 
+					</div>						
+<nav class="navigation3 post-navigation3" role="navigation">
+		
+		<div class="nav-links3">
+      
+		<div class="wow bounceInLeft nav-previous3"><a href="https://p.guipulp.top//post/9yPSD7pfq" rel="prev"> kubernetes配置外网dns</a></div>
+		 
+		 
+		<div class="wow bounceInRight nav-next3"><a href="https://p.guipulp.top//post/vo3IdA9w1" rel="next"> Centos 7 install nfs</a></div>
+		
+		</div>
+	</nav>
+	<div class="wow rollIn author-info" style="visibility: visible; animation-name: rollIn;">
+	<div class="author-avatar pull-left"><img src="https://p.guipulp.top//images/avatar.png" ></div>
+ 
+	<div class="author-description"><div class="author-title"><div class="author-link" rel="author">小飞侠</div></div>
+
+
+	<p class="author-bio">比你优秀的人不可怕,可怕的是比你优秀的人比你更努力。</p></div></div>
+	
+		</div>
+		
+ 
+		
+</article>
+
+<div id="marlin_lite_about_widget-2" class="wow bounceInUp widget marlin_lite_about_widget" data-wow-delay="0.1s">
+		
+        
+		<script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+<script src='https://p.guipulp.top//media/scripts/Valine.min.js'></script>
+
+<div class="comment"></div>
+<script>
+        new Valine({
+            // AV 对象来自上面引入av-min.js(老司机们不要开车➳♡゛扎心了老铁)
+            av: AV, 
+            el: '.comment',
+            lang: 'zh-cn',
+            
+            admin_email:'1771761752@qq.com',
+            
+            
+      emoticon_list: ["吐.png","喷血.png","狂汗.png","不说话.png","汗.png","坐等.png","献花.png","不高兴.png","中刀.png","害羞.png","皱眉.png","小眼睛.png","中指.png","尴尬.png","瞅你.png","想一想.png","中枪.png","得意.png","肿包.png","扇耳光.png","亲亲.png","惊喜.png","脸红.png","无所谓.png","便便.png","愤怒.png","蜡烛.png","献黄瓜.png","内伤.png","投降.png","观察.png","看不见.png","击掌.png","抠鼻.png","邪恶.png","看热闹.png","口水.png","抽烟.png","锁眉.png","装大款.png","吐舌.png","无奈.png","长草.png","赞一个.png","呲牙.png","无语.png","阴暗.png","不出所料.png","咽气.png","期待.png","高兴.png","吐血倒地.png","哭泣.png","欢呼.png","黑线.png","喜极而泣.png","喷水.png","深思.png","鼓掌.png","暗地观察.png"],
+     	
+      	
+          
+        });
+    </script> 
+
+
+   
+  
+ 
+
+		</div>
+
+			</div>
+			
+
+
+<div class="tocc col l3 hide-on-med-and-down">
+	
+        <div class="toc-widget">
+			
+            <div class="toc-title"></div>
+			
+            <div id="toc-content">
+			
+			
+			</div>
+        </div>
+    </div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.5.0/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '.entry-summary',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            // headingsOffset: -205,
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        i = 0;
+        $('.entry-summary').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+    });
+</script>										 
+
+ 
+       
+
+
+			</div>
+		</div>
+
+		
+		 	<footer id="colophon" class="site-footer">
+
+			<div class="container">
+	
+				<div class="copyright"><ul class="links">
+<li><a href="/" target="_blank" rel="noopener noreferrer">小飞侠的飞行日记</a></li>
+</ul><br>Theme:   <a href="https://github.com/alterfang/gridea-theme-pan" target="_blank" title="Pan"><span>Pan</span></a>. Powered by <a href="https://gridea.dev/" target="_blank" title="Gridea"><span>Gridea</span></a></div>		
+			</div><!-- .container -->
+		
+		</footer><!-- #colophon -->
+
+</div>
+
+<script src="https://cdn.bootcss.com/fitvids/1.2.0/jquery.fitvids.min.js"></script>
+<script type='text/javascript' src='https://p.guipulp.top//media/scripts/marlin-scripts.js'></script>
+ <script src="//tokinx.github.io/lately/lately.min.js"></script>
+  <script>jQuery(document).ready(function(){$.lately({'target':'.lately-a,.lately-b,.lately-c'})});</script>
+  <style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span><i class="iconfont icon-xiangshang"></i></span>
+</a>
+
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+		<script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $('.navigation:eq(0)').remove();
+                $("").attr("rel" , "external");
+                $("a[rel='external'],a[rel='external nofollow']").attr("target","_blank");
+                $("a.vi").attr("rel" , "");
+                $.viewImage({
+                    'target'  : 'img',
+                    'exclude' : '.vsmile-icons img,.gallery img',
+                    'delay'   : 300
+                });
+                $.lately({
+                    'target' : '.commentmetadata a,.infos time,.post-list time'
+                });
+                prettyPrint();
+                
+                $('ul.links li a').each(function(){
+                    if($(this).parent().find('.bg').length==0){
+                        $(this).parent().append('<!---<div class="bg" style="background-image:url(https://c3.glgoo.top/s2/favicons?domain='+$(this).attr("href")+')"></div>--->')
+                    }
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+
+</body>
+</html>
