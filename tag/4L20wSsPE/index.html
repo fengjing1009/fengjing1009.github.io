@@ -1,12 +1,12 @@
 
 <html>
-  <head lang="zh">
+<head lang="zh">
         <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
         <meta content="yes" name="apple-mobile-web-app-capable"/>
         <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
         <meta content="telephone=no" name="format-detection"/>
         <meta name="renderer" content="webkit">
-    <title>Centos7下的日志切割 | PeterPan</title>
+    <title>PeterPan</title>
 <link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
 <script type="text/javascript" src="https://p.guipulp.top//media/scripts/jquery.js"></script>
 <script type="text/javascript" src="https://p.guipulp.top//media/scripts/basic.js"></script>
@@ -16,7 +16,7 @@
   </head>
 
   <body>
-     <div class="header">
+    <div class="header">
       <div class="logo_title">
 		  
         <div class="title animated fadeInDown"><img src="https://p.guipulp.top//images/avatar.png?v=1568384513091"/>
@@ -135,7 +135,6 @@
     <div class="main">
       <div class="main-inner">
 
-
 <div class="content">
 
 
@@ -143,29 +142,27 @@
 
 
 
-  <div class="post_page" >
+  <div class="post_list" >
 
+	
 <div class="post">
-  <div class="post_title sm_margin">
-    <h2><a>Centos7下的日志切割</a>
-
-
-
+  <div class="post_title weaklink">
+    <h2><a href="https://p.guipulp.top//post/hello-gridea" >Hello Gridea</a>
     </h2>
   </div>
-
-  <div class="post_details">
-    <div class="info"><i class="fa fa-clock-o"></i>
-<span class="date_info">2019-09-05</span>
-<i class="fa fa-eye"></i>
-
-<span class="date_info"><span id="busuanzi_value_page_pv"></span> Views</span>
-
+  <div class="post_content markdown"><div class="p_part"><p><p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
+✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
+</p></div></div>
+  <div class="post_footer">
+    <div class="info weaklink"><i class="fa fa-clock-o"></i>
+<span class="date_info">2018-12-12</span>
 
 <i class="fa fa-bookmark-o"></i>
+	
 <span class="tags_info weaklink">
 	
-	<a href="https://p.guipulp.top//tag/WNdlutgnv" class="tag">运维</a>
+	<a href="https://p.guipulp.top//tag/4L20wSsPE" class="tag">Gridea</a>
+
 
 
 </span>
@@ -175,62 +172,19 @@
 
   </div>
 
-
-
-
-
-  <div class="post_content markdown"><p class="md_block">
-    <span class="md_line md_line_start md_line_end"><h2 id="logrotate">logrotate</h2>
-<p>/etc/logrotate.conf 是 Logrotate 工具的一个配置文件，这个工具用来自动切割系统日志，Logrotate 是基于 cron 来运行的，如下：</p>
-<pre><code>[root@localhost ~]$ cat /etc/cron.daily/logrotate    # 每天运行
-#!/bin/sh
-
-/usr/sbin/logrotate /etc/logrotate.conf &gt;/dev/null 2&gt;&amp;1
-EXITVALUE=$?
-if [ $EXITVALUE != 0 ]; then
-    /usr/bin/logger -t logrotate &quot;ALERT exited abnormally with [$EXITVALUE]&quot;
-fi
-exit 0
-</code></pre>
-<p>实际运行时，Logrotate 会调用配置文件 /etc/logrotate.conf ，默认的配置如下：</p>
-<pre><code>[root@localhost ~]$ cat /etc/logrotate.conf 
-
-weekly                      # 每周切割一次
-rotate 4                    # 只保留四份文件
-create                      # 切割后会创建一个新的文件
-dateext                     # 指定切割文件的后缀名，这里以日期为后缀名
-include /etc/logrotate.d    # 包含其他配置文件的目录
-
-/var/log/wtmp {             # 对哪个文件进行切割
-    monthly                 # 每个月切割一次
-    create 0664 root utmp   # 指定创建的新文件的权限，属主，属组
-        minsize 1M          # 文件容量超过这个值时才进行切割
-    rotate 1                # 只保留一份文件
-}
-
-/var/log/btmp {
-    missingok
-    monthly
-    create 0600 root utmp
-    rotate 1
-}
-</code></pre>
-<h2 id="参考链接">参考链接</h2>
-<p>https://blog.51cto.com/linuxblind/1269458</p>
-</p>
-
-     <p class="md_block">
-    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://p.guipulp.top//media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://p.guipulp.top//media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
-</p> 
 </div>
+	
+	
 
-</div>
+<div class="paginator pager pagination" >
+	
 
 
 
-<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+    <div style="clear:both;height:0;"></div>
 
-<div class="doc_comments">
+
+  </div>
 
 </div>
 
@@ -243,12 +197,9 @@ include /etc/logrotate.d    # 包含其他配置文件的目录
 
       </div>
 
-
-
-
     </div>
 
-   <div class="footer">
+    <div class="footer">
 <link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
 
       <div class="mysocials"><div class="my_socials">
