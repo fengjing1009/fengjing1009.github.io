@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-09-13T06:25:30.290Z</updated>
+    <updated>2019-09-13T06:27:19.282Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -595,6 +595,11 @@ Allocatable:
 [kubeconfig] Writing &quot;scheduler.conf&quot; kubeconfig file
 [root@lab1 local]# cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 [root@lab1 local]# sudo systemctl restart docker; sudo systemctl restart kubelet
+</code></pre>
+<blockquote>
+<p>如果遇见static pod 启动不了的情况可以采用以下方式处理</p>
+</blockquote>
+<pre><code>docker ps -a |grep -i exit |awk '{print $1}'|xargs docker rm
 </code></pre>
 <h2 id="参考地址">参考地址</h2>
 <p>https://stackoverflow.com/questions/56320930/renew-kubernetes-pki-after-expired</p>

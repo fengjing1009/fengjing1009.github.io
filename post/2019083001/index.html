@@ -19,7 +19,7 @@
      <div class="header">
       <div class="logo_title">
 		  
-        <div class="title animated fadeInDown"><img src="https://p.guipulp.top//images/avatar.png?v=1568355926634"/>
+        <div class="title animated fadeInDown"><img src="https://p.guipulp.top//images/avatar.png?v=1568356036125"/>
 
           <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
 
@@ -203,6 +203,11 @@
 [kubeconfig] Writing &quot;scheduler.conf&quot; kubeconfig file
 [root@lab1 local]# cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 [root@lab1 local]# sudo systemctl restart docker; sudo systemctl restart kubelet
+</code></pre>
+<blockquote>
+<p>如果遇见static pod 启动不了的情况可以采用以下方式处理</p>
+</blockquote>
+<pre><code>docker ps -a |grep -i exit |awk '{print $1}'|xargs docker rm
 </code></pre>
 <h2 id="参考地址">参考地址</h2>
 <p>https://stackoverflow.com/questions/56320930/renew-kubernetes-pki-after-expired</p>
