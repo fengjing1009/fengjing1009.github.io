@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-09-13T14:24:24.658Z</updated>
+    <updated>2019-09-13T14:25:25.416Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -17,7 +17,9 @@
         </link>
         <updated>2019-09-13T14:24:16.000Z</updated>
         <content type="html"><![CDATA[<script type="text/javascript" src="https://asciinema.org/a/132560.js"
-id="asciicast-132560" async></script>]]></content>
+id="asciicast-132560" async></script>
+<p><a href="https://asciinema.org/a/132560"><img src="https://asciinema.org/a/132560.png" alt="asciicast"></a></p>
+]]></content>
     </entry>
     <entry>
         <title type="html"><![CDATA[使用kubeadm 新加入节点（原始token过期后）]]></title>
