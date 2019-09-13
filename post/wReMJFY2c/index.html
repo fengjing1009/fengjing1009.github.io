@@ -6,7 +6,7 @@
         <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
         <meta content="telephone=no" name="format-detection"/>
         <meta name="renderer" content="webkit">
-    <title>centos快速创建kubernetes | PeterPan</title>
+    <title>123 | PeterPan</title>
 <link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
 <script type="text/javascript" src="https://p.guipulp.top//media/scripts/jquery.js"></script>
 <script type="text/javascript" src="https://p.guipulp.top//media/scripts/basic.js"></script>
@@ -147,7 +147,7 @@
 
 <div class="post">
   <div class="post_title sm_margin">
-    <h2><a>centos快速创建kubernetes</a>
+    <h2><a>123</a>
 
 
 
@@ -156,7 +156,7 @@
 
   <div class="post_details">
     <div class="info"><i class="fa fa-clock-o"></i>
-<span class="date_info">2019-08-07</span>
+<span class="date_info">2019-09-13</span>
 <i class="fa fa-eye"></i>
 
 <span class="date_info"><span id="busuanzi_value_page_pv"></span> Views</span>
@@ -165,8 +165,6 @@
 <i class="fa fa-bookmark-o"></i>
 <span class="tags_info weaklink">
 	
-	<a href="https://p.guipulp.top//tag/OzrDk-wrZ" class="tag">kubernetes</a>
-
 
 </span>
 
@@ -180,128 +178,8 @@
 
 
   <div class="post_content markdown"><p class="md_block">
-    <span class="md_line md_line_start md_line_end"><h2 id="前置条件">前置条件</h2>
-<ul>
-<li>系统要求:64位centos7.6</li>
-<li>关闭防火墙和selinux</li>
-<li>关闭操作系统swap分区(使用k8s不推荐打开)</li>
-</ul>
-<h2 id="环境说明">环境说明</h2>
-<p>本手册安装方式适用于单节点测试部署</p>
-<h2 id="准备工作每个节点都需要执行">准备工作(每个节点都需要执行)</h2>
-<h3 id="docker和kubernetes软件源配置">Docker和kubernetes软件源配置</h3>
-<pre><code># 切换到配置目录
-cd /etc/yum.repos.d/
-# 配置docker-ce阿里源
-wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
-# 配置kubernetes阿里源
-cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
-EOF
-</code></pre>
-<h3 id="配置内核相关参数">配置内核相关参数</h3>
-<pre><code>cat &lt;&lt;EOF &gt;  /etc/sysctl.d/ceph.conf
-net.ipv4.ip_forward = 1
-net.bridge.bridge-nf-call-ip6tables = 1
-net.bridge.bridge-nf-call-iptables = 1
-EOF
-sysctl --system
-</code></pre>
-<h3 id="安装相应软件包">安装相应软件包</h3>
-<pre><code># 安装kubeadm kubelet kubectl
-yum install docker-ce kubeadm kubectl kubelet -y
-
-# 开机启动kubelet和docker
-systemctl enable docker kubelet
-
-# 启动docker
-systemctl start docker
-</code></pre>
-<h2 id="部署">部署</h2>
-<h3 id="安装k8s">安装k8s</h3>
-<pre><code># 30.4.241.19 需要更新为当前部署节点ip地址
-kubeadm init --apiserver-advertise-address 30.4.241.19 --pod-network-cidr=10.244.0.0/16 --image-repository=registry.cn-hangzhou.aliyuncs.com/google_containers --ignore-preflight-errors=Swap
-
-# 初始化完成后按提示执行以下命令
-mkdir -p $HOME/.kube
-sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-sudo chown $(id -u):$(id -g) $HOME/.kube/config
-</code></pre>
-<h3 id="安装flannel">安装flannel</h3>
-<pre><code>kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-</code></pre>
-<h3 id="检查是否安装完成">检查是否安装完成</h3>
-<pre><code>root@k8s4:~# kubectl  get nodes
-NAME   STATUS   ROLES    AGE   VERSION
-k8s4   Ready    master   20m   v1.14.2
-root@k8s4:~# kubectl  get nodes
-NAME   STATUS   ROLES    AGE   VERSION
-k8s4   Ready    master   20m   v1.14.2
-root@k8s4:~# kubectl  get pods --all-namespaces
-NAMESPACE     NAME                           READY   STATUS    RESTARTS   AGE
-kube-system   coredns-8cc96f57d-cfr4j        1/1     Running   0          20m
-kube-system   coredns-8cc96f57d-stcz6        1/1     Running   0          20m
-kube-system   etcd-k8s4                      1/1     Running   0          19m
-kube-system   kube-apiserver-k8s4            1/1     Running   0          19m
-kube-system   kube-controller-manager-k8s4   1/1     Running   0          19m
-kube-system   kube-flannel-ds-amd64-k4q6q    1/1     Running   0          50s
-kube-system   kube-proxy-lhjsf               1/1     Running   0          20m
-kube-system   kube-scheduler-k8s4            1/1     Running   0          19m
-</code></pre>
-<h3 id="测试是否能正常使用">测试是否能正常使用</h3>
-<pre><code># 取消节点污点,使master能被正常调度, k8s4请更改为你自有集群的nodename
-kubectl  taint node k8s4 node-role.kubernetes.io/master:NoSchedule-
-
-# 创建nginx deploy
-root@k8s4:~# kubectl  create deploy nginx --image nginx
-deployment.apps/nginx created
-
-root@k8s4:~# kubectl  get pods
-NAME                     READY   STATUS    RESTARTS   AGE
-nginx-65f88748fd-9sk6z   1/1     Running   0          2m44s
-
-# 暴露nginx到集群外
-root@k8s4:~# kubectl  expose deploy nginx --port=80 --type=NodePort
-service/nginx exposed
-root@k8s4:~# kubectl  get svc
-NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
-kubernetes   ClusterIP   10.96.0.1        &lt;none&gt;        443/TCP        25m
-nginx        NodePort    10.104.109.234   &lt;none&gt;        80:32129/TCP   5s
-root@k8s4:~# curl 127.0.0.1:32129
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-&lt;title&gt;Welcome to nginx!&lt;/title&gt;
-&lt;style&gt;
-    body {
-        width: 35em;
-        margin: 0 auto;
-        font-family: Tahoma, Verdana, Arial, sans-serif;
-    }
-&lt;/style&gt;
-&lt;/head&gt;
-&lt;body&gt;
-&lt;h1&gt;Welcome to nginx!&lt;/h1&gt;
-&lt;p&gt;If you see this page, the nginx web server is successfully installed and
-working. Further configuration is required.&lt;/p&gt;
-
-&lt;p&gt;For online documentation and support please refer to
-&lt;a href=&quot;http://nginx.org/&quot;&gt;nginx.org&lt;/a&gt;.&lt;br/&gt;
-Commercial support is available at
-&lt;a href=&quot;http://nginx.com/&quot;&gt;nginx.com&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Thank you for using nginx.&lt;/em&gt;&lt;/p&gt;
-&lt;/body&gt;
-&lt;/html&gt;
-
-</code></pre>
-</p>
+    <span class="md_line md_line_start md_line_end"><script type="text/javascript" src="https://asciinema.org/a/132560.js"
+id="asciicast-132560" async></script></p>
 
      <p class="md_block">
     <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://p.guipulp.top//media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://p.guipulp.top//media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
