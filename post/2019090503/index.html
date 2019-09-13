@@ -1,0 +1,397 @@
+
+<html>
+  <head lang="zh">
+        <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+        <meta content="yes" name="apple-mobile-web-app-capable"/>
+        <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+        <meta content="telephone=no" name="format-detection"/>
+        <meta name="renderer" content="webkit">
+    <title>etcd数据备份和恢复 | PeterPan</title>
+<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://p.guipulp.top//media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://p.guipulp.top//media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+  </head>
+
+  <body>
+     <div class="header">
+      <div class="logo_title">
+		  
+        <div class="title animated fadeInDown"><img src="https://p.guipulp.top//images/avatar.png?v=1568383535354"/>
+
+          <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
+
+          </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="https://p.guipulp.top//post/about/" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="https://p.guipulp.top//post/about/" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+
+<div class="content">
+
+
+
+
+
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>etcd数据备份和恢复</a>
+
+
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-09-05</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> Views</span>
+
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+	<a href="https://p.guipulp.top//tag/WNdlutgnv" class="tag">运维</a>
+
+
+</span>
+
+
+    </div>
+
+  </div>
+
+
+
+
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><h2 id="对于etcd-api-v3数据备份与恢复方法">对于etcd api v3数据备份与恢复方法</h2>
+<pre><code> # export ETCDCTL_API=3
+</code></pre>
+<pre><code> # etcdctl --endpoints localhost:2379 snapshot save snapshot.db （备份）
+</code></pre>
+<pre><code> # etcdctl snapshot restore snapshot.db --name m3 --data-dir=/home/etcd_data （还原）
+</code></pre>
+<blockquote>
+<p>恢复后的文件需要修改权限为 etcd:etcd<br>
+–name:重新指定一个数据目录，可以不指定，默认为 default.etcd<br>
+–data-dir：指定数据目录<br>
+建议使用时不指定 name 但指定 data-dir，并将 data-dir 对应于 etcd 服务中配置的 data-dir</p>
+</blockquote>
+<h2 id="实践方法">实践方法</h2>
+<p><strong>单机备份</strong></p>
+<pre><code>[root@k8s-master1 ~]# etcdctl --endpoints 127.0.0.1:2379 snapshot save snashot.db
+Snapshot saved at snashot.db
+[root@k8s-master1 ~]# ll
+-rw-r--r--   1 root root 3756064 Apr 18 10:38 snashot.db
+[root@k8s-master1 ~]#
+</code></pre>
+<p><strong>集群备份</strong></p>
+<pre><code>[root@k8s-master1 ~]# etcdctl --endpoints=&quot;https://192.168.32.129:2379,https://192.168.32.130:2379,192.168.32.128:2379&quot; --cacert=/etc/kubernetes/cert/ca.pem --key=/etc/etcd/cert/etcd-key.pem --cert=/etc/etcd/cert/etcd.pem  snapshot save snashot1.db
+Snapshot saved at snashot1.db
+[root@k8s-master1 ~]#
+[root@k8s-master1 ~]# ll
+-rw-r--r--   1 root root 3756064 Apr 18 10:53 snashot1.db
+-rw-r--r--   1 root root 3756064 Apr 18 10:38 snashot.db
+</code></pre>
+<p><strong>数据恢复</strong></p>
+<p>做下面的操作,请慎重,有可能造成集群崩溃数据丢失.请在实验环境测试.</p>
+<p>执行命令:systemctl stop etcd<br>
+所有节点的etcd服务全部停止.</p>
+<p>执行命令:rm -rf /var/lib/etcd/<br>
+所有节点删除etcd的数据</p>
+<p><strong>恢复v3的数据</strong></p>
+<pre><code>[root@k8s-master1 ~]#  etcdctl --name=k8s-master1 --endpoints=&quot;https://192.168.32.128:2379&quot; --cacert=/etc/kubernetes/cert/ca.pem --key=/etc/etcd/cert/etcd-key.pem --cert=/etc/etcd/cert/etcd.pem --initial-cluster-token=etcd-cluster-1 --initial-advertise-peer-urls=https://192.168.32.128:2380 --initial-cluster=k8s-master1=https://192.168.32.128:2380,k8s-master2=https://192.168.32.129:2380,k8s-master3=https://192.168.32.130:2380 --data-dir=/var/lib/etcd snapshot restore snashot1.db
+2019-04-18 13:43:42.570882 I | mvcc: restore compact to 148651
+2019-04-18 13:43:42.584194 I | etcdserver/membership: added member 4c99f52323a3e391 [https://192.168.32.129:2380] to cluster 2a0978507970d828
+2019-04-18 13:43:42.584224 I | etcdserver/membership: added member 5a74b01f28ece933 [https://192.168.32.128:2380] to cluster 2a0978507970d828
+2019-04-18 13:43:42.584234 I | etcdserver/membership: added member b29b94ace458096d [https://192.168.32.130:2380] to cluster 2a0978507970d828
+</code></pre>
+<pre><code>[root@k8s-master2 ~]# etcdctl --name=k8s-master2 --endpoints=&quot;https://192.168.32.129:2379&quot; --cacert=/etc/kubernetes/cert/ca.pem --key=/etc/etcd/cert/etcd-key.pem --cert=/etc/etcd/cert/etcd.pem --initial-cluster-token=etcd-cluster-1 --initial-advertise-peer-urls=https://192.168.32.129:2380 --initial-cluster=k8s-master1=https://192.168.32.128:2380,k8s-master2=https://192.168.32.129:2380,k8s-master3=https://192.168.32.130:2380 --data-dir=/var/lib/etcd snapshot restore snashot1.db
+2019-04-18 13:43:56.313096 I | mvcc: restore compact to 148651
+2019-04-18 13:43:56.324779 I | etcdserver/membership: added member 4c99f52323a3e391 [https://192.168.32.129:2380] to cluster 2a0978507970d828
+2019-04-18 13:43:56.324806 I | etcdserver/membership: added member 5a74b01f28ece933 [https://192.168.32.128:2380] to cluster 2a0978507970d828
+2019-04-18 13:43:56.324819 I | etcdserver/membership: added member b29b94ace458096d [https://192.168.32.130:2380] to cluster 2a0978507970d828
+</code></pre>
+<pre><code>[root@k8s-master3 ~]# etcdctl --name=k8s-master3 --endpoints=&quot;https://192.168.32.130:2379&quot; --cacert=/etc/kubernetes/cert/ca.pem --key=/etc/etcd/cert/etcd-key.pem --cert=/etc/etcd/cert/etcd.pem --initial-cluster-token=etcd-cluster-1 --initial-advertise-peer-urls=https://192.168.32.130:2380 --initial-cluster=k8s-master1=https://192.168.32.128:2380,k8s-master2=https://192.168.32.129:2380,k8s-master3=https://192.168.32.130:2380 --data-dir=/var/lib/etcd snapshot restore snashot1.db
+2019-04-18 13:44:10.643115 I | mvcc: restore compact to 148651
+2019-04-18 13:44:10.649920 I | etcdserver/membership: added member 4c99f52323a3e391 [https://192.168.32.129:2380] to cluster 2a0978507970d828
+2019-04-18 13:44:10.649957 I | etcdserver/membership: added member 5a74b01f28ece933 [https://192.168.32.128:2380] to cluster 2a0978507970d828
+2019-04-18 13:44:10.649973 I | etcdserver/membership: added member b29b94ace458096d [https://192.168.32.130:2380] to cluster 2a0978507970d828
+</code></pre>
+<p>服务起不来</p>
+<pre><code>[root@k8s-master1 ~]# tail -n 30 /var/log/messages
+Apr 18 13:46:41 k8s-master1 systemd: Starting Etcd Server...
+Apr 18 13:46:41 k8s-master1 etcd: etcd Version: 3.3.7
+Apr 18 13:46:41 k8s-master1 etcd: Git SHA: 56536de55
+Apr 18 13:46:41 k8s-master1 etcd: Go Version: go1.9.6
+Apr 18 13:46:41 k8s-master1 etcd: Go OS/Arch: linux/amd64
+Apr 18 13:46:41 k8s-master1 etcd: setting maximum number of CPUs to 1, total number of available CPUs is 1
+Apr 18 13:46:41 k8s-master1 etcd: error listing data dir: /var/lib/etcd
+Apr 18 13:46:41 k8s-master1 systemd: etcd.service: main process exited, code=exited, status=1/FAILURE
+Apr 18 13:46:41 k8s-master1 systemd: Failed to start Etcd Server.
+Apr 18 13:46:41 k8s-master1 systemd: Unit etcd.service entered failed state.
+Apr 18 13:46:41 k8s-master1 systemd: etcd.service failed.
+Apr 18 13:46:41 k8s-master1 flanneld: timed out
+Apr 18 13:46:41 k8s-master1 flanneld: E0418 13:46:41.858283   63943 main.go:349] Couldn't fetch network config: client: etcd cluster is unavailable or misconfigured; error #0: EOF
+Apr 18 13:46:41 k8s-master1 flanneld: ; error #1: EOF
+Apr 18 13:46:41 k8s-master1 flanneld: ; error #2: EOF
+[root@k8s-master1 ~]#
+</code></pre>
+<p>修改数据目录权限,默认是root:root<br>
+chown -R etcd:etcd /var/lib/etcd<br>
+恢复正常.</p>
+<pre><code>[root@k8s-master1 ~]# etcdctl member list
+4c99f52323a3e391, started, k8s-master2, https://192.168.32.129:2380, https://192.168.32.129:2379
+5a74b01f28ece933, started, k8s-master1, https://192.168.32.128:2380, https://192.168.32.128:2379
+b29b94ace458096d, started, k8s-master3, https://192.168.32.130:2380, https://192.168.32.130:2379
+[root@k8s-master1 ~]#
+</code></pre>
+<p>可以看到v3的数据恢复成功.</p>
+<h2 id="参考地址">参考地址</h2>
+<p>https://blog.csdn.net/liukuan73/article/details/78986652</p>
+<p>https://blog.51cto.com/goome/2380854</p>
+<p>https://yq.aliyun.com/articles/336781</p>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://p.guipulp.top//media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://p.guipulp.top//media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+
+
+<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+</div>
+
+
+
+  </div>
+</div>
+
+
+
+      </div>
+
+
+
+
+    </div>
+
+   <div class="footer">
+<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright"><ul class="links">
+<li><a href="/" target="_blank" rel="noopener noreferrer">小飞侠的飞行日记</a></li>
+</ul>
+      </div>
+
+</div></div>
+
+    </div>
+
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://p.guipulp.top//media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>

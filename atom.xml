@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-09-13T14:04:08.675Z</updated>
+    <updated>2019-09-13T14:05:38.049Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -924,6 +924,996 @@ iptables -A POSTROUTING -o eth0 -s 192.168.1.200 -j SNAT --to 202.110.123.200
 <p>https://www.cnblogs.com/zejin2008/p/5919550.html<br>
 https://blog.csdn.net/skc361/article/details/20481521<br>
 https://www.cnblogs.com/zhujingzhi/p/9706664.html</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[使用iptables实现网络互联]]></title>
+        <id>https://p.guipulp.top//post/2019082702</id>
+        <link href="https://p.guipulp.top//post/2019082702">
+        </link>
+        <updated>2019-08-27T15:34:48.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="iptables实现网络功能的方式">iptables实现网络功能的方式</h2>
+<p>SNAT：代理上网实现原地址转换</p>
+<p>DNAT：用于端口转发实现目标地址转换</p>
+<p>实现以上两种功能均要打开内核路由转发功能</p>
+<pre><code>[root@xuegod63 ~]# vim /etc/sysctl.conf
+#改：#net.ipv4.ip_forward = 0
+#为： net.ipv4.ip_forward = 1
+#改完使配置生效：
+[root@xuegod63 ~]# sysctl -p
+</code></pre>
+<h2 id="iptables的源地址转换snat">iptables的源地址转换(SNAT)</h2>
+<h3 id="双网卡实现snat">双网卡实现SNAT</h3>
+<p><strong>示例一</strong></p>
+<p><img src="https://img-blog.csdn.net/20171117145802662?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvd2hlYXRfZ3JvdW5k/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="è¿éåå¾çæè¿°"></p>
+<pre><code># 左边的机器为A，右边的机器为B ，A和B在同一个自网路，B有两个网卡。一个网卡和A同在一个网络，另外一个网卡可以连接外网。 
+# 配置方式
+[root@xuegod63 ~]# iptables -t nat -A POSTROUTING -s 192.168.240.0/24   -j  SNAT  --to 192.168.1.250
+或：
+[root@xuegod63 ~]#iptables -t nat -A POSTROUTING -s 192.168.2.0/24  -o eth0  -j MASQUERADE
+# 拒绝访问转发机器本身
+[root@xuegod63 ~]# iptables -A INPUT -s 192.168.2.2 -j DROP
+</code></pre>
+<p><strong>示例二</strong></p>
+<pre><code>场景：
+有一台A服务器不能上网，和B服务器通过内网来连接，B服务器可以上网，要实现A服务器也可以上网。
+A IP:192.168.0.35
+B IP:192.168.0.146（123.196.112.146为外网ip）
+
+SNAT:改变数据包的源地址。防火墙会使用外部地址，替换数据包的本地网络地址。这样使网络内部主机能够与网络外部通信。
+
+1.在可以上网那台服务器B上，开启内核路由转发功能
+echo 1 &gt; /proc/sys/net/ipv4/ip_forward
+
+2.在需要通过代理上网服务器A上，查看路由表。并添加默认网关。route add default gw 192.168.0.146
+[root@localhost ~]# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+192.168.0.0     0.0.0.0         255.255.255.0   U     0      0        0 eth0
+169.254.0.0     0.0.0.0         255.255.0.0     U     0      0        0 eth0
+0.0.0.0         192.168.0.146   0.0.0.0         UG    0      0        0 eth0
+
+3.在可以上网那台服务器B上添加SNAT规则
+iptables -t nat -A POSTROUTING -o eth0 -s 192.168.0.0/24 -j SNAT –-to 123.196.112.146
+
+4.保存
+service iptables save
+
+5.验证是否可以正常上网。
+</code></pre>
+<h3 id="单网卡实现snat">单网卡实现SNAT</h3>
+<p><strong>示例</strong></p>
+<pre><code>场景：
+给转发机器网卡绑定两个IP。一个内网IP，无需设置网关，另一个接口，IP要可以连接internet。
+直接将下面内容加在 /etc/rc.local 启动脚本内（把192.168.51.250换成外网IP，把192.168.151.1换内网的网络地址）
+
+echo 1 &gt; /proc/sys/net/ipv4/ip_forward
+ifconfig eth0:1 192.168.151.1 netmask 255.255.255.0
+iptables -F
+iptables -F -t nat
+iptables -P FORWARD DROP
+iptables -A FORWARD -s 192.168.151.0/24 -j ACCEPT
+iptables -A FORWARD -i eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -t nat -A POSTROUTING -o eth0 -s 192.168.151.0/24 -j SNAT --to 192.168.51.250
+</code></pre>
+<h2 id="iptables的目标地址转换dnat">iptables的目标地址转换（DNAT）</h2>
+<h3 id="双网卡实现dnat">双网卡实现DNAT</h3>
+<pre><code># 代理192.168.0.10的80端口到NAT服务器
+# NAT服务器IP： 172.16.0.1  192.168.0.1
+# 服务端IP： 192.168.0.10 需要将服务端的网关指向NAT服务器
+# 做DNAT转发：
+iptables -t nat -A PREROUTING -i ens33 -d 172.16.0.1 -p tcp --dport  80 -j DNAT --to-destination 192.168.0.10
+</code></pre>
+<h3 id="单网卡实现dnat">单网卡实现DNAT</h3>
+<p><strong>说明</strong></p>
+<pre><code>A)将本机端口转发至目标机器
+iptables -t nat -A PREROUTING -p tcp -d [本地服务器主网卡绑定IP] –dport [本地端口] -j DNAT –to-destination [目标IP:目标端口]
+iptables -t nat -A PREROUTING -p udp -d [本地服务器主网卡绑定IP] –dport [本地端口] -j DNAT –to-destination [目标IP:目标端口]
+
+B)将目标机器返回的数据转发至本机
+iptables -t nat -A POSTROUTING -p tcp -d [目标IP] –dport [目标端口] -j SNAT –to-source [本地服务器主网卡绑定IP]
+iptables -t nat -A POSTROUTING -p udp -d [目标IP] –dport [目标端口] -j SNAT –to-source [本地服务器主网卡绑定IP]
+</code></pre>
+<p><strong>示例</strong></p>
+<pre><code># 单网卡iptables配置路由转发，需要配置snat和dnat
+# pc1 ip:192.168.23.252 
+# pc2 ip:192.168.23.253 
+
+iptables -t nat -A PREROUTING -d 192.168.23.252 -p tcp --dport 80 -j DNAT --to-destination 192.168.23.253:80
+# 如果进来的route的访问目的地址是192.168.23.252并且访问的目的端口是80，就进行dnat转换，把目的地址改为192.168.23.253 ，端口还是80
+ 
+iptables -t nat -A POSTROUTING -d 192.168.23.253 -p tcp --dport 80 -j SNAT --to 192.168.23.252
+# 当FORWARD 出来后，访问的目的地址是192.168.23.253，端口是80的。进行snat地址转换，把原地址改为192.168.23.252
+ 
+iptables -A FORWARD -o eth0 -d 192.168.23.253 -p tcp --dport 80 -j ACCEPT
+# 当从eth0出去的访问目的地址是 192.168.23.253且目的端口是80的route，允许通过
+ 
+iptables -A FORWARD -i eth0 -s 192.168.23.253 -p tcp --dport 80 -j ACCEPT
+# 当从eth0进来的原地址是 192.168.23.253且目的端口是80的route，允许通过
+ 
+# 保存规则启动iptables
+service iptables save
+service iptables start
+</code></pre>
+<h2 id="参考链接">参考链接</h2>
+<p>https://blog.csdn.net/wheat_ground/article/details/78561750</p>
+<p>https://blog.51cto.com/jinchuang/1947052</p>
+<p>http://www.flynoc.com/help/helpview_390.html</p>
+<p>https://blog.51cto.com/2333657/2157070?source=dra</p>
+<p>https://blog.csdn.net/weixin_42537861/article/details/81195070</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[使用ipvs模式安装kubernetes]]></title>
+        <id>https://p.guipulp.top//post/2019082701</id>
+        <link href="https://p.guipulp.top//post/2019082701">
+        </link>
+        <updated>2019-08-27T07:11:33.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="安装ipvs">安装ipvs</h3>
+<pre><code>cat &gt; /etc/sysconfig/modules/ipvs.modules &lt;&lt;EOF
+#!/bin/bash
+modprobe -- ip_vs
+modprobe -- ip_vs_rr
+modprobe -- ip_vs_wrr
+modprobe -- ip_vs_sh
+modprobe -- nf_conntrack_ipv4
+EOF
+$ chmod 755 /etc/sysconfig/modules/ipvs.modules &amp;&amp; bash /etc/sysconfig/modules/ipvs.modules &amp;&amp; lsmod | grep -e ip_vs -e nf_conntrack_ipv4
+
+</code></pre>
+<h3 id="安装ipset和ipvsadm">安装ipset和ipvsadm</h3>
+<pre><code>yum install ipset
+yum install ipvsadm
+</code></pre>
+<h3 id="安装时间服务">安装时间服务</h3>
+<pre><code>$ yum install chrony -y
+$ systemctl enable chronyd
+$ systemctl start chronyd
+$ chronyc sources
+210 Number of sources = 4
+MS Name/IP address         Stratum Poll Reach LastRx Last sample
+===============================================================================
+^+ sv1.ggsrv.de                  2   6    17    32   -823us[-1128us] +/-   98ms
+^- montreal.ca.logiplex.net      2   6    17    32    -17ms[  -17ms] +/-  179ms
+^- ntp6.flashdance.cx            2   6    17    32    -32ms[  -32ms] +/-  161ms
+^* 119.28.183.184                2   6    33    32   +661us[ +357us] +/-   38ms
+$ date
+Tue Aug 27 09:28:41 CST 2019
+</code></pre>
+<h3 id="安装ipvs模式的kubernetes集群模板">安装ipvs模式的kubernetes集群模板</h3>
+<pre><code>apiVersion: kubeadm.k8s.io/v1beta2
+bootstrapTokens:
+- groups:
+  - system:bootstrappers:kubeadm:default-node-token
+  token: abcdef.0123456789abcdef
+  ttl: 24h0m0s
+  usages:
+  - signing
+  - authentication
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: 10.151.30.11  # apiserver 节点内网IP
+  bindPort: 6443
+nodeRegistration:
+  criSocket: /var/run/dockershim.sock
+  name: ydzs-master
+  taints:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+---
+apiServer:
+  timeoutForControlPlane: 4m0s
+apiVersion: kubeadm.k8s.io/v1beta2
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+controllerManager: {}
+dns:
+  type: CoreDNS  # dns类型
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+imageRepository: gcr.azk8s.cn/google_containers
+kind: ClusterConfiguration
+kubernetesVersion: v1.15.3  # k8s版本
+networking:
+  dnsDomain: cluster.local
+  podSubnet: 192.168.0.0/16
+  serviceSubnet: 10.96.0.0/12
+scheduler: {}
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: ipvs  # kube-proxy 模式
+</code></pre>
+<h3 id="参考地址">参考地址</h3>
+<p>https://mp.weixin.qq.com/s/vnriX2bTtnkv8i2UpLeNnA</p>
+<p>https://www.qikqiak.com/post/use-kubeadm-install-kubernetes-1.15.3/</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[kubernetes的国内软件源配置]]></title>
+        <id>https://p.guipulp.top//post/2019080801</id>
+        <link href="https://p.guipulp.top//post/2019080801">
+        </link>
+        <updated>2019-08-08T06:40:52.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="ubuntu-软件源配置">ubuntu 软件源配置</h2>
+<pre><code>add-apt-repository &quot;deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main&quot;
+add-apt-repository &quot;deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable&quot;
+wget -q https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg -O- | sudo apt-key add -
+curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
+apt-get update
+apt-get -y install apt-transport-https ca-certificates curl software-properties-common
+apt-get -y install docker-ce kubeadm kubectl kubelet
+systemctl enable docker kubelet &amp;&amp; systemctl start docker
+</code></pre>
+<h2 id="centos-软件源配置">centos 软件源配置</h2>
+<pre><code># 切换到配置目录
+cd /etc/yum.repos.d/
+# 配置docker-ce阿里源
+wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+# 配置kubernetes阿里源
+cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[centos快速创建kubernetes]]></title>
+        <id>https://p.guipulp.top//post/2019090701</id>
+        <link href="https://p.guipulp.top//post/2019090701">
+        </link>
+        <updated>2019-08-07T08:22:17.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="前置条件">前置条件</h2>
+<ul>
+<li>系统要求:64位centos7.6</li>
+<li>关闭防火墙和selinux</li>
+<li>关闭操作系统swap分区(使用k8s不推荐打开)</li>
+</ul>
+<h2 id="环境说明">环境说明</h2>
+<p>本手册安装方式适用于单节点测试部署</p>
+<h2 id="准备工作每个节点都需要执行">准备工作(每个节点都需要执行)</h2>
+<h3 id="docker和kubernetes软件源配置">Docker和kubernetes软件源配置</h3>
+<pre><code># 切换到配置目录
+cd /etc/yum.repos.d/
+# 配置docker-ce阿里源
+wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+# 配置kubernetes阿里源
+cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
+</code></pre>
+<h3 id="配置内核相关参数">配置内核相关参数</h3>
+<pre><code>cat &lt;&lt;EOF &gt;  /etc/sysctl.d/ceph.conf
+net.ipv4.ip_forward = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sysctl --system
+</code></pre>
+<h3 id="安装相应软件包">安装相应软件包</h3>
+<pre><code># 安装kubeadm kubelet kubectl
+yum install docker-ce kubeadm kubectl kubelet -y
+
+# 开机启动kubelet和docker
+systemctl enable docker kubelet
+
+# 启动docker
+systemctl start docker
+</code></pre>
+<h2 id="部署">部署</h2>
+<h3 id="安装k8s">安装k8s</h3>
+<pre><code># 30.4.241.19 需要更新为当前部署节点ip地址
+kubeadm init --apiserver-advertise-address 30.4.241.19 --pod-network-cidr=10.244.0.0/16 --image-repository=registry.cn-hangzhou.aliyuncs.com/google_containers --ignore-preflight-errors=Swap
+
+# 初始化完成后按提示执行以下命令
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+</code></pre>
+<h3 id="安装flannel">安装flannel</h3>
+<pre><code>kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+</code></pre>
+<h3 id="检查是否安装完成">检查是否安装完成</h3>
+<pre><code>root@k8s4:~# kubectl  get nodes
+NAME   STATUS   ROLES    AGE   VERSION
+k8s4   Ready    master   20m   v1.14.2
+root@k8s4:~# kubectl  get nodes
+NAME   STATUS   ROLES    AGE   VERSION
+k8s4   Ready    master   20m   v1.14.2
+root@k8s4:~# kubectl  get pods --all-namespaces
+NAMESPACE     NAME                           READY   STATUS    RESTARTS   AGE
+kube-system   coredns-8cc96f57d-cfr4j        1/1     Running   0          20m
+kube-system   coredns-8cc96f57d-stcz6        1/1     Running   0          20m
+kube-system   etcd-k8s4                      1/1     Running   0          19m
+kube-system   kube-apiserver-k8s4            1/1     Running   0          19m
+kube-system   kube-controller-manager-k8s4   1/1     Running   0          19m
+kube-system   kube-flannel-ds-amd64-k4q6q    1/1     Running   0          50s
+kube-system   kube-proxy-lhjsf               1/1     Running   0          20m
+kube-system   kube-scheduler-k8s4            1/1     Running   0          19m
+</code></pre>
+<h3 id="测试是否能正常使用">测试是否能正常使用</h3>
+<pre><code># 取消节点污点,使master能被正常调度, k8s4请更改为你自有集群的nodename
+kubectl  taint node k8s4 node-role.kubernetes.io/master:NoSchedule-
+
+# 创建nginx deploy
+root@k8s4:~# kubectl  create deploy nginx --image nginx
+deployment.apps/nginx created
+
+root@k8s4:~# kubectl  get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+nginx-65f88748fd-9sk6z   1/1     Running   0          2m44s
+
+# 暴露nginx到集群外
+root@k8s4:~# kubectl  expose deploy nginx --port=80 --type=NodePort
+service/nginx exposed
+root@k8s4:~# kubectl  get svc
+NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+kubernetes   ClusterIP   10.96.0.1        &lt;none&gt;        443/TCP        25m
+nginx        NodePort    10.104.109.234   &lt;none&gt;        80:32129/TCP   5s
+root@k8s4:~# curl 127.0.0.1:32129
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Welcome to nginx!&lt;/title&gt;
+&lt;style&gt;
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h1&gt;Welcome to nginx!&lt;/h1&gt;
+&lt;p&gt;If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.&lt;/p&gt;
+
+&lt;p&gt;For online documentation and support please refer to
+&lt;a href=&quot;http://nginx.org/&quot;&gt;nginx.org&lt;/a&gt;.&lt;br/&gt;
+Commercial support is available at
+&lt;a href=&quot;http://nginx.com/&quot;&gt;nginx.com&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Thank you for using nginx.&lt;/em&gt;&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[kubernetes NVIDIA GPU 实践]]></title>
+        <id>https://p.guipulp.top//post/201986</id>
+        <link href="https://p.guipulp.top//post/201986">
+        </link>
+        <updated>2019-08-06T03:36:20.000Z</updated>
+        <content type="html"><![CDATA[<p>查看此文档时候，内容可能已经过时，但大体过程不会有什么变化，建议按照官网说明进行安装。</p>
+<h3 id="前置条件">前置条件</h3>
+<ol>
+<li>GNU/Linux x86_64 with kernel version &gt; 3.10</li>
+<li>Docker &gt;= 1.12</li>
+<li>NVIDIA GPU with Architecture &gt; Fermi (2.1)</li>
+<li><a href="http://www.nvidia.com/object/unix.html">NVIDIA drivers</a> ~= 361.93 (untested on older versions)</li>
+</ol>
+<h3 id="安装nvidia-docker">安装nvidia-docker</h3>
+<h4 id="ubuntu-16041804-debian-jessiestretch">Ubuntu 16.04/18.04, Debian Jessie/Stretch</h4>
+<pre><code># Add the package repositories
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+
+sudo apt-get update &amp;&amp; sudo apt-get install -y nvidia-container-toolkit
+sudo systemctl restart docker
+</code></pre>
+<h4 id="centos-7-docker-ce-rhel-7475-docker-ce-amazon-linux-12">CentOS 7 (docker-ce), RHEL 7.4/7.5 (docker-ce), Amazon Linux 1/2</h4>
+<pre><code>distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.repo | sudo tee /etc/yum.repos.d/nvidia-docker.repo
+
+sudo yum install -y nvidia-container-toolkit
+sudo systemctl restart docker
+</code></pre>
+<h4 id="设置nvidia-docker-runtime">设置nvidia-docker runtime</h4>
+<pre><code># vim /etc/docker/daemon.json
+{
+    &quot;default-runtime&quot;: &quot;nvidia&quot;,
+    &quot;runtimes&quot;: {
+        &quot;nvidia&quot;: {
+            &quot;path&quot;: &quot;/usr/bin/nvidia-container-runtime&quot;,
+            &quot;runtimeArgs&quot;: []
+        }
+    }
+}
+
+# restart docker
+sudo systemctl restart docker
+sudo systemctl restart kubelet
+</code></pre>
+<h4 id="测试nvidia-docker">测试nvidia-docker</h4>
+<pre><code>#### Test nvidia-smi with the latest official CUDA image
+$ docker run --gpus all nvidia/cuda:9.0-base nvidia-smi
+
+# Start a GPU enabled container on two GPUs
+$ docker run --gpus 2 nvidia/cuda:9.0-base nvidia-smi
+
+# Starting a GPU enabled container on specific GPUs
+$ docker run --gpus '&quot;device=1,2&quot;' nvidia/cuda:9.0-base nvidia-smi
+$ docker run --gpus '&quot;device=UUID-ABCDEF,1'&quot; nvidia/cuda:9.0-base nvidia-smi
+
+# Specifying a capability (graphics, compute, ...) for my container
+# Note this is rarely if ever used this way
+$ docker run --gpus all,capabilities=utility nvidia/cuda:9.0-base nvidia-smi
+</code></pre>
+<h3 id="安装kubernetes-插件">安装kubernetes 插件</h3>
+<pre><code>kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/1.0.0-beta/nvidia-device-plugin.yml
+</code></pre>
+<h3 id="测试运行gpu">测试运行GPU</h3>
+<pre><code># 适用于多GPU核心的带企业显卡的集群测试
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-pod
+spec:
+  containers:
+    - name: cuda-container
+      image: nvidia/cuda:9.0-devel
+      resources:
+        limits:
+          nvidia.com/gpu: 2 # requesting 2 GPUs
+    - name: digits-container
+      image: nvidia/digits:6.0
+      resources:
+        limits:
+          nvidia.com/gpu: 2 # requesting 2 GPUs
+</code></pre>
+<pre><code># 适用于个人GPU测试
+kubectl  create job nvjob --image=nvidia/cuda:9.0-base -- nvidia-smi
+</code></pre>
+<h3 id="参考资料">参考资料</h3>
+<p><a href="https://github.com/NVIDIA/nvidia-docker">https://github.com/NVIDIA/nvidia-docker</a></p>
+<p><a href="https://github.com/NVIDIA/k8s-device-plugin">https://github.com/NVIDIA/k8s-device-plugin</a></p>
+<p><a href="https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/">https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/</a></p>
+<p><a href="https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0)#prerequisites">https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0)#prerequisites</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[使用SRS自建直播服务]]></title>
+        <id>https://p.guipulp.top//post/zi-jian-zhi-bo-fu-wu</id>
+        <link href="https://p.guipulp.top//post/zi-jian-zhi-bo-fu-wu">
+        </link>
+        <updated>2019-08-02T11:16:55.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="直播平台搭建分享">直播平台搭建分享</h2>
+<pre><code># 分享链接
+https://juejin.im/entry/599634d2f265da248a7a66a7
+</code></pre>
+<h2 id="直播服务">直播服务</h2>
+<ul>
+<li><a href="https://github.com/arut/nginx-rtmp-module">nginx-rtmp</a></li>
+<li><a href="http://www.ossrs.net/srs.release/releases/">srs</a></li>
+</ul>
+<p>最终选择srs的原因在于其功能丰富，兼容性更好，且支持多种视频格式，支持多级级联，拥有丰富的接口。具体srs和nginx对比如下：</p>
+<p><a href="https://github.com/ossrs/srs/tree/2.0release#compare">https://github.com/ossrs/srs/tree/2.0release#compare</a></p>
+<p>srs架构：</p>
+<p><a href="https://github.com/ossrs/srs/wiki/v2_CN_Architecture">https://github.com/ossrs/srs/wiki/v2_CN_Architecture</a></p>
+<h2 id="srs">srs</h2>
+<h3 id="srs部署">SRS部署</h3>
+<pre><code># https://github.com/ossrs/srs/wiki/v2_CN_Home
+# http://blog.itpub.net/31559758/viewspace-2220944/
+# https://blog.csdn.net/ai2000ai/article/details/72769961
+# srs 可以分角色进行部署具体查看官方文档，推荐使用的客户端为V2版本，V3暂未进入稳定版
+# 系统建议采用centos6
+
+[root@lab1 ~]# wget https://codeload.github.com/ossrs/srs/tar.gz/v2.0-r6
+[root@lab1 ~]# tar xvf v2.0-r6
+[root@lab1 ~]# cd srs-2.0-r6/trunk/
+[root@lab1 trunk]# ./configure &amp;&amp; make
+[root@lab1 trunk]# ./objs/srs -c conf/http.flv.live.conf （支持输出flv和rtmp）
+
+# 推流地址
+rtmp://172.16.10.101:8080/live/demo
+# 播放地址
+flv: http://172.16.10.101:8080/live/demo.flv
+rtmp: rtmp://172.16.10.101:8080/live/demo
+</code></pre>
+<h3 id="srs热更新">SRS热更新</h3>
+<pre><code>Reload的方法为：killall -1 srs
+使用启动脚本：/etc/init.d/srs reload
+</code></pre>
+<h2 id="nginx-rtmp">nginx-rtmp</h2>
+<h3 id="nginx-rtmp部署">nginx-rtmp部署</h3>
+<pre><code># 部署参考链接
+https://www.cnblogs.com/monjeo/p/8492357.html
+https://wiki.blanc.site/archives/3f439512.html
+https://www.cnblogs.com/Leo_wl/p/5654819.html
+https://www.helplib.com/GitHub/article_145412
+https://smartshitter.com/musings/2017/12/nginx-rtmp-streaming-with-simple-authentication/
+</code></pre>
+<h2 id="直播搭建过程中遇见的问题">直播搭建过程中遇见的问题</h2>
+<pre><code># GOP（关键帧）设置过长导致直播延迟过大或者直播黑屏
+http://blog.itpub.net/31559352/viewspace-2564571/
+https://blog.csdn.net/wishfly/article/details/53079303
+https://blog.csdn.net/lcalqf/article/details/55258929
+https://www.cnblogs.com/suannaibuding/p/6366978.html
+https://www.jianshu.com/p/3a84d0c8f466
+http://blog.chinaunix.net/uid-26000296-id-4932817.html
+https://www.jianshu.com/p/9a0bbe1658eb
+http://www.voidcn.com/article/p-naiixvpv-bnw.html  (解释gop和解决办法)
+
+# 直播出现客户端中断问题
+buffer被清空，需要检查源流
+
+# 直播无法播放出http流检查
+检查流文件是否生成，流路径为 objs/nginx/html/live/
+</code></pre>
+<h2 id="直播延迟和推流设置">直播延迟和推流设置</h2>
+<pre><code>https://developer.qiniu.com/pili/kb/1722/server-live-on-delay
+https://cloud.tencent.com/document/product/267/32726
+</code></pre>
+<h2 id="更优秀的直播方案">更优秀的直播方案</h2>
+<pre><code># SD-RTN
+https://blog.csdn.net/wolf09311/article/details/52680170
+</code></pre>
+<h2 id="ffmpeg推流方式">ffmpeg推流方式</h2>
+<pre><code>docker run --name  test1 --restart=always -d -v $(pwd):/temp/ jrottenberg/ffmpeg -re  -stream_loop -1 -i /temp/war.mp4 -vcodec libx264 -acodec libfdk_aac \
+      -metadata service_name=&quot;Channel 1&quot; -metadata service_provider=&quot;PBS&quot; \
+      -b 1.5M\
+      -f flv rtmp://172.16.10.101:1935/live/demo
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[kubernetes使用PodPreset特性预设整个集群]]></title>
+        <id>https://p.guipulp.top//post/t-I_dB2CB</id>
+        <link href="https://p.guipulp.top//post/t-I_dB2CB">
+        </link>
+        <updated>2019-06-24T07:25:54.000Z</updated>
+        <summary type="html"><![CDATA[<p>有的时候我们需要根据情况,预先配置集群里面的容器的某些属性,则可以通过podpreset配置实现.</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>有的时候我们需要根据情况,预先配置集群里面的容器的某些属性,则可以通过podpreset配置实现.</p>
+<!-- more -->
+<h3 id="配置apiserver">配置apiserver</h3>
+<blockquote>
+<p>通过标签选择器完成对特定pod的部分属性预设</p>
+</blockquote>
+<pre><code># 开启settings.k8s.io/v1alpha1api
+- --runtime-config=settings.k8s.io/v1alpha1=true
+# 开启adminssion controller
+- --enable-admission-plugins=PodPreset
+# 可配置选项 Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,Validating
+</code></pre>
+<h3 id="配置测试yaml">配置测试yaml</h3>
+<pre><code>root@ubuntu4:~/podpreset# cat preset-time.yaml
+kind: PodPreset
+apiVersion: settings.k8s.io/v1alpha1
+metadata:
+  name: timezone
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  volumeMounts:
+    - name: host-time
+      mountPath: /etc/localtime
+  volumes:
+    - name: host-time
+      hostPath:
+        path: /etc/localtime
+
+</code></pre>
+<pre><code>root@ubuntu4:~/podpreset# kubectl  create deploy nginx --image nginx -o yaml --dry-run
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: nginx
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources: {}
+status: {}
+
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[kubernetes配置外网dns]]></title>
+        <id>https://p.guipulp.top//post/9yPSD7pfq</id>
+        <link href="https://p.guipulp.top//post/9yPSD7pfq">
+        </link>
+        <updated>2019-06-21T02:36:34.000Z</updated>
+        <summary type="html"><![CDATA[<p>通过更新coredns configmap，设置upstream字段实现指定上游解析服务器</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>通过更新coredns configmap，设置upstream字段实现指定上游解析服务器</p>
+<!-- more -->
+<h1 id="编辑coredns-configmap">编辑coredns configmap</h1>
+<pre><code>[root@k8s-node1 ~]# cat setdns.yaml 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+  labels:
+      addonmanager.kubernetes.io/mode: EnsureExists
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+            pods insecure
+            upstream 114.114.114.114
+            fallthrough in-addr.arpa ip6.arpa
+        }
+        prometheus :9153
+        proxy . /etc/resolv.conf
+        cache 30
+        reload
+    }
+</code></pre>
+<h1 id="应用config-map">应用config map</h1>
+<pre><code> kubectl apply -f setdns.yaml
+</code></pre>
+<h1 id="检查外网dns解析">检查外网dns解析</h1>
+<pre><code>
+[root@k8s-node1 ~]# kubectl run -it --rm --restart=Never --image=infoblox/dnstools:latest dnstools
+If you don't see a command prompt, try pressing enter.
+dnstools# host www.baidu.com
+www.baidu.com is an alias for www.a.shifen.com.
+www.a.shifen.com has address 220.181.111.188
+www.a.shifen.com has address 220.181.112.244
+
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[kubeadm搭建v1.10.3kubernetes集群]]></title>
+        <id>https://p.guipulp.top//post/jZoeyPf8e</id>
+        <link href="https://p.guipulp.top//post/jZoeyPf8e">
+        </link>
+        <updated>2019-06-21T02:33:01.000Z</updated>
+        <summary type="html"><![CDATA[<p>本文使用kubeadm和容器化etcd安装kubernetes集群用于poc</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本文使用kubeadm和容器化etcd安装kubernetes集群用于poc</p>
+<!-- more -->
+<blockquote>
+<p>lab 说明：<br>
+1.此lab手册不需要越过长城<br>
+2.100.64.16.176 为master地址，配置时候需要替换该地址为新环境的master地址<br>
+3.lab环境为单节点master环境<br>
+4.lab环境etcd访问方式为http方式</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>clusterinfo</th>
+<th>ip</th>
+<th>package</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>k8s-node1(master)</td>
+<td>100.64.16.176</td>
+<td>kubeadm, etcd, kubelet, kubectl, docker</td>
+</tr>
+<tr>
+<td>k8s-node2(node)</td>
+<td>100.64.16.177</td>
+<td>kubeadm, kubelet, kubectl, docker</td>
+</tr>
+<tr>
+<td>k8s-node3(node)</td>
+<td>100.64.16.178</td>
+<td>kubeadm, kubelet, kubectl, docker</td>
+</tr>
+</tbody>
+</table>
+<h3 id="环境准备">环境准备</h3>
+<h4 id="注意事项">注意事项</h4>
+<p>该部分内容需要在所有节点执行</p>
+<h4 id="关闭防火墙">关闭防火墙</h4>
+<pre><code>systemctl stop firewalld &amp;&amp; systemctl disable firewalld
+</code></pre>
+<h4 id="关闭交换">关闭交换</h4>
+<pre><code>swapoff -a
+</code></pre>
+<h4 id="设置系统路由参数">设置系统路由参数</h4>
+<p>系统路由参数,防止kubeadm报路由警告</p>
+<pre><code>cat &lt;&lt;EOF &gt;  /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+vm.swappiness=0
+EOF
+sysctl --system
+</code></pre>
+<h4 id="关闭selinux">关闭selinux</h4>
+<pre><code>sed -i 's/SELINUX=permissive/SELINUX=disabled/' /etc/sysconfig/selinux
+setenforce 0
+</code></pre>
+<h4 id="安装docker">安装docker</h4>
+<ol>
+<li>安装</li>
+</ol>
+<pre><code>yum install -y docker
+systemctl enable docker
+systemctl start docker
+</code></pre>
+<ol start="2">
+<li>配置docker daemon(不需要加速器可省略)</li>
+</ol>
+<pre><code>vim /etc/docker/daemon.json 
+{
+  &quot;registry-mirrors&quot;: [&quot;https://v5d7kh0f.mirror.aliyuncs.com&quot;]
+}
+</code></pre>
+<ol start="3">
+<li>修改docker启动文件</li>
+</ol>
+<pre><code>vim /usr/lib/systemd/system/docker.service
+# 添加下面行
+ExecStartPost=/sbin/iptables -P FORWARD ACCEPT
+</code></pre>
+<ol start="4">
+<li>重新加载docker服务</li>
+</ol>
+<pre><code>systemctl daemon-reload
+service docker restart
+</code></pre>
+<h3 id="安装k8s">安装k8s</h3>
+<h4 id="软件包准备">软件包准备</h4>
+<p><strong>注意：该部分内容所有节点都需要执行</strong></p>
+<ol>
+<li>上传软件包到所有节点</li>
+</ol>
+<p><a href="https://pan.baidu.com/s/1LPDoy5QHan77QKj8s8nz1w">软件包下载地址</a></p>
+<blockquote>
+<p>若提示资源不存在，请复制浏览器里的地址，重新访问。</p>
+</blockquote>
+<pre><code># 所有节点解压并安装软件包
+tar xf k8s-*.tgz &amp;&amp; cd k8s-* &amp;&amp; yum localinstall -y *.rpm
+</code></pre>
+<ol start="2">
+<li>配置所有节点的kubelet</li>
+</ol>
+<pre><code># 修改/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+# 添加如下配置 
+Environment=&quot;KUBELET_EXTRA_ARGS=--pod-infra-container-image=registry.cn-shanghai.aliyuncs.com/gcr-k8s/pause-amd64:3.0&quot;
+</code></pre>
+<ol start="3">
+<li>所有节点重新载入配置</li>
+</ol>
+<pre><code>systemctl daemon-reload
+systemctl enable kubelet
+</code></pre>
+<h4 id="master安装">master安装</h4>
+<h5 id="安装etcd">安装etcd</h5>
+<ol>
+<li>配置启动etcd</li>
+</ol>
+<pre><code>docker stop etcd &amp;&amp; docker rm etcd
+rm -rf /data/etcd
+mkdir -p /data/etcd
+docker run -d \
+--restart always \
+-v /etc/etcd/ssl/certs:/etc/ssl/certs \
+-v /data/etcd:/var/lib/etcd \
+-p 2380:2380 \
+-p 2379:2379 \
+--name etcd \
+registry.cn-hangzhou.aliyuncs.com/google_containers/etcd-amd64:3.1.12 \
+etcd --name=etcd0 \
+--advertise-client-urls=http://100.64.16.176:2379 \
+--listen-client-urls=http://0.0.0.0:2379 \
+--initial-advertise-peer-urls=http://100.64.16.176:2380 \
+--listen-peer-urls=http://0.0.0.0:2380 \
+--initial-cluster-token=9477af68bbee1b9ae037d6fd9e7efefd \
+--initial-cluster=etcd0=http://100.64.16.176:2380 \
+--initial-cluster-state=new \
+--auto-tls \
+--peer-auto-tls \
+--data-dir=/var/lib/etcd
+</code></pre>
+<ol start="2">
+<li>验证etcd</li>
+</ol>
+<pre><code>docker exec -ti etcd ash
+etcdctl member list
+etcdctl cluster-health
+exit
+</code></pre>
+<h5 id="生成kubeadmin文件">生成kubeadmin文件</h5>
+<pre><code># 生成token
+# 保留token后面还要使用
+token=$(kubeadm token generate)
+echo $token
+
+# 生成配置文件
+# advertiseAddress 配置为master地址
+cat &gt;kubeadm-master.config&lt;&lt;EOF
+apiVersion: kubeadm.k8s.io/v1alpha1
+kind: MasterConfiguration
+kubernetesVersion: v1.10.3
+imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
+
+api:
+  advertiseAddress: 100.64.16.176
+
+apiServerExtraArgs:
+  endpoint-reconciler-type: lease
+
+controllerManagerExtraArgs:
+  node-monitor-grace-period: 10s
+  pod-eviction-timeout: 10s
+
+networking:
+  podSubnet: 10.244.0.0/16
+
+etcd:
+  endpoints:
+  - &quot;http://100.64.16.176:2379&quot;
+
+apiServerCertSANs:
+- &quot;node1&quot;
+- &quot;100.64.16.176&quot;
+- &quot;127.0.0.1&quot;
+
+token: $token
+tokenTTL: &quot;0&quot;
+
+featureGates:
+  CoreDNS: true
+EOF
+</code></pre>
+<h5 id="初始化master节点">初始化master节点</h5>
+<pre><code>kubeadm init --config kubeadm-master.config
+systemctl enable kubelet
+</code></pre>
+<h5 id="配置kubectl">配置kubectl</h5>
+<pre><code>mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+</code></pre>
+<h5 id="安装网络插件">安装网络插件</h5>
+<ol>
+<li>下载配置</li>
+</ol>
+<pre><code>mkdir flannel &amp;&amp; cd flannel
+wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+</code></pre>
+<ol start="2">
+<li>修改配置</li>
+</ol>
+<pre><code># 此处的ip配置要与上面kubeadm的pod-network一致
+  net-conf.json: |
+    {
+      &quot;Network&quot;: &quot;10.244.0.0/16&quot;,
+      &quot;Backend&quot;: {
+        &quot;Type&quot;: &quot;vxlan&quot;
+      }
+    }
+
+# 修改镜像
+image: registry.cn-shanghai.aliyuncs.com/gcr-k8s/flannel:v0.10.0-amd64
+</code></pre>
+<ol start="3">
+<li>启动</li>
+</ol>
+<pre><code>kubectl apply -f kube-flannel.yml
+</code></pre>
+<ol start="4">
+<li>检查master</li>
+</ol>
+<pre><code>kubectl get pods -n kube-system
+kubectl get svc -n kube-system
+</code></pre>
+<h4 id="node节点安装">node节点安装</h4>
+<ol>
+<li>配置node kubelet开机启动</li>
+</ol>
+<pre><code>systemctl enable kubelet
+systemctl start kubelet
+</code></pre>
+<ol start="2">
+<li>初始化node</li>
+</ol>
+<pre><code># 这个命令是之前初始化master完成时，输出的命令
+kubeadm join 100.64.16.176:6443 --token i2ha18.euygiv9g922b5fkf --discovery-token-ca-cert-hash sha256:1c8fe595a95e2daed035ba89f9604ef6ad5fb0d589b89adbff80ea8c09db567e
+</code></pre>
+<ol start="3">
+<li>在master上检查集群状态</li>
+</ol>
+<pre><code>kubectl get nodes
+</code></pre>
+<h3 id="k8s集群检查">k8s集群检查</h3>
+<pre><code>kubectl run nginx --replicas=2 --labels=&quot;run=load-balancer-example&quot; --image=nginx  --port=80
+kubectl get pods --all-namespaces -o wide 
+</code></pre>
+<p><a href="https://asciinema.org/a/bnyI5J6IcupDM5SV2eglMtJKu"><img src="https://asciinema.org/a/bnyI5J6IcupDM5SV2eglMtJKu.png" alt="asciicast"></a></p>
+<h3 id="总结">总结</h3>
+<p>经过这篇博客, 我们成功部署了一个3个节点的kubernetes 1.10.3的集群, 但是此时集群DashBoard, 监控都还没完成, 在接下来的<a href="https://p.fengjingblog.top/2018/06/11/kubernetes-Addons%E5%AE%89%E8%A3%85/">kubernetes Addons安装</a>中将进行这些组件的部署。</p>
+<h3 id="排错">排错</h3>
+<p>如果出现如下错误：</p>
+<pre><code>Jun 14 12:33:30 k8s-node1 kubelet: E0614 12:33:30.265135   12998 summary.go:102] Failed to get system container stats for &quot;/system.slice/kubelet.service&quot;: failed to get cgroup stats for &quot;/system.slice/kubelet.service&quot;: failed to get container info for &quot;/system.slice/kubelet.service&quot;: unknown container &quot;/system.slice/kubelet.service&quot;
+Jun 14 12:33:30 k8s-node1 etcd: rejected connection from &quot;100.64.16.176:54174&quot; (error &quot;EOF&quot;, ServerName &quot;&quot;)
+</code></pre>
+<ul>
+<li>针对etcd的报错可以尝试降低etcd的版本，本人使用<code>https://github.com/coreos/etcd/releases/download/v3.1.15/etcd-v3.1.15-linux-amd64.tar.gz</code>该版本的etcd后解决。</li>
+<li>针对kubelet的错误可以在<code>/etc/systemd/system/kubelet.service.d/10-kubeadm.conf</code> 文件最后一行末尾追加<code>--runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice</code>,完整文档如下：</li>
+</ul>
+<pre><code>[Service]
+Environment=&quot;KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf&quot;
+Environment=&quot;KUBELET_SYSTEM_PODS_ARGS=--pod-manifest-path=/etc/kubernetes/manifests --allow-privileged=true&quot;
+Environment=&quot;KUBELET_NETWORK_ARGS=--network-plugin=cni --cni-conf-dir=/etc/cni/net.d --cni-bin-dir=/opt/cni/bin&quot;
+Environment=&quot;KUBELET_DNS_ARGS=--cluster-dns=10.96.0.10 --cluster-domain=cluster.local&quot;
+Environment=&quot;KUBELET_AUTHZ_ARGS=--authorization-mode=Webhook --client-ca-file=/etc/kubernetes/pki/ca.crt&quot;
+Environment=&quot;KUBELET_CADVISOR_ARGS=--cadvisor-port=0&quot;
+Environment=&quot;KUBELET_CGROUP_ARGS=--cgroup-driver=systemd&quot;
+Environment=&quot;KUBELET_CERTIFICATE_ARGS=--rotate-certificates=true --cert-dir=/var/lib/kubelet/pki&quot;
+Environment=&quot;KUBELET_EXTRA_ARGS=--pod-infra-container-image=registry.cn-shanghai.aliyuncs.com/gcr-k8s/pause-amd64:3.0&quot;
+ExecStart=
+ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_AUTHZ_ARGS $KUBELET_CADVISOR_ARGS $KUBELET_CGROUP_ARGS $KUBELET_CERTIFICATE_ARGS $KUBELET_EXTRA_ARGS --runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Centos 7 install nfs]]></title>
+        <id>https://p.guipulp.top//post/vo3IdA9w1</id>
+        <link href="https://p.guipulp.top//post/vo3IdA9w1">
+        </link>
+        <updated>2019-06-21T02:32:06.000Z</updated>
+        <summary type="html"><![CDATA[<p>使用centos7 安装NFS用于环境POC</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>使用centos7 安装NFS用于环境POC</p>
+<!-- more -->
+<h1 id="安装nfs和rpcbind">安装nfs和rpcbind</h1>
+<p><strong>lab环境仅适用于测试</strong><br>
+<strong>lab环境需要关闭防火墙</strong></p>
+<pre><code>yum -y install nfs-utils ,rpcbind
+</code></pre>
+<h1 id="启动nfs和rpcbind">启动nfs和rpcbind</h1>
+<pre><code># nfs需要向rpc注册，rpc一旦重启，注册的文件都丢失，向他注册的服务都需要重启，注意启动顺序
+systemctl start rpcbind.service &amp;&amp; systemctl start nfs.service
+systemctl enable  rpcbind.service &amp;&amp; systemctl enable nfs.service
+</code></pre>
+<h1 id="配置nfs">配置nfs</h1>
+<blockquote>
+<p>配置文件/etc/exports</p>
+</blockquote>
+<pre><code>/nfsdata  *(rw,sync,no_root_squash)
+systemctl restart rpcbind.service &amp;&amp; systemctl restart nfs.service
+</code></pre>
+<ul>
+<li>nfsdata 为存放数据的目录,需要先创建</li>
+<li>'*':任何人</li>
+<li>rw:读写权限</li>
+<li>sync:资料会先暂存于内存中，而非直接写入硬盘。</li>
+<li>no_root_squash:当登录NFS主机使用共享目录的使用者是root时，其权限将被转换成为匿名使用者，通常它的UID与GID都会变成nobody身份。</li>
+</ul>
 ]]></content>
     </entry>
 </feed>

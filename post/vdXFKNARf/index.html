@@ -1,0 +1,460 @@
+
+<html>
+  <head lang="zh">
+        <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+        <meta content="yes" name="apple-mobile-web-app-capable"/>
+        <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+        <meta content="telephone=no" name="format-detection"/>
+        <meta name="renderer" content="webkit">
+    <title>全手动生成服务证书 | PeterPan</title>
+<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://p.guipulp.top//media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://p.guipulp.top//media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+  </head>
+
+  <body>
+     <div class="header">
+      <div class="logo_title">
+		  
+        <div class="title animated fadeInDown"><img src="https://p.guipulp.top//images/avatar.png?v=1568383535354"/>
+
+          <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
+
+          </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="https://p.guipulp.top//post/about/" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="https://p.guipulp.top//post/about/" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+
+<div class="content">
+
+
+
+
+
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>全手动生成服务证书</a>
+
+
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-06-21</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> Views</span>
+
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+	<a href="https://p.guipulp.top//tag/uhVzlcSkHf" class="tag">ssl</a>
+
+	<a href="https://p.guipulp.top//tag/NWZdNyt2H6" class="tag">证书</a>
+
+
+</span>
+
+
+    </div>
+
+  </div>
+
+
+
+
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><p>使用cfssl生成服务证书,用于kubernetes搭建和etcd集群搭建</p>
+<!-- more -->
+<h1 id="证书生成步骤">证书生成步骤</h1>
+<p>主要步骤如下：</p>
+<ul>
+<li>安装证书工具</li>
+<li>创建签名请求文件</li>
+<li>生成相应的ca证书和对应服务证书</li>
+</ul>
+<blockquote>
+<p>下面以为harbor服务为例，生成harbor服务证书</p>
+</blockquote>
+<h1 id="安装证书工具">安装证书工具</h1>
+<pre><code>wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+chmod +x cfssl_linux-amd64
+mv cfssl_linux-amd64 /usr/local/bin/cfssl
+
+wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+chmod +x cfssljson_linux-amd64
+mv cfssljson_linux-amd64 /usr/local/bin/cfssljson
+
+wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64
+chmod +x cfssl-certinfo_linux-amd64
+mv cfssl-certinfo_linux-amd64 /usr/local/bin/cfssl-certinfo
+
+</code></pre>
+<h1 id="创建签名请求文件">创建签名请求文件</h1>
+<ol>
+<li>生成ca配置文件</li>
+</ol>
+<pre><code>mkdir /root/ssl &amp;&amp; cd /root/ssl
+
+cat &gt; ca-config.json &lt;&lt;EOF
+{
+  &quot;signing&quot;: {
+    &quot;default&quot;: {
+      &quot;expiry&quot;: &quot;87600h&quot;
+    },
+    &quot;profiles&quot;: {
+      &quot;harbor&quot;: {
+        &quot;usages&quot;: [
+            &quot;signing&quot;,
+            &quot;key encipherment&quot;,
+            &quot;server auth&quot;,
+            &quot;client auth&quot;
+        ],
+        &quot;expiry&quot;: &quot;87600h&quot;
+      }
+    }
+  }
+}
+EOF
+</code></pre>
+<ul>
+<li>可以定义多个profiles，生成证书时候自动应用定义的profiles属性</li>
+<li>signing 表示该证书可用于签名其它证书；生成的 ca.pem 证书中 CA=TRUE</li>
+<li>server auth 表示client可以用该 CA 对server提供的证书进行验证</li>
+<li>client auth 表示server可以用该CA对client提供的证书进行验证</li>
+</ul>
+<ol start="2">
+<li>生成ca签名请求文件</li>
+</ol>
+<pre><code>cat &gt; ca-csr.json &lt;&lt;EOF
+{
+  &quot;CN&quot;: &quot;harbor&quot;,
+  &quot;key&quot;: {
+    &quot;algo&quot;: &quot;rsa&quot;,
+    &quot;size&quot;: 2048
+  },
+  &quot;names&quot;: [
+    {
+      &quot;C&quot;: &quot;CN&quot;,
+      &quot;ST&quot;: &quot;BeiJing&quot;,
+      &quot;L&quot;: &quot;BeiJing&quot;,
+      &quot;O&quot;: &quot;k8s&quot;,
+      &quot;OU&quot;: &quot;System&quot;
+    }
+  ],
+    &quot;ca&quot;: {
+       &quot;expiry&quot;: &quot;87600h&quot;
+    }
+}
+EOF
+</code></pre>
+<ul>
+<li>可根据自己的需求更改对应的值</li>
+</ul>
+<ol start="3">
+<li>生成服务签名请求文件</li>
+</ol>
+<blockquote>
+<p>创建服务签名文件 servicename-csr.json</p>
+</blockquote>
+<pre><code>cat &gt; harbor-csr.json &lt;&lt;EOF
+{
+    &quot;CN&quot;: &quot;harbor&quot;,
+    &quot;hosts&quot;: [
+      &quot;127.0.0.1&quot;,
+      &quot;100.64.16.179&quot;
+    ],
+    &quot;key&quot;: {
+        &quot;algo&quot;: &quot;rsa&quot;,
+        &quot;size&quot;: 2048
+    },
+    &quot;names&quot;: [
+        {
+            &quot;C&quot;: &quot;CN&quot;,
+            &quot;ST&quot;: &quot;BeiJing&quot;,
+            &quot;L&quot;: &quot;BeiJing&quot;,
+            &quot;O&quot;: &quot;k8s&quot;,
+            &quot;OU&quot;: &quot;System&quot;
+        }
+    ]
+}
+EOF
+</code></pre>
+<ul>
+<li>替换和增加hosts字段为自己服务的ip地址或者域名</li>
+<li>替换CN等字段为自己的服务名</li>
+</ul>
+<h1 id="生成ca和harbor证书">生成ca和harbor证书</h1>
+<pre><code>cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=harbor harbor-csr.json | cfssljson -bare harbor
+</code></pre>
+<ul>
+<li>替换profile为自己在ca-config.json定义的profiles</li>
+<li>替换harbor-csr.json为自己创建的service-csr.json</li>
+<li>替换harbor为自己的服务名</li>
+</ul>
+<h1 id="导入证书到客户端">导入证书到客户端</h1>
+<blockquote>
+<p>拷贝ca.pem证书到客户端节点，区分环境执行以下操作</p>
+</blockquote>
+<ol>
+<li>Red Hat (CentOS etc)</li>
+</ol>
+<pre><code>cat ca.pem &gt;&gt; ca.crt 
+cp ca.crt /etc/pki/ca-trust/source/anchors/ca.crt
+update-ca-trust
+
+</code></pre>
+<ol start="2">
+<li>Ubuntu</li>
+</ol>
+<pre><code>cat ca.pem &gt;&gt; ca.crt 
+cp ca.crt  /usr/local/share/ca-certificates/ca.crt 
+update-ca-certificates
+</code></pre>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://p.guipulp.top//media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://p.guipulp.top//media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+
+
+<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+</div>
+
+
+
+  </div>
+</div>
+
+
+
+      </div>
+
+
+
+
+    </div>
+
+   <div class="footer">
+<link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://p.guipulp.top//styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright"><ul class="links">
+<li><a href="/" target="_blank" rel="noopener noreferrer">小飞侠的飞行日记</a></li>
+</ul>
+      </div>
+
+</div></div>
+
+    </div>
+
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://p.guipulp.top//media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>
