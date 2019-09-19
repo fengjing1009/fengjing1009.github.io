@@ -19,7 +19,7 @@
      <div class="header">
       <div class="logo_title">
 		  
-        <div class="title animated fadeInDown"><img src="https://p.guipulp.top//images/avatar.png?v=1568618103638"/>
+        <div class="title animated fadeInDown"><img src="https://p.guipulp.top//images/avatar.png?v=1568884071160"/>
 
           <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
 
@@ -281,7 +281,8 @@ systemctl start keepalived
 
 </code></pre>
 <h2 id="生成kubeadm-master-配置文件">生成kubeadm master 配置文件</h2>
-<pre><code>cd &amp;&amp; cat &lt;&lt;EOF &gt; kubeadm.yaml
+<pre><code>vim kubeadm.yaml
+
 apiVersion: kubeadm.k8s.io/v1beta1
 kind: ClusterConfiguration
 kubernetesVersion: stable
@@ -294,7 +295,6 @@ networking:
   dnsDomain: cluster.local
   podSubnet: &quot;10.244.0.0/16&quot;
   serviceSubnet: 10.96.0.0/12
-EOF
 </code></pre>
 <h2 id="初始化第一个master">初始化第一个master</h2>
 <pre><code># 使用上一步生成的kubeadm.yaml
