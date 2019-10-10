@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-10-10T06:49:36.595Z</updated>
+    <updated>2019-10-10T06:51:05.366Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -304,13 +304,9 @@ include /etc/logrotate.d    # 包含其他配置文件的目录
 <p>Scanner： 它负责收集目前系统中已存在的 Resource，并且周期性的将这些资源对象放入一个队列中，等待处理（检测是否要对某一个Resource Object 进行 GC 操作）</p>
 </li>
 <li>
-<p>Garbage Processor: Garbage Processor 由两部分组成</p>
-</li>
-<li>
+<p>Garbage Processor: Garbage Processor 由两部分组成<br>
+- Dirty Queue： Scanner 会将周期性扫描到的 Resource Object 放入这个队列中等待处理</p>
 <ul>
-<li>
-<p>Dirty Queue： Scanner 会将周期性扫描到的 Resource Object 放入这个队列中等待处理</p>
-</li>
 <li>
 <p>Worker：worker 负责从这个队列中取出元素进行处理</p>
 </li>

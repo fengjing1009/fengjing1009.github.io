@@ -19,7 +19,7 @@
      <div class="header">
       <div class="logo_title">
 		  
-        <div class="title animated fadeInDown"><img src="https://p.guipulp.top//images/avatar.png?v=1570690169691"/>
+        <div class="title animated fadeInDown"><img src="https://p.guipulp.top//images/avatar.png?v=1570690260045"/>
 
           <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
 
@@ -199,13 +199,9 @@
 <p>Scanner： 它负责收集目前系统中已存在的 Resource，并且周期性的将这些资源对象放入一个队列中，等待处理（检测是否要对某一个Resource Object 进行 GC 操作）</p>
 </li>
 <li>
-<p>Garbage Processor: Garbage Processor 由两部分组成</p>
-</li>
-<li>
+<p>Garbage Processor: Garbage Processor 由两部分组成<br>
+- Dirty Queue： Scanner 会将周期性扫描到的 Resource Object 放入这个队列中等待处理</p>
 <ul>
-<li>
-<p>Dirty Queue： Scanner 会将周期性扫描到的 Resource Object 放入这个队列中等待处理</p>
-</li>
 <li>
 <p>Worker：worker 负责从这个队列中取出元素进行处理</p>
 </li>
