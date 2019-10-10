@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://p.guipulp.top/</id>
     <title>PeterPan</title>
-    <updated>2019-10-10T06:54:43.069Z</updated>
+    <updated>2019-10-10T06:56:57.363Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://p.guipulp.top/"/>
     <link rel="self" href="https://p.guipulp.top//atom.xml"/>
@@ -300,30 +300,23 @@ include /etc/logrotate.d    # 包含其他配置文件的目录
 <p><img src="http://img.blog.csdn.net/20161225115013410?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvV2FsdG9uV2FuZw==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="kubernetes GC architecture in v1.3"></p>
 <p>一个 Garbage Collector 通常由三部分实现：</p>
 <ul>
-<li>
-<p>Scanner： 它负责收集目前系统中已存在的 Resource，并且周期性的将这些资源对象放入一个队列中，等待处理（检测是否要对某一个Resource Object 进行 GC 操作）</p>
-</li>
-<li>
-<p>Garbage Processor: Garbage Processor 由两部分组成<br>
-- Dirty Queue： Scanner 会将周期性扫描到的 Resource Object 放入这个队列中等待处理</p>
+<li>Scanner： 它负责收集目前系统中已存在的 Resource，并且周期性的将这些资源对象放入一个队列中，等待处理（检测是否要对某一个Resource Object 进行 GC 操作）</li>
+<li>Garbage Processor: Garbage Processor 由两部分组成
 <ul>
 <li>
-<p>Worker：worker 负责从这个队列中取出元素进行处理</p>
+<p>Dirty Queue： Scanner 会将周期性扫描到的 Resource Object 放入这个队列中等待处理</p>
 </li>
 <li>
+<p>Worker：worker 负责从这个队列中取出元素进行处理</p>
 <ul>
 <li>
 <p>检查 Object 的 metaData 部分，查看<code>ownerReference</code>字段是否为空</p>
-</li>
-<li>
 <ul>
 <li>
 <p>如果为空，则本次处理结束</p>
 </li>
 <li>
 <p>如果不为空，检测<code>ownerReference</code>字段内标识的 Owner Resource Object是否存在</p>
-</li>
-<li>
 <ul>
 <li>存在：则本次处理结束</li>
 <li>不存在：删除这个 Object</li>
@@ -335,10 +328,7 @@ include /etc/logrotate.d    # 包含其他配置文件的目录
 </li>
 </ul>
 </li>
-<li>
-<p>Propagator： Propagator 由三个部分构成</p>
-</li>
-<li>
+<li>Propagator： Propagator 由三个部分构成
 <ul>
 <li>
 <p>EventQueue：负责存储 k8s 中资源对象的事件（Eg：ADD，UPDATE，DELETE）</p>
@@ -348,8 +338,6 @@ include /etc/logrotate.d    # 包含其他配置文件的目录
 </li>
 <li>
 <p>Worker：从 EventQueue 中，取出资源对象的事件，根据事件的类型会采取以下两种操作</p>
-</li>
-<li>
 <ul>
 <li>ADD/UPDATE: 将该事件对应的资源对象加入 DAG，且如果该对象有 owner 且 owner 不在 DAG 中，将它同时加入 Garbage Processor 的 Dirty Queue 中</li>
 <li>DELETE：将该事件对应的资源对象从 DAG 中删除，并且将其「管辖」的对象（只向下寻找一级，如删除 Deployment，那么只操作 ReplicaSet ）加入 Garbage Processor 的 Dirty Queue 中</li>
