@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-    <id>https://p.guipulp.top/</id>
+    <id>https://tomcat1009.coding.me/hexo</id>
     <title>PeterPan</title>
-    <updated>2019-10-10T06:56:57.363Z</updated>
+    <updated>2019-10-17T03:50:01.674Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="https://p.guipulp.top/"/>
-    <link rel="self" href="https://p.guipulp.top//atom.xml"/>
+    <link rel="alternate" href="https://tomcat1009.coding.me/hexo"/>
+    <link rel="self" href="https://tomcat1009.coding.me/hexo/atom.xml"/>
     <subtitle>贵有恒，何必三更起五更睡；最无益，只怕一日暴十寒。</subtitle>
-    <logo>https://p.guipulp.top//images/avatar.png</logo>
-    <icon>https://p.guipulp.top//favicon.ico</icon>
+    <logo>https://tomcat1009.coding.me/hexo/images/avatar.png</logo>
+    <icon>https://tomcat1009.coding.me/hexo/favicon.ico</icon>
     <rights>All rights reserved 2019, PeterPan</rights>
     <entry>
         <title type="html"><![CDATA[使用kubeadm 新加入节点（原始token过期后）]]></title>
-        <id>https://p.guipulp.top//post/2019091201</id>
-        <link href="https://p.guipulp.top//post/2019091201">
+        <id>https://tomcat1009.coding.me/hexo/post/2019091201</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019091201">
         </link>
         <updated>2019-09-12T04:47:00.000Z</updated>
         <content type="html"><![CDATA[<h2 id="kubeadm-join">kubeadm join</h2>
@@ -59,8 +59,8 @@ kubeadm token create $token --print-join-command --ttl=0
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes1.15.3离线安装]]></title>
-        <id>https://p.guipulp.top//post/2019090901</id>
-        <link href="https://p.guipulp.top//post/2019090901">
+        <id>https://tomcat1009.coding.me/hexo/post/2019090901</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019090901">
         </link>
         <updated>2019-09-09T10:09:51.000Z</updated>
         <content type="html"><![CDATA[<h1 id="kubeadm-k8s集群离线安装">kubeadm k8s集群离线安装</h1>
@@ -141,8 +141,8 @@ kubectl  get nodes |grep master |awk '{print $1}' |xargs -i kubectl  taint node 
     </entry>
     <entry>
         <title type="html"><![CDATA[etcd数据备份和恢复]]></title>
-        <id>https://p.guipulp.top//post/2019090503</id>
-        <link href="https://p.guipulp.top//post/2019090503">
+        <id>https://tomcat1009.coding.me/hexo/post/2019090503</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019090503">
         </link>
         <updated>2019-09-05T03:46:23.000Z</updated>
         <content type="html"><![CDATA[<h2 id="对于etcd-api-v3数据备份与恢复方法">对于etcd api v3数据备份与恢复方法</h2>
@@ -236,8 +236,8 @@ b29b94ace458096d, started, k8s-master3, https://192.168.32.130:2380, https://192
     </entry>
     <entry>
         <title type="html"><![CDATA[Centos7下的日志切割]]></title>
-        <id>https://p.guipulp.top//post/2019090502</id>
-        <link href="https://p.guipulp.top//post/2019090502">
+        <id>https://tomcat1009.coding.me/hexo/post/2019090502</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019090502">
         </link>
         <updated>2019-09-05T03:27:49.000Z</updated>
         <content type="html"><![CDATA[<h2 id="logrotate">logrotate</h2>
@@ -281,8 +281,8 @@ include /etc/logrotate.d    # 包含其他配置文件的目录
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes里面的GC]]></title>
-        <id>https://p.guipulp.top//post/2019090501</id>
-        <link href="https://p.guipulp.top//post/2019090501">
+        <id>https://tomcat1009.coding.me/hexo/post/2019090501</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019090501">
         </link>
         <updated>2019-09-05T03:02:08.000Z</updated>
         <content type="html"><![CDATA[<h2 id="什么是gc">什么是GC</h2>
@@ -297,7 +297,7 @@ include /etc/logrotate.d    # 包含其他配置文件的目录
 <li>k8s 是通过 <code>Garbage Collector</code> 和 <code>ownerReference</code> 一起配合实现了「垃圾回收」的功能。</li>
 </ul>
 <h2 id="kubernetes的gc组成">kubernetes的gc组成</h2>
-<p><img src="http://img.blog.csdn.net/20161225115013410?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvV2FsdG9uV2FuZw==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="kubernetes GC architecture in v1.3"></p>
+<figure data-type="image" tabindex="1"><img src="http://img.blog.csdn.net/20161225115013410?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvV2FsdG9uV2FuZw==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="kubernetes GC architecture in v1.3"></figure>
 <p>一个 Garbage Collector 通常由三部分实现：</p>
 <ul>
 <li>Scanner： 它负责收集目前系统中已存在的 Resource，并且周期性的将这些资源对象放入一个队列中，等待处理（检测是否要对某一个Resource Object 进行 GC 操作）</li>
@@ -364,8 +364,8 @@ include /etc/logrotate.d    # 包含其他配置文件的目录
     </entry>
     <entry>
         <title type="html"><![CDATA[linux cgroups简介]]></title>
-        <id>https://p.guipulp.top//post/2019090202</id>
-        <link href="https://p.guipulp.top//post/2019090202">
+        <id>https://tomcat1009.coding.me/hexo/post/2019090202</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019090202">
         </link>
         <updated>2019-09-02T07:54:27.000Z</updated>
         <content type="html"><![CDATA[<p>https://blog.csdn.net/ahilll/article/details/82109008<br>
@@ -374,8 +374,8 @@ https://blog.csdn.net/chenleiking/article/details/87988851</p>
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes 清理孤儿POD]]></title>
-        <id>https://p.guipulp.top//post/2019090201</id>
-        <link href="https://p.guipulp.top//post/2019090201">
+        <id>https://tomcat1009.coding.me/hexo/post/2019090201</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019090201">
         </link>
         <updated>2019-09-02T07:53:25.000Z</updated>
         <content type="html"><![CDATA[<h3 id="孤儿pod的产生">孤儿pod的产生</h3>
@@ -411,8 +411,8 @@ done
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes资源预留]]></title>
-        <id>https://p.guipulp.top//post/2019083002</id>
-        <link href="https://p.guipulp.top//post/2019083002">
+        <id>https://tomcat1009.coding.me/hexo/post/2019083002</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019083002">
         </link>
         <updated>2019-08-30T09:25:37.000Z</updated>
         <content type="html"><![CDATA[<blockquote>
@@ -554,8 +554,8 @@ Allocatable:
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes集群证书过期之后]]></title>
-        <id>https://p.guipulp.top//post/2019083001</id>
-        <link href="https://p.guipulp.top//post/2019083001">
+        <id>https://tomcat1009.coding.me/hexo/post/2019083001</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019083001">
         </link>
         <updated>2019-08-30T08:50:14.000Z</updated>
         <content type="html"><![CDATA[<h2 id="步骤">步骤</h2>
@@ -593,8 +593,8 @@ Allocatable:
     </entry>
     <entry>
         <title type="html"><![CDATA[iptables的四表五链]]></title>
-        <id>https://p.guipulp.top//post/2019082802</id>
-        <link href="https://p.guipulp.top//post/2019082802">
+        <id>https://tomcat1009.coding.me/hexo/post/2019082802</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019082802">
         </link>
         <updated>2019-08-28T04:44:56.000Z</updated>
         <content type="html"><![CDATA[<h2 id="netfilter介绍">netfilter介绍</h2>
@@ -604,7 +604,7 @@ Allocatable:
 <li>匹配之后，进行相应的处理ACCEPT、DROP等等；</li>
 </ul>
 <h3 id="netfilter和iptables的关系图">netfilter和iptables的关系图</h3>
-<p><img src="https://img.mubu.com/document_image/e0653c59-e432-40d9-a8bd-38558599a4da-1235096.jpg" alt="img"></p>
+<figure data-type="image" tabindex="1"><img src="https://img.mubu.com/document_image/e0653c59-e432-40d9-a8bd-38558599a4da-1235096.jpg" alt="img"></figure>
 <h2 id="四表五链">四表五链</h2>
 <ul>
 <li>链就是位置：共有五个，进路由(PREROUTING)、进系统(INPUT) 、转发(FORWARD)、出系统(OUTPUT)、出路由(POSTROUTING)；</li>
@@ -626,7 +626,7 @@ Allocatable:
 <li>POSTROUTING链——对数据包作路由选择后应用此链中的规则（所有的数据包出来的时侯都先由这个链处理）</li>
 </ul>
 <h3 id="链表关系图">链表关系图</h3>
-<p><img src="http://pyl10u56y.bkt.clouddn.com/iptables01.png" alt="image-20190828125115128"></p>
+<figure data-type="image" tabindex="2"><img src="http://pyl10u56y.bkt.clouddn.com/iptables01.png" alt="image-20190828125115128"></figure>
 <h3 id="数据处理流程">数据处理流程</h3>
 <p>我们结合下面的图举个例子：<br>
 假如有数据包从Network IN要通过iptables，数据包流向如下：<br>
@@ -657,11 +657,11 @@ Allocatable:
 <ul>
 <li>
 <p>图一</p>
-<p><img src="https://img.mubu.com/document_image/c1b9ef44-0c8d-4818-a18b-83b527e8d0e4-1235096.jpg" alt="img"></p>
+<figure data-type="image" tabindex="3"><img src="https://img.mubu.com/document_image/c1b9ef44-0c8d-4818-a18b-83b527e8d0e4-1235096.jpg" alt="img"></figure>
 </li>
 <li>
 <p>图二</p>
-<p><img src="https://img.mubu.com/document_image/bcb89f30-1a57-4967-9a41-3cb6e2c8a5bc-1235096.jpg" alt="img"></p>
+<figure data-type="image" tabindex="4"><img src="https://img.mubu.com/document_image/bcb89f30-1a57-4967-9a41-3cb6e2c8a5bc-1235096.jpg" alt="img"></figure>
 </li>
 </ul>
 <h2 id="iptables操作">iptables操作</h2>
@@ -912,8 +912,8 @@ https://www.cnblogs.com/zhujingzhi/p/9706664.html</p>
     </entry>
     <entry>
         <title type="html"><![CDATA[使用iptables实现网络互联]]></title>
-        <id>https://p.guipulp.top//post/2019082702</id>
-        <link href="https://p.guipulp.top//post/2019082702">
+        <id>https://tomcat1009.coding.me/hexo/post/2019082702</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019082702">
         </link>
         <updated>2019-08-27T15:34:48.000Z</updated>
         <content type="html"><![CDATA[<h2 id="iptables实现网络功能的方式">iptables实现网络功能的方式</h2>
@@ -929,7 +929,7 @@ https://www.cnblogs.com/zhujingzhi/p/9706664.html</p>
 <h2 id="iptables的源地址转换snat">iptables的源地址转换(SNAT)</h2>
 <h3 id="双网卡实现snat">双网卡实现SNAT</h3>
 <p><strong>示例一</strong></p>
-<p><img src="https://img-blog.csdn.net/20171117145802662?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvd2hlYXRfZ3JvdW5k/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="è¿éåå¾çæè¿°"></p>
+<figure data-type="image" tabindex="1"><img src="https://img-blog.csdn.net/20171117145802662?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvd2hlYXRfZ3JvdW5k/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="è¿éåå¾çæè¿°"></figure>
 <pre><code># 左边的机器为A，右边的机器为B ，A和B在同一个自网路，B有两个网卡。一个网卡和A同在一个网络，另外一个网卡可以连接外网。 
 # 配置方式
 [root@xuegod63 ~]# iptables -t nat -A POSTROUTING -s 192.168.240.0/24   -j  SNAT  --to 192.168.1.250
@@ -1029,8 +1029,8 @@ service iptables start
     </entry>
     <entry>
         <title type="html"><![CDATA[使用ipvs模式安装kubernetes]]></title>
-        <id>https://p.guipulp.top//post/2019082701</id>
-        <link href="https://p.guipulp.top//post/2019082701">
+        <id>https://tomcat1009.coding.me/hexo/post/2019082701</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019082701">
         </link>
         <updated>2019-08-27T07:11:33.000Z</updated>
         <content type="html"><![CDATA[<h3 id="安装ipvs">安装ipvs</h3>
@@ -1116,8 +1116,8 @@ mode: ipvs  # kube-proxy 模式
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes的国内软件源配置]]></title>
-        <id>https://p.guipulp.top//post/2019080801</id>
-        <link href="https://p.guipulp.top//post/2019080801">
+        <id>https://tomcat1009.coding.me/hexo/post/2019080801</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019080801">
         </link>
         <updated>2019-08-08T06:40:52.000Z</updated>
         <content type="html"><![CDATA[<h2 id="ubuntu-软件源配置">ubuntu 软件源配置</h2>
@@ -1150,8 +1150,8 @@ EOF
     </entry>
     <entry>
         <title type="html"><![CDATA[centos快速创建kubernetes]]></title>
-        <id>https://p.guipulp.top//post/2019090701</id>
-        <link href="https://p.guipulp.top//post/2019090701">
+        <id>https://tomcat1009.coding.me/hexo/post/2019090701</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019090701">
         </link>
         <updated>2019-08-07T08:22:17.000Z</updated>
         <content type="html"><![CDATA[<h2 id="前置条件">前置条件</h2>
@@ -1279,8 +1279,8 @@ Commercial support is available at
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes NVIDIA GPU 实践]]></title>
-        <id>https://p.guipulp.top//post/201986</id>
-        <link href="https://p.guipulp.top//post/201986">
+        <id>https://tomcat1009.coding.me/hexo/post/201986</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/201986">
         </link>
         <updated>2019-08-06T03:36:20.000Z</updated>
         <content type="html"><![CDATA[<p>查看此文档时候，内容可能已经过时，但大体过程不会有什么变化，建议按照官网说明进行安装。</p>
@@ -1373,8 +1373,8 @@ kubectl  create job nvjob --image=nvidia/cuda:9.0-base -- nvidia-smi
     </entry>
     <entry>
         <title type="html"><![CDATA[使用SRS自建直播服务]]></title>
-        <id>https://p.guipulp.top//post/zi-jian-zhi-bo-fu-wu</id>
-        <link href="https://p.guipulp.top//post/zi-jian-zhi-bo-fu-wu">
+        <id>https://tomcat1009.coding.me/hexo/post/zi-jian-zhi-bo-fu-wu</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/zi-jian-zhi-bo-fu-wu">
         </link>
         <updated>2019-08-02T11:16:55.000Z</updated>
         <content type="html"><![CDATA[<h2 id="直播平台搭建分享">直播平台搭建分享</h2>
@@ -1458,8 +1458,8 @@ https://blog.csdn.net/wolf09311/article/details/52680170
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes使用PodPreset特性预设整个集群]]></title>
-        <id>https://p.guipulp.top//post/t-I_dB2CB</id>
-        <link href="https://p.guipulp.top//post/t-I_dB2CB">
+        <id>https://tomcat1009.coding.me/hexo/post/t-I_dB2CB</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/t-I_dB2CB">
         </link>
         <updated>2019-06-24T07:25:54.000Z</updated>
         <summary type="html"><![CDATA[<p>有的时候我们需要根据情况,预先配置集群里面的容器的某些属性,则可以通过podpreset配置实现.</p>
@@ -1526,8 +1526,8 @@ status: {}
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes配置外网dns]]></title>
-        <id>https://p.guipulp.top//post/9yPSD7pfq</id>
-        <link href="https://p.guipulp.top//post/9yPSD7pfq">
+        <id>https://tomcat1009.coding.me/hexo/post/9yPSD7pfq</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/9yPSD7pfq">
         </link>
         <updated>2019-06-21T02:36:34.000Z</updated>
         <summary type="html"><![CDATA[<p>通过更新coredns configmap，设置upstream字段实现指定上游解析服务器</p>
@@ -1576,8 +1576,8 @@ www.a.shifen.com has address 220.181.112.244
     </entry>
     <entry>
         <title type="html"><![CDATA[kubeadm搭建v1.10.3kubernetes集群]]></title>
-        <id>https://p.guipulp.top//post/jZoeyPf8e</id>
-        <link href="https://p.guipulp.top//post/jZoeyPf8e">
+        <id>https://tomcat1009.coding.me/hexo/post/jZoeyPf8e</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/jZoeyPf8e">
         </link>
         <updated>2019-06-21T02:33:01.000Z</updated>
         <summary type="html"><![CDATA[<p>本文使用kubeadm和容器化etcd安装kubernetes集群用于poc</p>
@@ -1837,7 +1837,7 @@ kubeadm join 100.64.16.176:6443 --token i2ha18.euygiv9g922b5fkf --discovery-toke
 <pre><code>kubectl run nginx --replicas=2 --labels=&quot;run=load-balancer-example&quot; --image=nginx  --port=80
 kubectl get pods --all-namespaces -o wide 
 </code></pre>
-<p><a href="https://asciinema.org/a/bnyI5J6IcupDM5SV2eglMtJKu"><img src="https://asciinema.org/a/bnyI5J6IcupDM5SV2eglMtJKu.png" alt="asciicast"></a></p>
+<figure data-type="image" tabindex="1"><a href="https://asciinema.org/a/bnyI5J6IcupDM5SV2eglMtJKu"><img src="https://asciinema.org/a/bnyI5J6IcupDM5SV2eglMtJKu.png" alt="asciicast"></a></figure>
 <h3 id="总结">总结</h3>
 <p>经过这篇博客, 我们成功部署了一个3个节点的kubernetes 1.10.3的集群, 但是此时集群DashBoard, 监控都还没完成, 在接下来的<a href="https://p.fengjingblog.top/2018/06/11/kubernetes-Addons%E5%AE%89%E8%A3%85/">kubernetes Addons安装</a>中将进行这些组件的部署。</p>
 <h3 id="排错">排错</h3>
@@ -1866,8 +1866,8 @@ ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $K
     </entry>
     <entry>
         <title type="html"><![CDATA[Centos 7 install nfs]]></title>
-        <id>https://p.guipulp.top//post/vo3IdA9w1</id>
-        <link href="https://p.guipulp.top//post/vo3IdA9w1">
+        <id>https://tomcat1009.coding.me/hexo/post/vo3IdA9w1</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/vo3IdA9w1">
         </link>
         <updated>2019-06-21T02:32:06.000Z</updated>
         <summary type="html"><![CDATA[<p>使用centos7 安装NFS用于环境POC</p>
