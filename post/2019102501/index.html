@@ -6,7 +6,7 @@
         <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
         <meta content="telephone=no" name="format-detection"/>
         <meta name="renderer" content="webkit">
-    <title>kubernetes 清理孤儿POD | PeterPan</title>
+    <title>etcd测试集群搭建（http） | PeterPan</title>
 <link href="https://tomcat1009.coding.me/hexo/styles/main.css" type="text/css" rel="stylesheet"/>
 <script type="text/javascript" src="https://tomcat1009.coding.me/hexo/media/scripts/jquery.js"></script>
 <script type="text/javascript" src="https://tomcat1009.coding.me/hexo/media/scripts/basic.js"></script>
@@ -147,7 +147,7 @@
 
 <div class="post">
   <div class="post_title sm_margin">
-    <h2><a>kubernetes 清理孤儿POD</a>
+    <h2><a>etcd测试集群搭建（http）</a>
 
 
 
@@ -156,7 +156,7 @@
 
   <div class="post_details">
     <div class="info"><i class="fa fa-clock-o"></i>
-<span class="date_info">2019-09-02</span>
+<span class="date_info">2019-10-25</span>
 <i class="fa fa-eye"></i>
 
 <span class="date_info"><span id="busuanzi_value_page_pv"></span> Views</span>
@@ -180,35 +180,97 @@
 
 
   <div class="post_content markdown"><p class="md_block">
-    <span class="md_line md_line_start md_line_end"><h3 id="孤儿pod的产生">孤儿pod的产生</h3>
-<p>节点OOM以后或者节点异常崩溃的情况下，pod未能被正常的清理而导致的孤儿进程。</p>
-<p><strong>提示如下</strong></p>
-<pre><code>Orphaned pod found - but volume paths are still present on disk
+    <span class="md_line md_line_start md_line_end"><h3 id="集群搭建">集群搭建</h3>
+<h4 id="资源列表">资源列表</h4>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>ip地址</th>
+<th>端口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>etcd1</td>
+<td>172.16.10.101</td>
+<td>2379,2380</td>
+</tr>
+<tr>
+<td>ectd2</td>
+<td>172.16.10.102</td>
+<td>2379,2380</td>
+</tr>
+<tr>
+<td>Etcd3</td>
+<td>172.16.10.103</td>
+<td>2379,2380</td>
+</tr>
+</tbody>
+</table>
+<h4 id="etcd1">etcd1</h4>
+<pre><code>mkdir -p /var/etcd
+docker rm etcd1 -f
+rm -rf /var/etcd
+docker run --restart=always --net host -it --name etcd1 -d \
+-v /var/etcd:/var/etcd \
+-v /etc/localtime:/etc/localtime \
+registry.cn-hangzhou.aliyuncs.com/google_containers/etcd:3.3.10 \
+etcd --name etcd-s1 \
+--auto-compaction-retention=1 --max-request-bytes=33554432 --quota-backend-bytes=8589934592 \
+--data-dir=/var/etcd/etcd-data \
+--listen-client-urls http://0.0.0.0:2379 \
+--listen-peer-urls http://0.0.0.0:2380 \
+--initial-advertise-peer-urls http://172.16.10.101:2380 \
+--advertise-client-urls http://172.16.10.101:2379,http://172.16.10.101:2380 \
+-initial-cluster-token etcd-cluster \
+-initial-cluster &quot;etcd-s1=http://172.16.10.101:2380,etcd-s2=http://172.16.10.102:2380,etcd-s3=http://172.16.10.103:2380&quot; \
+-initial-cluster-state new
 </code></pre>
-<p><strong>进入k8s的pod目录</strong></p>
-<pre><code>cd /var/lib/kubelet/pods/
+<h4 id="etcd2">etcd2</h4>
+<pre><code>mkdir -p /var/etcd
+docker rm etcd2 -f
+rm -rf /var/etcd
+docker run --restart=always --net host -it --name etcd2 -d \
+-v /var/etcd:/var/etcd \
+-v /etc/localtime:/etc/localtime \
+registry.cn-hangzhou.aliyuncs.com/google_containers/etcd:3.3.10 \
+etcd --name etcd-s2  \
+--auto-compaction-retention=1 --max-request-bytes=33554432 --quota-backend-bytes=8589934592 \
+--data-dir=/var/etcd/etcd-data \
+--listen-client-urls http://0.0.0.0:2379 \
+--listen-peer-urls http://0.0.0.0:2380 \
+--initial-advertise-peer-urls http://172.16.10.102:2380 \
+--advertise-client-urls http://172.16.10.102:2379,http://172.16.10.102:2380 \
+-initial-cluster-token etcd-cluster \
+-initial-cluster &quot;etcd-s1=http://172.16.10.101:2380,etcd-s2=http://172.16.10.102:2380,etcd-s3=http://172.16.10.103:2380&quot; \
+-initial-cluster-state new
 </code></pre>
-<h3 id="解决问题">解决问题</h3>
-<p>过滤日志中的孤儿pod，删除pod。</p>
-<pre><code class="language-js">#!/bin/bash
-num=$(grep &quot;errors similar to this. Turn up verbosity to see them.&quot;  /var/log/messages |tail -1 | awk '{print $12}' |sed 's/&quot;//g')
-echo $num
-
-while [ $num ]
-do
-   [ -d &quot;/var/lib/kubelet/pods/${num}&quot; ] &amp;&amp; rm -rf /var/lib/kubelet/pods/${num}
-
-  sleep 2s
-  num=$(grep &quot;errors similar to this. Turn up verbosity to see them.&quot;  /var/log/messages |tail -1 | awk '{print $12}' |sed 's/&quot;//g')
-  [ -d &quot;/var/lib/kubelet/pods/${num}&quot; ] || num=
-
-  echo &quot;$num remaining&quot;
-
-done
+<h4 id="etcd3">etcd3</h4>
+<pre><code>mkdir -p /var/etcd
+docker rm etcd3 -f
+rm -rf /var/etcd
+docker run --restart=always --net host -it --name etcd3 -d \
+-v /var/etcd:/var/etcd \
+-v /etc/localtime:/etc/localtime \
+registry.cn-hangzhou.aliyuncs.com/google_containers/etcd:3.3.10 \
+etcd --name etcd-s3  \
+--auto-compaction-retention=1 --max-request-bytes=33554432 --quota-backend-bytes=8589934592 \
+--data-dir=/var/etcd/etcd-data \
+--listen-client-urls http://0.0.0.0:2379 \
+--listen-peer-urls http://0.0.0.0:2380 \
+--initial-advertise-peer-urls http://172.16.10.103:2380 \
+--advertise-client-urls http://172.16.10.103:2379,http://172.16.10.103:2380 \
+-initial-cluster-token etcd-cluster \
+-initial-cluster &quot;etcd-s1=http://172.16.10.101:2380,etcd-s2=http://172.16.10.102:2380,etcd-s3=http://172.16.10.103:2380&quot; \
+-initial-cluster-state new
 </code></pre>
-<p>但是这个方法有一定的<code>危险性</code>，还不确认是否有<code>数据丢失</code>的风险，如果可以确认，再执行。</p>
-<p>如果已经挂载了PVC等相关存储，先执行umount再执行删除。</p>
-<p>再去查看日志，就会发现syslog不会再刷类似的日志了。</p>
+<h3 id="检查">检查</h3>
+<pre><code># 检查
+ETCDCTL_API=3 etcdctl endpoint health
+ETCDCTL_API=3 etcdctl member list
+ETCDCTL_API=3 etcdctl put foo bar
+</code></pre>
 </p>
 
      <p class="md_block">

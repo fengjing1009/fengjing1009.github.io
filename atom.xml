@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://tomcat1009.coding.me/hexo</id>
     <title>PeterPan</title>
-    <updated>2019-10-17T03:52:45.342Z</updated>
+    <updated>2019-10-25T07:36:09.663Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://tomcat1009.coding.me/hexo"/>
     <link rel="self" href="https://tomcat1009.coding.me/hexo/atom.xml"/>
@@ -10,6 +10,105 @@
     <logo>https://tomcat1009.coding.me/hexo/images/avatar.png</logo>
     <icon>https://tomcat1009.coding.me/hexo/favicon.ico</icon>
     <rights>All rights reserved 2019, PeterPan</rights>
+    <entry>
+        <title type="html"><![CDATA[etcd测试集群搭建（http）]]></title>
+        <id>https://tomcat1009.coding.me/hexo/post/2019102501</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019102501">
+        </link>
+        <updated>2019-10-25T07:35:10.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="集群搭建">集群搭建</h3>
+<h4 id="资源列表">资源列表</h4>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>ip地址</th>
+<th>端口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>etcd1</td>
+<td>172.16.10.101</td>
+<td>2379,2380</td>
+</tr>
+<tr>
+<td>ectd2</td>
+<td>172.16.10.102</td>
+<td>2379,2380</td>
+</tr>
+<tr>
+<td>Etcd3</td>
+<td>172.16.10.103</td>
+<td>2379,2380</td>
+</tr>
+</tbody>
+</table>
+<h4 id="etcd1">etcd1</h4>
+<pre><code>mkdir -p /var/etcd
+docker rm etcd1 -f
+rm -rf /var/etcd
+docker run --restart=always --net host -it --name etcd1 -d \
+-v /var/etcd:/var/etcd \
+-v /etc/localtime:/etc/localtime \
+registry.cn-hangzhou.aliyuncs.com/google_containers/etcd:3.3.10 \
+etcd --name etcd-s1 \
+--auto-compaction-retention=1 --max-request-bytes=33554432 --quota-backend-bytes=8589934592 \
+--data-dir=/var/etcd/etcd-data \
+--listen-client-urls http://0.0.0.0:2379 \
+--listen-peer-urls http://0.0.0.0:2380 \
+--initial-advertise-peer-urls http://172.16.10.101:2380 \
+--advertise-client-urls http://172.16.10.101:2379,http://172.16.10.101:2380 \
+-initial-cluster-token etcd-cluster \
+-initial-cluster &quot;etcd-s1=http://172.16.10.101:2380,etcd-s2=http://172.16.10.102:2380,etcd-s3=http://172.16.10.103:2380&quot; \
+-initial-cluster-state new
+</code></pre>
+<h4 id="etcd2">etcd2</h4>
+<pre><code>mkdir -p /var/etcd
+docker rm etcd2 -f
+rm -rf /var/etcd
+docker run --restart=always --net host -it --name etcd2 -d \
+-v /var/etcd:/var/etcd \
+-v /etc/localtime:/etc/localtime \
+registry.cn-hangzhou.aliyuncs.com/google_containers/etcd:3.3.10 \
+etcd --name etcd-s2  \
+--auto-compaction-retention=1 --max-request-bytes=33554432 --quota-backend-bytes=8589934592 \
+--data-dir=/var/etcd/etcd-data \
+--listen-client-urls http://0.0.0.0:2379 \
+--listen-peer-urls http://0.0.0.0:2380 \
+--initial-advertise-peer-urls http://172.16.10.102:2380 \
+--advertise-client-urls http://172.16.10.102:2379,http://172.16.10.102:2380 \
+-initial-cluster-token etcd-cluster \
+-initial-cluster &quot;etcd-s1=http://172.16.10.101:2380,etcd-s2=http://172.16.10.102:2380,etcd-s3=http://172.16.10.103:2380&quot; \
+-initial-cluster-state new
+</code></pre>
+<h4 id="etcd3">etcd3</h4>
+<pre><code>mkdir -p /var/etcd
+docker rm etcd3 -f
+rm -rf /var/etcd
+docker run --restart=always --net host -it --name etcd3 -d \
+-v /var/etcd:/var/etcd \
+-v /etc/localtime:/etc/localtime \
+registry.cn-hangzhou.aliyuncs.com/google_containers/etcd:3.3.10 \
+etcd --name etcd-s3  \
+--auto-compaction-retention=1 --max-request-bytes=33554432 --quota-backend-bytes=8589934592 \
+--data-dir=/var/etcd/etcd-data \
+--listen-client-urls http://0.0.0.0:2379 \
+--listen-peer-urls http://0.0.0.0:2380 \
+--initial-advertise-peer-urls http://172.16.10.103:2380 \
+--advertise-client-urls http://172.16.10.103:2379,http://172.16.10.103:2380 \
+-initial-cluster-token etcd-cluster \
+-initial-cluster &quot;etcd-s1=http://172.16.10.101:2380,etcd-s2=http://172.16.10.102:2380,etcd-s3=http://172.16.10.103:2380&quot; \
+-initial-cluster-state new
+</code></pre>
+<h3 id="检查">检查</h3>
+<pre><code># 检查
+ETCDCTL_API=3 etcdctl endpoint health
+ETCDCTL_API=3 etcdctl member list
+ETCDCTL_API=3 etcdctl put foo bar
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[使用kubeadm 新加入节点（原始token过期后）]]></title>
         <id>https://tomcat1009.coding.me/hexo/post/2019091201</id>
@@ -1862,42 +1961,6 @@ Environment=&quot;KUBELET_EXTRA_ARGS=--pod-infra-container-image=registry.cn-sha
 ExecStart=
 ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_AUTHZ_ARGS $KUBELET_CADVISOR_ARGS $KUBELET_CGROUP_ARGS $KUBELET_CERTIFICATE_ARGS $KUBELET_EXTRA_ARGS --runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice
 </code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Centos 7 install nfs]]></title>
-        <id>https://tomcat1009.coding.me/hexo/post/vo3IdA9w1</id>
-        <link href="https://tomcat1009.coding.me/hexo/post/vo3IdA9w1">
-        </link>
-        <updated>2019-06-21T02:32:06.000Z</updated>
-        <summary type="html"><![CDATA[<p>使用centos7 安装NFS用于环境POC</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>使用centos7 安装NFS用于环境POC</p>
-<!-- more -->
-<h1 id="安装nfs和rpcbind">安装nfs和rpcbind</h1>
-<p><strong>lab环境仅适用于测试</strong><br>
-<strong>lab环境需要关闭防火墙</strong></p>
-<pre><code>yum -y install nfs-utils ,rpcbind
-</code></pre>
-<h1 id="启动nfs和rpcbind">启动nfs和rpcbind</h1>
-<pre><code># nfs需要向rpc注册，rpc一旦重启，注册的文件都丢失，向他注册的服务都需要重启，注意启动顺序
-systemctl start rpcbind.service &amp;&amp; systemctl start nfs.service
-systemctl enable  rpcbind.service &amp;&amp; systemctl enable nfs.service
-</code></pre>
-<h1 id="配置nfs">配置nfs</h1>
-<blockquote>
-<p>配置文件/etc/exports</p>
-</blockquote>
-<pre><code>/nfsdata  *(rw,sync,no_root_squash)
-systemctl restart rpcbind.service &amp;&amp; systemctl restart nfs.service
-</code></pre>
-<ul>
-<li>nfsdata 为存放数据的目录,需要先创建</li>
-<li>'*':任何人</li>
-<li>rw:读写权限</li>
-<li>sync:资料会先暂存于内存中，而非直接写入硬盘。</li>
-<li>no_root_squash:当登录NFS主机使用共享目录的使用者是root时，其权限将被转换成为匿名使用者，通常它的UID与GID都会变成nobody身份。</li>
-</ul>
 ]]></content>
     </entry>
 </feed>
