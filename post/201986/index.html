@@ -19,7 +19,7 @@
      <div class="header">
       <div class="logo_title">
 		  
-        <div class="title animated fadeInDown"><img src="https://tomcat1009.coding.me/hexo/images/avatar.png?v=1571988962312"/>
+        <div class="title animated fadeInDown"><img src="https://tomcat1009.coding.me/hexo/images/avatar.png?v=1573697254332"/>
 
           <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
 
@@ -263,6 +263,49 @@ spec:
 <pre><code># 适用于个人GPU测试
 kubectl  create job nvjob --image=nvidia/cuda:9.0-base -- nvidia-smi
 </code></pre>
+<h3 id="驱动安装说明">驱动安装说明</h3>
+<ol>
+<li>
+<p>使用cuda10或者以上的版本，一定要去<a href="https://www.nvidia.cn/Download/index.aspx?lang=cn">官网页面</a>下载驱动</p>
+</li>
+<li>
+<p>安装时候先禁用ubuntu默认显卡驱动,编辑/etc/modprobe.d/blacklist.conf文件</p>
+<pre><code>blacklist nouveau
+option nouveau modeset=0
+</code></pre>
+<pre><code>update-initramfs -u
+</code></pre>
+<pre><code># 重启后执行，没有输出表示禁用成功
+lsmod | grep nouveau
+</code></pre>
+</li>
+<li>
+<p>卸载旧驱动</p>
+<pre><code># 查看已经安装了的包
+apt list --installed
+dpkg -l
+
+# 停止图形界面
+/etc/init.d/lightdm stop
+
+# 方法一：
+sudo apt-get remove –purge nvidia*
+# 方法二：
+xxxx.run --uninstall
+# 方法三：
+nvidia-uninstall
+# 卸载完成后最好重启下
+</code></pre>
+</li>
+<li>
+<p>安装驱动</p>
+<pre><code># 停止图形界面
+service lightdm stop
+# 安装驱动程序
+xxx.run 
+</code></pre>
+</li>
+</ol>
 <h3 id="参考资料">参考资料</h3>
 <p><a href="https://github.com/NVIDIA/nvidia-docker">https://github.com/NVIDIA/nvidia-docker</a></p>
 <p><a href="https://github.com/NVIDIA/k8s-device-plugin">https://github.com/NVIDIA/k8s-device-plugin</a></p>
