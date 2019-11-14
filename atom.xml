@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://tomcat1009.coding.me/hexo</id>
     <title>PeterPan</title>
-    <updated>2019-11-14T02:07:39.361Z</updated>
+    <updated>2019-11-14T02:12:46.860Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://tomcat1009.coding.me/hexo"/>
     <link rel="self" href="https://tomcat1009.coding.me/hexo/atom.xml"/>
@@ -1469,11 +1469,13 @@ kubectl  create job nvjob --image=nvidia/cuda:9.0-base -- nvidia-smi
 <p>使用cuda10或者以上的版本，一定要去<a href="https://www.nvidia.cn/Download/index.aspx?lang=cn">官网页面</a>下载驱动</p>
 </li>
 <li>
-<p>安装时候先禁用ubuntu默认显卡驱动,编辑/etc/modprobe.d/blacklist.conf文件</p>
-<pre><code>blacklist nouveau
+<p>安装时候先禁用ubuntu默认显卡驱动</p>
+<pre><code># 编辑/etc/modprobe.d/blacklist.conf
+blacklist nouveau
 option nouveau modeset=0
 </code></pre>
-<pre><code>update-initramfs -u
+<pre><code># 文件编辑完成后，执行以下命令，使引导生效
+update-initramfs -u
 </code></pre>
 <pre><code># 重启后执行，没有输出表示禁用成功
 lsmod | grep nouveau

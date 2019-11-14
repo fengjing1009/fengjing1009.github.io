@@ -19,7 +19,7 @@
      <div class="header">
       <div class="logo_title">
 		  
-        <div class="title animated fadeInDown"><img src="https://tomcat1009.coding.me/hexo/images/avatar.png?v=1573697254332"/>
+        <div class="title animated fadeInDown"><img src="https://tomcat1009.coding.me/hexo/images/avatar.png?v=1573697559051"/>
 
           <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
 
@@ -269,11 +269,13 @@ kubectl  create job nvjob --image=nvidia/cuda:9.0-base -- nvidia-smi
 <p>使用cuda10或者以上的版本，一定要去<a href="https://www.nvidia.cn/Download/index.aspx?lang=cn">官网页面</a>下载驱动</p>
 </li>
 <li>
-<p>安装时候先禁用ubuntu默认显卡驱动,编辑/etc/modprobe.d/blacklist.conf文件</p>
-<pre><code>blacklist nouveau
+<p>安装时候先禁用ubuntu默认显卡驱动</p>
+<pre><code># 编辑/etc/modprobe.d/blacklist.conf
+blacklist nouveau
 option nouveau modeset=0
 </code></pre>
-<pre><code>update-initramfs -u
+<pre><code># 文件编辑完成后，执行以下命令，使引导生效
+update-initramfs -u
 </code></pre>
 <pre><code># 重启后执行，没有输出表示禁用成功
 lsmod | grep nouveau
