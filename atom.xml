@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://tomcat1009.coding.me/hexo</id>
     <title>PeterPan</title>
-    <updated>2019-11-22T02:37:56.737Z</updated>
+    <updated>2019-11-22T02:43:29.878Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://tomcat1009.coding.me/hexo"/>
     <link rel="self" href="https://tomcat1009.coding.me/hexo/atom.xml"/>
@@ -16,8 +16,13 @@
         <link href="https://tomcat1009.coding.me/hexo/post/2019112201">
         </link>
         <updated>2019-11-22T02:25:27.000Z</updated>
-        <content type="html"><![CDATA[<h3 id="初始化集群">初始化集群</h3>
-<pre><code>kubeadm join 100.64.139.60:6443 --token 9vbxyg.dc7mupnjuznb8839 \
+        <content type="html"><![CDATA[<blockquote>
+<p>本方法使用于1.15之后的版本(实验版本为1.16.3)</p>
+</blockquote>
+<h3 id="初始化集群">初始化集群</h3>
+<pre><code>[root@k8s-master-2 ~]# kubeadm init --control-plane-endpoint 100.64.139.60 --pod-network-cidr=10.244.0.0/16 --image-repository=registry.cn-hangzhou.aliyuncs.com/google_containers --upload-certs
+...
+kubeadm join 100.64.139.60:6443 --token 9vbxyg.dc7mupnjuznb8839 \
     --discovery-token-ca-cert-hash sha256:92fb288714ae020deba3740fab23c04e13d40f833b0ce9d0e33b3cb248dd33a5 \
     --control-plane --certificate-key 3181c80884a40d3df623564940c550a01f26e994ac94a3843c87700444ed9bee
 
