@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://tomcat1009.coding.me/hexo</id>
     <title>PeterPan</title>
-    <updated>2019-12-11T03:07:11.128Z</updated>
+    <updated>2019-12-11T04:47:14.075Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://tomcat1009.coding.me/hexo"/>
     <link rel="self" href="https://tomcat1009.coding.me/hexo/atom.xml"/>
@@ -10,6 +10,68 @@
     <logo>https://tomcat1009.coding.me/hexo/images/avatar.png</logo>
     <icon>https://tomcat1009.coding.me/hexo/favicon.ico</icon>
     <rights>All rights reserved 2019, PeterPan</rights>
+    <entry>
+        <title type="html"><![CDATA[etcd故障后恢复]]></title>
+        <id>https://tomcat1009.coding.me/hexo/post/2019121101</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019121101">
+        </link>
+        <updated>2019-12-11T04:46:33.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="etcd故障描述">etcd故障描述</h3>
+<p>etcd集群采用raft算法,所以当集群能够正常运行的时候一定是存活节点数大于总节点数的一半。当少于总结点数一半时，集群会处于不可用状态，这种情况下我们需要恢复集群。此处也可以使用备份进行新节点恢复。</p>
+<h3 id="故障模拟">故障模拟</h3>
+<ol>
+<li>
+<p>首先我们需要搭建一个正常的集群，搭建集群参考文档<a href="https://tomcat1009.coding.me/hexo/post/2019102501/">etcd测试集群搭建</a>。</p>
+</li>
+<li>
+<p>根据上述文档完成集群搭建后，选择任意两个节点进行宕机操作</p>
+<pre><code>docker stop etcd2
+docker stop etcd3
+</code></pre>
+</li>
+</ol>
+<h3 id="恢复">恢复</h3>
+<h4 id="etcd1">etcd1</h4>
+<p>使用剩下的节点<code>etcd1</code>进行如下操作</p>
+<pre><code># 备份数据库，注意需要备份到持久化目录中
+ETCDCTL_API=3 /root/local/bin/etcdctl snapshot save snapshot.db
+
+# 删除容器
+docker rm -f etcd1
+
+# 启动新容器，跟上参数--force-new-cluster
+docker run --restart=always --net host -it --name etcd1 -d -v /var/etcd:/var/etcd -v /etc/localtime:/etc/localtime registry.cn-hangzhou.aliyuncs.com/google_containers/etcd:3.3.10 etcd --name etcd-s1 --auto-compaction-retention=1 --max-request-bytes=33554432 --quota-backend-bytes=8589934592 --data-dir=/var/etcd/etcd-data --listen-client-urls http://0.0.0.0:2379 --listen-peer-urls http://0.0.0.0:2380 --initial-advertise-peer-urls http://172.16.10.101:2380 --advertise-client-urls http://172.16.10.101:2379,http://172.16.10.101:2380 -initial-cluster-token etcd-cluster -initial-cluster &quot;etcd-s1=http://172.16.10.101:2380,etcd-s2=http://172.16.10.102:2380,etcd-s3=http://172.16.10.103:2380&quot; -initial-cluster-state new --force-new-cluster
+
+# 查看并添加节点，需要一个一个添加，添加后再启动相应的节点
+ETCDCTL_API=3 etcdctl member list
+ETCDCTL_API=3 etcdctl member add etcd-s2 --peer-urls=http://172.16.10.102:2380
+
+# 当完成etcd2的启动后再执行etcd3节点的注册添加
+ETCDCTL_API=3 etcdctl member add etcd-s3 --peer-urls=http://172.16.10.103:2380
+</code></pre>
+<h4 id="etcd2">etcd2</h4>
+<p>启动<code>etcd2</code>,此处需要注意参数<code>existing</code></p>
+<pre><code># 删除etcd2容器，并清理本地etcd数据目录
+docker rm -f etcd3
+rm -rf /var/etcd
+
+# 启动etcd2新容器
+docker run --restart=always --net host -it --name etcd2 -d -v /var/etcd:/var/etcd -v /etc/localtime:/etc/localtime registry.cn-hangzhou.aliyuncs.com/google_containers/etcd:3.3.10 etcd --name etcd-s2  --auto-compaction-retention=1 --max-request-bytes=33554432 --quota-backend-bytes=8589934592 --data-dir=/var/etcd/etcd-data --listen-client-urls http://0.0.0.0:2379 --listen-peer-urls http://0.0.0.0:2380 --initial-advertise-peer-urls http://172.16.10.102:2380 --advertise-client-urls http://172.16.10.102:2379,http://172.16.10.102:2380 -initial-cluster-token etcd-cluster -initial-cluster &quot;etcd-s1=http://172.16.10.101:2380,etcd-s2=http://172.16.10.102:2380&quot; -initial-cluster-state existing
+</code></pre>
+<h4 id="etcd3">etcd3</h4>
+<p>启动<code>etcd3</code>,此处需要注意参数<code>existing</code></p>
+<pre><code># 删除etcd3容器，并清理本地etcd数据目录
+docker rm -f etcd3
+rm -rf /var/etcd
+
+# 启动etcd3容器
+docker run --restart=always --net host -it --name etcd3 -d -v /var/etcd:/var/etcd -v /etc/localtime:/etc/localtime registry.cn-hangzhou.aliyuncs.com/google_containers/etcd:3.3.10 etcd --name etcd-s3  --auto-compaction-retention=1 --max-request-bytes=33554432 --quota-backend-bytes=8589934592 --data-dir=/var/etcd/etcd-data --listen-client-urls http://0.0.0.0:2379 --listen-peer-urls http://0.0.0.0:2380 --initial-advertise-peer-urls http://172.16.10.103:2380 --advertise-client-urls http://172.16.10.103:2379,http://172.16.10.103:2380 -initial-cluster-token etcd-cluster -initial-cluster &quot;etcd-s1=http://172.16.10.101:2380,etcd-s2=http://172.16.10.102:2380,etcd-s3=http://172.16.10.103:2380&quot; -initial-cluster-state existing
+</code></pre>
+<h3 id="参考文档">参考文档</h3>
+<p>https://blog.csdn.net/yinlongfei_love/article/details/87722341</p>
+<p>https://www.cnblogs.com/wangbin/p/9426644.html</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes 新增master节点]]></title>
         <id>https://tomcat1009.coding.me/hexo/post/2019112201</id>
@@ -1704,57 +1766,6 @@ spec:
         name: nginx
         resources: {}
 status: {}
-
-</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[kubernetes配置外网dns]]></title>
-        <id>https://tomcat1009.coding.me/hexo/post/9yPSD7pfq</id>
-        <link href="https://tomcat1009.coding.me/hexo/post/9yPSD7pfq">
-        </link>
-        <updated>2019-06-21T02:36:34.000Z</updated>
-        <summary type="html"><![CDATA[<p>通过更新coredns configmap，设置upstream字段实现指定上游解析服务器</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>通过更新coredns configmap，设置upstream字段实现指定上游解析服务器</p>
-<!-- more -->
-<h1 id="编辑coredns-configmap">编辑coredns configmap</h1>
-<pre><code>[root@k8s-node1 ~]# cat setdns.yaml 
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: coredns
-  namespace: kube-system
-  labels:
-      addonmanager.kubernetes.io/mode: EnsureExists
-data:
-  Corefile: |
-    .:53 {
-        errors
-        health
-        kubernetes cluster.local in-addr.arpa ip6.arpa {
-            pods insecure
-            upstream 114.114.114.114
-            fallthrough in-addr.arpa ip6.arpa
-        }
-        prometheus :9153
-        proxy . /etc/resolv.conf
-        # proxy . 223.5.5.5
-        cache 30
-        reload
-    }
-</code></pre>
-<h1 id="应用config-map">应用config map</h1>
-<pre><code> kubectl apply -f setdns.yaml
-</code></pre>
-<h1 id="检查外网dns解析">检查外网dns解析</h1>
-<pre><code>
-[root@k8s-node1 ~]# kubectl run -it --rm --restart=Never --image=infoblox/dnstools:latest dnstools
-If you don't see a command prompt, try pressing enter.
-dnstools# host www.baidu.com
-www.baidu.com is an alias for www.a.shifen.com.
-www.a.shifen.com has address 220.181.111.188
-www.a.shifen.com has address 220.181.112.244
 
 </code></pre>
 ]]></content>
