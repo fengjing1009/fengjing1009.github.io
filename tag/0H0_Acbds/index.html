@@ -1,12 +1,12 @@
 
 <html>
-  <head lang="zh">
+<head lang="zh">
         <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
         <meta content="yes" name="apple-mobile-web-app-capable"/>
         <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
         <meta content="telephone=no" name="format-detection"/>
         <meta name="renderer" content="webkit">
-    <title>kubernetes 新增master节点 | PeterPan</title>
+    <title>PeterPan</title>
 <link href="https://tomcat1009.coding.me/hexo/styles/main.css" type="text/css" rel="stylesheet"/>
 <script type="text/javascript" src="https://tomcat1009.coding.me/hexo/media/scripts/jquery.js"></script>
 <script type="text/javascript" src="https://tomcat1009.coding.me/hexo/media/scripts/basic.js"></script>
@@ -16,7 +16,7 @@
   </head>
 
   <body>
-     <div class="header">
+    <div class="header">
       <div class="logo_title">
 		  
         <div class="title animated fadeInDown"><img src="https://tomcat1009.coding.me/hexo/images/avatar.png?v=1576039803156"/>
@@ -135,7 +135,6 @@
     <div class="main">
       <div class="main-inner">
 
-
 <div class="content">
 
 
@@ -143,31 +142,25 @@
 
 
 
-  <div class="post_page" >
+  <div class="post_list" >
 
+	
 <div class="post">
-  <div class="post_title sm_margin">
-    <h2><a>kubernetes 新增master节点</a>
-
-
-
+  <div class="post_title weaklink">
+    <h2><a href="https://tomcat1009.coding.me/hexo/post/2019121101" >etcd故障后恢复</a>
     </h2>
   </div>
-
-  <div class="post_details">
-    <div class="info"><i class="fa fa-clock-o"></i>
-<span class="date_info">2019-11-22</span>
-<i class="fa fa-eye"></i>
-
-<span class="date_info"><span id="busuanzi_value_page_pv"></span> Views</span>
-
+  <div class="post_content markdown"><div class="p_part"><p></p></div></div>
+  <div class="post_footer">
+    <div class="info weaklink"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-12-11</span>
 
 <i class="fa fa-bookmark-o"></i>
+	
 <span class="tags_info weaklink">
 	
-	<a href="https://tomcat1009.coding.me/hexo/tag/OzrDk-wrZ" class="tag">kubernetes</a>
+	<a href="https://tomcat1009.coding.me/hexo/tag/0H0_Acbds" class="tag">etcd</a>
 
-	<a href="https://tomcat1009.coding.me/hexo/tag/3mskBUybD0" class="tag">kubeadm</a>
 
 
 </span>
@@ -177,57 +170,80 @@
 
   </div>
 
-
-
-
-
-  <div class="post_content markdown"><p class="md_block">
-    <span class="md_line md_line_start md_line_end"><blockquote>
-<p>本方法使用于1.15之后的版本(实验版本为1.16.3)</p>
-</blockquote>
-<h3 id="初始化集群">初始化集群</h3>
-<pre><code>[root@k8s-master-2 ~]# kubeadm init --control-plane-endpoint 100.64.139.60 --pod-network-cidr=10.244.0.0/16 --image-repository=registry.cn-hangzhou.aliyuncs.com/google_containers --upload-certs
-...
-kubeadm join 100.64.139.60:6443 --token 9vbxyg.dc7mupnjuznb8839 \
-    --discovery-token-ca-cert-hash sha256:92fb288714ae020deba3740fab23c04e13d40f833b0ce9d0e33b3cb248dd33a5 \
-    --control-plane --certificate-key 3181c80884a40d3df623564940c550a01f26e994ac94a3843c87700444ed9bee
-
-Please note that the certificate-key gives access to cluster sensitive data, keep it secret!
-As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you can use
-&quot;kubeadm init phase upload-certs --upload-certs&quot; to reload certs afterward.
-
-Then you can join any number of worker nodes by running the following on each as root:
-
-kubeadm join 100.64.139.60:6443 --token 9vbxyg.dc7mupnjuznb8839 \
-    --discovery-token-ca-cert-hash sha256:92fb288714ae020deba3740fab23c04e13d40f833b0ce9d0e33b3cb248dd33a5
-</code></pre>
-<h3 id="后续新加入">后续新加入</h3>
-<p><strong>node</strong></p>
-<pre><code>kubeadm token create --print-join-command
-</code></pre>
-<p><strong>master</strong></p>
-<pre><code># 子命令
-kubeadm token create --print-join-command
-kubeadm init phase upload-certs --upload-certs
-# 单个命令全部生成
-echo &quot;$(kubeadm token create --print-join-command) --control-plane --certificate-key $(kubeadm init phase upload-certs --upload-certs|tail -n 1)&quot;
-</code></pre>
-<h3 id="参考文档">参考文档</h3>
-<p>https://www.cnblogs.com/Dev0ps/p/10980516.html</p>
-</p>
-
-     <p class="md_block">
-    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://tomcat1009.coding.me/hexo/media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://tomcat1009.coding.me/hexo/media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
-</p> 
 </div>
+	
+
+	
+<div class="post">
+  <div class="post_title weaklink">
+    <h2><a href="https://tomcat1009.coding.me/hexo/post/2019102501" >etcd测试集群搭建（http）</a>
+    </h2>
+  </div>
+  <div class="post_content markdown"><div class="p_part"><p></p></div></div>
+  <div class="post_footer">
+    <div class="info weaklink"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-10-25</span>
+
+<i class="fa fa-bookmark-o"></i>
+	
+<span class="tags_info weaklink">
+	
+	<a href="https://tomcat1009.coding.me/hexo/tag/0H0_Acbds" class="tag">etcd</a>
+
+
+
+</span>
+
+
+    </div>
+
+  </div>
 
 </div>
+	
+
+	
+<div class="post">
+  <div class="post_title weaklink">
+    <h2><a href="https://tomcat1009.coding.me/hexo/post/2019090503" >etcd数据备份和恢复</a>
+    </h2>
+  </div>
+  <div class="post_content markdown"><div class="p_part"><p></p></div></div>
+  <div class="post_footer">
+    <div class="info weaklink"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-09-05</span>
+
+<i class="fa fa-bookmark-o"></i>
+	
+<span class="tags_info weaklink">
+	
+	<a href="https://tomcat1009.coding.me/hexo/tag/0H0_Acbds" class="tag">etcd</a>
+
+
+	<a href="https://tomcat1009.coding.me/hexo/tag/WNdlutgnv" class="tag">运维</a>
 
 
 
-<link href="https://tomcat1009.coding.me/hexo/styles/main.css" type="text/css" rel="stylesheet"/>
+</span>
 
-<div class="doc_comments">
+
+    </div>
+
+  </div>
+
+</div>
+	
+	
+
+<div class="paginator pager pagination" >
+	
+
+
+
+    <div style="clear:both;height:0;"></div>
+
+
+  </div>
 
 </div>
 
@@ -240,12 +256,9 @@ echo &quot;$(kubeadm token create --print-join-command) --control-plane --certif
 
       </div>
 
-
-
-
     </div>
 
-   <div class="footer">
+    <div class="footer">
 <link href="https://tomcat1009.coding.me/hexo/styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
 
       <div class="mysocials"><div class="my_socials">

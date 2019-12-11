@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://tomcat1009.coding.me/hexo</id>
     <title>PeterPan</title>
-    <updated>2019-12-11T04:47:14.075Z</updated>
+    <updated>2019-12-11T04:50:06.831Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://tomcat1009.coding.me/hexo"/>
     <link rel="self" href="https://tomcat1009.coding.me/hexo/atom.xml"/>
@@ -25,11 +25,11 @@
 </li>
 <li>
 <p>根据上述文档完成集群搭建后，选择任意两个节点进行宕机操作</p>
+</li>
+</ol>
 <pre><code>docker stop etcd2
 docker stop etcd3
 </code></pre>
-</li>
-</ol>
 <h3 id="恢复">恢复</h3>
 <h4 id="etcd1">etcd1</h4>
 <p>使用剩下的节点<code>etcd1</code>进行如下操作</p>
