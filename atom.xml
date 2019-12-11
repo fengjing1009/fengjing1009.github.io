@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://tomcat1009.coding.me/hexo</id>
     <title>PeterPan</title>
-    <updated>2019-12-11T04:50:06.831Z</updated>
+    <updated>2019-12-11T06:45:33.849Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://tomcat1009.coding.me/hexo"/>
     <link rel="self" href="https://tomcat1009.coding.me/hexo/atom.xml"/>
@@ -10,6 +10,134 @@
     <logo>https://tomcat1009.coding.me/hexo/images/avatar.png</logo>
     <icon>https://tomcat1009.coding.me/hexo/favicon.ico</icon>
     <rights>All rights reserved 2019, PeterPan</rights>
+    <entry>
+        <title type="html"><![CDATA[kubernetes master 更换ip（单节点）]]></title>
+        <id>https://tomcat1009.coding.me/hexo/post/2019121102</id>
+        <link href="https://tomcat1009.coding.me/hexo/post/2019121102">
+        </link>
+        <updated>2019-12-11T06:44:47.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="问题分析">问题分析</h3>
+<p>master ip地址变更以后，我们首先应该检查以下内容：</p>
+<ol>
+<li>
+<p><code>/etc/kubernetes/manifests</code>下面的config配置文件，替换里面对应的ip</p>
+</li>
+<li>
+<p>相关的证书文件</p>
+</li>
+<li>
+<p>客户端文件</p>
+</li>
+</ol>
+<h3 id="解决步骤">解决步骤</h3>
+<h4 id="准备config文件">准备config文件</h4>
+<blockquote>
+<p>如果环境能出国网则不用进行该步骤,此文件为kubeadm.config</p>
+</blockquote>
+<pre><code>apiVersion: kubeadm.k8s.io/v1beta2
+bootstrapTokens:
+- groups:
+  - system:bootstrappers:kubeadm:default-node-token
+  token: abcdef.0123456789abcdef
+  ttl: 24h0m0s
+  usages:
+  - signing
+  - authentication
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: 100.64.139.62
+  bindPort: 6443
+nodeRegistration:
+  criSocket: /var/run/dockershim.sock
+  name: k8s-master-2
+  taints:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+---
+apiServer:
+  timeoutForControlPlane: 4m0s
+apiVersion: kubeadm.k8s.io/v1beta2
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+controllerManager: {}
+dns:
+  type: CoreDNS
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+kind: ClusterConfiguration
+imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
+kubernetesVersion: v1.16.0
+networking:
+  dnsDomain: cluster.local
+  serviceSubnet: 10.96.0.0/12
+scheduler: {}
+</code></pre>
+<h4 id="修改配置文件">修改配置文件</h4>
+<pre><code>[root@k8s-master-2 kubernetes]# cd /etc/kubernetes
+[root@k8s-master-2 kubernetes]# find . -type f |xargs grep 100.64.139.60 |awk '{print $1}' |sort |uniq
+./admin.conf:
+./controller-manager.conf:
+./kubelet.conf:
+./manifests/etcd.yaml:
+./manifests/kube-apiserver.yaml:
+./scheduler.conf:
+</code></pre>
+<p>其中几个conf文件为kubeadm自动生成的带证书的客户端配置文件，需要修改的为<code>etcd.yaml</code>,<code>kube-apiserver.yaml</code>两个配置文件。将里面对应的ip地址修改为新的ip地址。</p>
+<h4 id="生成新证书">生成新证书</h4>
+<p><strong>方法一：部分删除生成证书</strong></p>
+<p>备份原始证书，根据<code>find</code>命令的输出，以下相关的服务证书需要更换<code>kubelt api proxy</code></p>
+<pre><code># 备份原始证书
+mv /etc/kubernetes/pki/apiserver.key /etc/kubernetes/pki/apiserver.key.old
+mv /etc/kubernetes/pki/apiserver.crt /etc/kubernetes/pki/apiserver.crt.old
+mv /etc/kubernetes/pki/apiserver-kubelet-client.crt /etc/kubernetes/pki/apiserver-kubelet-client.crt.old
+mv /etc/kubernetes/pki/apiserver-kubelet-client.key /etc/kubernetes/pki/apiserver-kubelet-client.key.old
+mv /etc/kubernetes/pki/front-proxy-client.crt /etc/kubernetes/pki/front-proxy-client.crt.old
+mv /etc/kubernetes/pki/front-proxy-client.key /etc/kubernetes/pki/front-proxy-client.key.old
+
+# 生成新证书
+kubeadm init  phase certs apiserver --config kubeadm.config
+kubeadm init  phase certs apiserver-kubelet-client --config kubeadm.config
+kubeadm init  phase certs front-proxy-client --config kubeadm.config
+</code></pre>
+<p><strong>方法二：全部删除生成证书</strong></p>
+<pre><code># 全部删除证书
+mv /etc/kubernetes/pki  /etc/kubernetes/pki.old
+
+# 生成新证书
+kubeadm init  phase certs all --config kubeadm.config
+</code></pre>
+<h4 id="生成新的客户端文件">生成新的客户端文件</h4>
+<p><strong>方法一：分步骤生成</strong></p>
+<pre><code>kubeadm  init phase kubeconfig admin --config kubeadm.config
+kubeadm  init phase kubeconfig controller-manager --config kubeadm.config
+kubeadm  init phase kubeconfig kubelet --config kubeadm.config
+kubeadm  init phase kubeconfig scheduler --config kubeadm.config
+</code></pre>
+<p><strong>方法二：一次全部生成</strong></p>
+<pre><code>mv /etc/kubernetes/*.conf /tmp
+kubeadm  init phase kubeconfig all --config kubeadm.config
+</code></pre>
+<h4 id="查看证书过期时间">查看证书过期时间</h4>
+<pre><code>[root@k8s-master-2 pki]# kubeadm  alpha  certs check-expiration
+CERTIFICATE                EXPIRES                  RESIDUAL TIME   EXTERNALLY MANAGED
+admin.conf                 Dec 10, 2020 05:31 UTC   364d            no
+apiserver                  Dec 10, 2020 05:30 UTC   364d            no
+apiserver-etcd-client      Dec 10, 2020 05:31 UTC   364d            no
+apiserver-kubelet-client   Dec 10, 2020 05:30 UTC   364d            no
+controller-manager.conf    Dec 10, 2020 05:31 UTC   364d            no
+etcd-healthcheck-client    Dec 10, 2020 05:31 UTC   364d            no
+etcd-peer                  Dec 10, 2020 05:31 UTC   364d            no
+etcd-server                Dec 10, 2020 05:30 UTC   364d            no
+front-proxy-client         Dec 10, 2020 05:30 UTC   364d            no
+scheduler.conf             Dec 10, 2020 05:31 UTC   364d            no
+</code></pre>
+<h4 id="重启服务">重启服务</h4>
+<pre><code>service docker restart 
+service kubelet restart
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[etcd故障后恢复]]></title>
         <id>https://tomcat1009.coding.me/hexo/post/2019121101</id>
@@ -1699,74 +1827,6 @@ https://blog.csdn.net/wolf09311/article/details/52680170
       -metadata service_name=&quot;Channel 1&quot; -metadata service_provider=&quot;PBS&quot; \
       -b 1.5M\
       -f flv rtmp://172.16.10.101:1935/live/demo
-</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[kubernetes使用PodPreset特性预设整个集群]]></title>
-        <id>https://tomcat1009.coding.me/hexo/post/t-I_dB2CB</id>
-        <link href="https://tomcat1009.coding.me/hexo/post/t-I_dB2CB">
-        </link>
-        <updated>2019-06-24T07:25:54.000Z</updated>
-        <summary type="html"><![CDATA[<p>有的时候我们需要根据情况,预先配置集群里面的容器的某些属性,则可以通过podpreset配置实现.</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>有的时候我们需要根据情况,预先配置集群里面的容器的某些属性,则可以通过podpreset配置实现.</p>
-<!-- more -->
-<h3 id="配置apiserver">配置apiserver</h3>
-<blockquote>
-<p>通过标签选择器完成对特定pod的部分属性预设</p>
-</blockquote>
-<pre><code># 开启settings.k8s.io/v1alpha1api
-- --runtime-config=settings.k8s.io/v1alpha1=true
-# 开启adminssion controller
-- --enable-admission-plugins=PodPreset
-# 可配置选项 Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,Validating
-</code></pre>
-<h3 id="配置测试yaml">配置测试yaml</h3>
-<pre><code>root@ubuntu4:~/podpreset# cat preset-time.yaml
-kind: PodPreset
-apiVersion: settings.k8s.io/v1alpha1
-metadata:
-  name: timezone
-spec:
-  selector:
-    matchLabels:
-      app: nginx
-  volumeMounts:
-    - name: host-time
-      mountPath: /etc/localtime
-  volumes:
-    - name: host-time
-      hostPath:
-        path: /etc/localtime
-
-</code></pre>
-<pre><code>root@ubuntu4:~/podpreset# kubectl  create deploy nginx --image nginx -o yaml --dry-run
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  creationTimestamp: null
-  labels:
-    app: nginx
-  name: nginx
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: nginx
-  strategy: {}
-  template:
-    metadata:
-      creationTimestamp: null
-      labels:
-        app: nginx
-    spec:
-      containers:
-      - image: nginx
-        name: nginx
-        resources: {}
-status: {}
-
 </code></pre>
 ]]></content>
     </entry>
