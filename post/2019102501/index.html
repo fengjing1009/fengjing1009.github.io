@@ -19,7 +19,7 @@
      <div class="header">
       <div class="logo_title">
 		  
-        <div class="title animated fadeInDown"><img src="https://tomcat1009.coding.me/hexo/images/avatar.png?v=1574390606483"/>
+        <div class="title animated fadeInDown"><img src="https://tomcat1009.coding.me/hexo/images/avatar.png?v=1576033627073"/>
 
           <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
 
@@ -209,9 +209,9 @@
 </tbody>
 </table>
 <h4 id="etcd1">etcd1</h4>
-<pre><code>mkdir -p /var/etcd
+<pre><code>rm -rf /var/etcd
+mkdir -p /var/etcd
 docker rm etcd1 -f
-rm -rf /var/etcd
 docker run --restart=always --net host -it --name etcd1 -d \
 -v /var/etcd:/var/etcd \
 -v /etc/localtime:/etc/localtime \
@@ -228,9 +228,9 @@ etcd --name etcd-s1 \
 -initial-cluster-state new
 </code></pre>
 <h4 id="etcd2">etcd2</h4>
-<pre><code>mkdir -p /var/etcd
+<pre><code>rm -rf /var/etcd
+mkdir -p /var/etcd
 docker rm etcd2 -f
-rm -rf /var/etcd
 docker run --restart=always --net host -it --name etcd2 -d \
 -v /var/etcd:/var/etcd \
 -v /etc/localtime:/etc/localtime \
@@ -247,9 +247,9 @@ etcd --name etcd-s2  \
 -initial-cluster-state new
 </code></pre>
 <h4 id="etcd3">etcd3</h4>
-<pre><code>mkdir -p /var/etcd
+<pre><code>rm -rf /var/etcd
+mkdir -p /var/etcd
 docker rm etcd3 -f
-rm -rf /var/etcd
 docker run --restart=always --net host -it --name etcd3 -d \
 -v /var/etcd:/var/etcd \
 -v /etc/localtime:/etc/localtime \

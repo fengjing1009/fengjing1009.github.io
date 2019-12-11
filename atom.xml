@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://tomcat1009.coding.me/hexo</id>
     <title>PeterPan</title>
-    <updated>2019-11-22T02:43:29.878Z</updated>
+    <updated>2019-12-11T03:07:11.128Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://tomcat1009.coding.me/hexo"/>
     <link rel="self" href="https://tomcat1009.coding.me/hexo/atom.xml"/>
@@ -85,9 +85,9 @@ echo &quot;$(kubeadm token create --print-join-command) --control-plane --certif
 </tbody>
 </table>
 <h4 id="etcd1">etcd1</h4>
-<pre><code>mkdir -p /var/etcd
+<pre><code>rm -rf /var/etcd
+mkdir -p /var/etcd
 docker rm etcd1 -f
-rm -rf /var/etcd
 docker run --restart=always --net host -it --name etcd1 -d \
 -v /var/etcd:/var/etcd \
 -v /etc/localtime:/etc/localtime \
@@ -104,9 +104,9 @@ etcd --name etcd-s1 \
 -initial-cluster-state new
 </code></pre>
 <h4 id="etcd2">etcd2</h4>
-<pre><code>mkdir -p /var/etcd
+<pre><code>rm -rf /var/etcd
+mkdir -p /var/etcd
 docker rm etcd2 -f
-rm -rf /var/etcd
 docker run --restart=always --net host -it --name etcd2 -d \
 -v /var/etcd:/var/etcd \
 -v /etc/localtime:/etc/localtime \
@@ -123,9 +123,9 @@ etcd --name etcd-s2  \
 -initial-cluster-state new
 </code></pre>
 <h4 id="etcd3">etcd3</h4>
-<pre><code>mkdir -p /var/etcd
+<pre><code>rm -rf /var/etcd
+mkdir -p /var/etcd
 docker rm etcd3 -f
-rm -rf /var/etcd
 docker run --restart=always --net host -it --name etcd3 -d \
 -v /var/etcd:/var/etcd \
 -v /etc/localtime:/etc/localtime \
