@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://tomcat1009.coding.me/hexo</id>
     <title>PeterPan</title>
-    <updated>2019-12-11T06:45:33.849Z</updated>
+    <updated>2019-12-13T10:43:55.290Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://tomcat1009.coding.me/hexo"/>
     <link rel="self" href="https://tomcat1009.coding.me/hexo/atom.xml"/>
@@ -167,7 +167,7 @@ ETCDCTL_API=3 /root/local/bin/etcdctl snapshot save snapshot.db
 # 删除容器
 docker rm -f etcd1
 
-# 启动新容器，跟上参数--force-new-cluster
+# 启动新容器，跟上参数--force-new-cluster，集群恢复后需要取消该选项
 docker run --restart=always --net host -it --name etcd1 -d -v /var/etcd:/var/etcd -v /etc/localtime:/etc/localtime registry.cn-hangzhou.aliyuncs.com/google_containers/etcd:3.3.10 etcd --name etcd-s1 --auto-compaction-retention=1 --max-request-bytes=33554432 --quota-backend-bytes=8589934592 --data-dir=/var/etcd/etcd-data --listen-client-urls http://0.0.0.0:2379 --listen-peer-urls http://0.0.0.0:2380 --initial-advertise-peer-urls http://172.16.10.101:2380 --advertise-client-urls http://172.16.10.101:2379,http://172.16.10.101:2380 -initial-cluster-token etcd-cluster -initial-cluster &quot;etcd-s1=http://172.16.10.101:2380,etcd-s2=http://172.16.10.102:2380,etcd-s3=http://172.16.10.103:2380&quot; -initial-cluster-state new --force-new-cluster
 
 # 查看并添加节点，需要一个一个添加，添加后再启动相应的节点
@@ -180,7 +180,7 @@ ETCDCTL_API=3 etcdctl member add etcd-s3 --peer-urls=http://172.16.10.103:2380
 <h4 id="etcd2">etcd2</h4>
 <p>启动<code>etcd2</code>,此处需要注意参数<code>existing</code></p>
 <pre><code># 删除etcd2容器，并清理本地etcd数据目录
-docker rm -f etcd3
+docker rm -f etcd2
 rm -rf /var/etcd
 
 # 启动etcd2新容器
