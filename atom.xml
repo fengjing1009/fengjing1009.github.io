@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://tomcat1009.coding.me/hexo</id>
     <title>PeterPan</title>
-    <updated>2019-12-13T10:43:55.290Z</updated>
+    <updated>2019-12-16T01:32:21.017Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://tomcat1009.coding.me/hexo"/>
     <link rel="self" href="https://tomcat1009.coding.me/hexo/atom.xml"/>
@@ -32,7 +32,8 @@
 <h3 id="解决步骤">解决步骤</h3>
 <h4 id="准备config文件">准备config文件</h4>
 <blockquote>
-<p>如果环境能出国网则不用进行该步骤,此文件为kubeadm.config</p>
+<p>如果环境能出国网则不用进行该步骤,此文件为kubeadm.config<br>
+使用该文件时候注意替换相关的API地址和端口等信息</p>
 </blockquote>
 <pre><code>apiVersion: kubeadm.k8s.io/v1beta2
 bootstrapTokens:
