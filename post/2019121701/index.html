@@ -6,7 +6,7 @@
         <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
         <meta content="telephone=no" name="format-detection"/>
         <meta name="renderer" content="webkit">
-    <title>Hello Gridea | PeterPan</title>
+    <title>kubernetes 设置节点异常时候POD调度时间 | PeterPan</title>
 <link href="https://tomcat1009.coding.me/hexo/styles/main.css" type="text/css" rel="stylesheet"/>
 <script type="text/javascript" src="https://tomcat1009.coding.me/hexo/media/scripts/jquery.js"></script>
 <script type="text/javascript" src="https://tomcat1009.coding.me/hexo/media/scripts/basic.js"></script>
@@ -147,7 +147,7 @@
 
 <div class="post">
   <div class="post_title sm_margin">
-    <h2><a>Hello Gridea</a>
+    <h2><a>kubernetes 设置节点异常时候POD调度时间</a>
 
 
 
@@ -156,7 +156,7 @@
 
   <div class="post_details">
     <div class="info"><i class="fa fa-clock-o"></i>
-<span class="date_info">2018-12-12</span>
+<span class="date_info">2019-12-17</span>
 <i class="fa fa-eye"></i>
 
 <span class="date_info"><span id="busuanzi_value_page_pv"></span> Views</span>
@@ -165,7 +165,7 @@
 <i class="fa fa-bookmark-o"></i>
 <span class="tags_info weaklink">
 	
-	<a href="https://tomcat1009.coding.me/hexo/tag/4L20wSsPE" class="tag">Gridea</a>
+	<a href="https://tomcat1009.coding.me/hexo/tag/OzrDk-wrZ" class="tag">kubernetes</a>
 
 
 </span>
@@ -180,27 +180,46 @@
 
 
   <div class="post_content markdown"><p class="md_block">
-    <span class="md_line md_line_start md_line_end"><p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
-✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
-<!-- more -->
-<p><a href="https://github.com/getgridea/gridea">Github</a><br>
-<a href="http://hvenotes.fehey.com/">Gridea 主页</a><br>
-<a href="http://fehey.com/">示例网站</a></p>
-<h2 id="特性">特性👇</h2>
-<p>📝  你可以使用最酷的 <strong>Markdown</strong> 语法，进行快速创作</p>
-<p>🌉  你可以给文章配上精美的封面图和在文章任意位置插入图片</p>
-<p>🏷️  你可以对文章进行标签分组</p>
-<p>📋  你可以自定义菜单，甚至可以创建外部链接菜单</p>
-<p>💻  你可以在 <strong>𝖶𝗂𝗇𝖽𝗈𝗐𝗌</strong> 或 <strong>𝖬𝖺𝖼𝖮𝖲</strong> 设备上使用此客户端</p>
-<p>🌎  你可以使用 <strong>𝖦𝗂𝗍𝗁𝗎𝖻 𝖯𝖺𝗀𝖾𝗌</strong> 或 <strong>Coding Pages</strong> 向世界展示，未来将支持更多平台</p>
-<p>💬  你可以进行简单的配置，接入 <a href="https://github.com/gitalk/gitalk">Gitalk</a> 或 <a href="https://github.com/SukkaW/DisqusJS">DisqusJS</a> 评论系统</p>
-<p>🇬🇧  你可以使用<strong>中文简体</strong>或<strong>英语</strong></p>
-<p>🌁  你可以任意使用应用内默认主题或任意第三方主题，强大的主题自定义能力</p>
-<p>🖥  你可以自定义源文件夹，利用 OneDrive、百度网盘、iCloud、Dropbox 等进行多设备同步</p>
-<p>🌱 当然 <strong>Gridea</strong> 还很年轻，有很多不足，但请相信，它会不停向前🏃</p>
-<p>未来，它一定会成为你离不开的伙伴</p>
-<p>尽情发挥你的才华吧！</p>
-<p>😘 Enjoy~</p>
+    <span class="md_line md_line_start md_line_end"><blockquote>
+<p>防止节点异常后，pod要很长时间才能在其他node上运行起来，导致业务故障时间过长。</p>
+</blockquote>
+<h3 id="配置controller-manager">配置controller manager</h3>
+<p>编辑配置文件<code>/etc/kubernetes/manifests/kube-controller-manager.yaml</code></p>
+<pre><code>--node-monitor-grace-period=10s \
+--node-monitor-period=3s \
+--node-startup-grace-period=20s \
+--pod-eviction-timeout=10s \
+</code></pre>
+<h3 id="pod-调度过程">pod 调度过程</h3>
+<p>kubernetes节点失效后pod的调度过程：</p>
+<ol>
+<li>
+<p>Master每隔一段时间和node联系一次，判定node是否失联，这个时间周期配置项为 node-monitor-period ，默认5s</p>
+</li>
+<li>
+<p>当node失联后一段时间后，kubernetes判定node为notready状态，这段时长的配置项为 node-monitor-grace-period ，默认40s</p>
+</li>
+<li>
+<p>当node失联后一段时间后，kubernetes判定node为unhealthy，这段时长的配置项为 node-startup-grace-period ，默认1m0s</p>
+</li>
+<li>
+<p>当node失联后一段时间后，kubernetes开始删除原node上的pod，这段时长配置项为 pod-eviction-timeout ，默认5m0s</p>
+</li>
+</ol>
+<p>在应用中，想要缩短pod的重启时间，可以修改上述几个参数</p>
+<p><strong>参数解释</strong></p>
+<pre><code>--node-monitor-grace-period duration     Default: 40s
+ 	Amount of time which we allow running Node to be unresponsive before marking it unhealthy. Must be N times more than kubelet's nodeStatusUpdateFrequency, where N means number of retries allowed for kubelet to post node status.
+--node-monitor-period duration     Default: 5s
+ 	The period for syncing NodeStatus in NodeController.
+--node-startup-grace-period duration     Default: 1m0s
+ 	Amount of time which we allow starting Node to be unresponsive before marking it unhealthy.
+--pod-eviction-timeout duration     Default: 5m0s
+ 	The grace period for deleting pods on failed nodes.
+</code></pre>
+<h3 id="参考文档">参考文档</h3>
+<p>https://www.cnblogs.com/Qing-840/p/9818404.html</p>
+<p>https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/</p>
 </p>
 
      <p class="md_block">
