@@ -19,7 +19,7 @@
      <div class="header">
       <div class="logo_title">
 		  
-        <div class="title animated fadeInDown"><img src="https://tomcat1009.coding.me/hexo/images/avatar.png?v=1579153764277"/>
+        <div class="title animated fadeInDown"><img src="https://tomcat1009.coding.me/hexo/images/avatar.png?v=1579246917661"/>
 
           <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
 
@@ -250,7 +250,6 @@ scheduler: {}
 </code></pre>
 <p>其中几个conf文件为kubeadm自动生成的带证书的客户端配置文件，需要修改的为<code>etcd.yaml</code>,<code>kube-apiserver.yaml</code>两个配置文件。将里面对应的ip地址修改为新的ip地址。</p>
 <h4 id="生成新证书">生成新证书</h4>
-<p><strong>方法一：部分删除生成证书</strong></p>
 <p>备份原始证书，根据<code>find</code>命令的输出，以下相关的服务证书需要更换<code>kubelt api proxy</code></p>
 <pre><code># 备份原始证书
 mv /etc/kubernetes/pki/apiserver.key /etc/kubernetes/pki/apiserver.key.old
@@ -265,23 +264,11 @@ kubeadm init  phase certs apiserver --config kubeadm.config
 kubeadm init  phase certs apiserver-kubelet-client --config kubeadm.config
 kubeadm init  phase certs front-proxy-client --config kubeadm.config
 </code></pre>
-<p><strong>方法二：全部删除生成证书</strong></p>
-<pre><code># 全部删除证书
-mv /etc/kubernetes/pki  /etc/kubernetes/pki.old
-
-# 生成新证书
-kubeadm init  phase certs all --config kubeadm.config
-</code></pre>
 <h4 id="生成新的客户端文件">生成新的客户端文件</h4>
-<p><strong>方法一：分步骤生成</strong></p>
 <pre><code>kubeadm  init phase kubeconfig admin --config kubeadm.config
 kubeadm  init phase kubeconfig controller-manager --config kubeadm.config
 kubeadm  init phase kubeconfig kubelet --config kubeadm.config
 kubeadm  init phase kubeconfig scheduler --config kubeadm.config
-</code></pre>
-<p><strong>方法二：一次全部生成</strong></p>
-<pre><code>mv /etc/kubernetes/*.conf /tmp
-kubeadm  init phase kubeconfig all --config kubeadm.config
 </code></pre>
 <h4 id="查看证书过期时间">查看证书过期时间</h4>
 <pre><code>[root@k8s-master-2 pki]# kubeadm  alpha  certs check-expiration
