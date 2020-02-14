@@ -19,7 +19,7 @@
      <div class="header">
       <div class="logo_title">
 		  
-        <div class="title animated fadeInDown"><img src="https://tomcat1009.coding.me/hexo/images/avatar.png?v=1581662848101"/>
+        <div class="title animated fadeInDown"><img src="https://tomcat1009.coding.me/hexo/images/avatar.png?v=1581665836279"/>
 
           <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
 
@@ -192,7 +192,7 @@
 <li>k8s 是通过 <code>Garbage Collector</code> 和 <code>ownerReference</code> 一起配合实现了「垃圾回收」的功能。</li>
 </ul>
 <h2 id="kubernetes的gc组成">kubernetes的gc组成</h2>
-<figure data-type="image" tabindex="1"><img src="http://img.blog.csdn.net/20161225115013410?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvV2FsdG9uV2FuZw==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="kubernetes GC architecture in v1.3"></figure>
+<figure data-type="image" tabindex="1"><img src="http://img.blog.csdn.net/20161225115013410?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvV2FsdG9uV2FuZw==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="kubernetes GC architecture in v1.3" loading="lazy"></figure>
 <p>一个 Garbage Collector 通常由三部分实现：</p>
 <ul>
 <li>Scanner： 它负责收集目前系统中已存在的 Resource，并且周期性的将这些资源对象放入一个队列中，等待处理（检测是否要对某一个Resource Object 进行 GC 操作）</li>

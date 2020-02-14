@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://tomcat1009.coding.me/hexo</id>
     <title>PeterPan</title>
-    <updated>2020-02-14T06:47:35.410Z</updated>
+    <updated>2020-02-14T07:38:47.842Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://tomcat1009.coding.me/hexo"/>
     <link rel="self" href="https://tomcat1009.coding.me/hexo/atom.xml"/>
@@ -37,7 +37,7 @@
 <p><strong>部署方式</strong></p>
 <pre><code>kubectl apply -f &quot;https://cloud.weave.works/k8s/scope.yaml?k8s-version=$(kubectl version | base64 | tr -d '\n')&amp;k8s-service-type=LoadBalancer&quot;
 </code></pre>
-<figure data-type="image" tabindex="1"><a href="https://imgchr.com/i/ljBWXq"><img src="https://s2.ax1x.com/2020/01/16/ljBWXq.md.png" alt="ljBWXq.md.png"></a></figure>
+<figure data-type="image" tabindex="1"><a href="https://imgchr.com/i/ljBWXq"><img src="https://s2.ax1x.com/2020/01/16/ljBWXq.md.png" alt="ljBWXq.md.png" loading="lazy"></a></figure>
 ]]></content>
     </entry>
     <entry>
@@ -692,7 +692,7 @@ include /etc/logrotate.d    # 包含其他配置文件的目录
 <li>k8s 是通过 <code>Garbage Collector</code> 和 <code>ownerReference</code> 一起配合实现了「垃圾回收」的功能。</li>
 </ul>
 <h2 id="kubernetes的gc组成">kubernetes的gc组成</h2>
-<figure data-type="image" tabindex="1"><img src="http://img.blog.csdn.net/20161225115013410?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvV2FsdG9uV2FuZw==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="kubernetes GC architecture in v1.3"></figure>
+<figure data-type="image" tabindex="1"><img src="http://img.blog.csdn.net/20161225115013410?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvV2FsdG9uV2FuZw==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="kubernetes GC architecture in v1.3" loading="lazy"></figure>
 <p>一个 Garbage Collector 通常由三部分实现：</p>
 <ul>
 <li>Scanner： 它负责收集目前系统中已存在的 Resource，并且周期性的将这些资源对象放入一个队列中，等待处理（检测是否要对某一个Resource Object 进行 GC 操作）</li>
@@ -999,7 +999,7 @@ Allocatable:
 <li>匹配之后，进行相应的处理ACCEPT、DROP等等；</li>
 </ul>
 <h3 id="netfilter和iptables的关系图">netfilter和iptables的关系图</h3>
-<figure data-type="image" tabindex="1"><img src="https://img.mubu.com/document_image/e0653c59-e432-40d9-a8bd-38558599a4da-1235096.jpg" alt="img"></figure>
+<figure data-type="image" tabindex="1"><img src="https://img.mubu.com/document_image/e0653c59-e432-40d9-a8bd-38558599a4da-1235096.jpg" alt="img" loading="lazy"></figure>
 <h2 id="四表五链">四表五链</h2>
 <ul>
 <li>链就是位置：共有五个，进路由(PREROUTING)、进系统(INPUT) 、转发(FORWARD)、出系统(OUTPUT)、出路由(POSTROUTING)；</li>
@@ -1021,7 +1021,7 @@ Allocatable:
 <li>POSTROUTING链——对数据包作路由选择后应用此链中的规则（所有的数据包出来的时侯都先由这个链处理）</li>
 </ul>
 <h3 id="链表关系图">链表关系图</h3>
-<figure data-type="image" tabindex="2"><img src="http://peterpan.yunsean.com/iptables01.png" alt="image-20190828125115128"></figure>
+<figure data-type="image" tabindex="2"><img src="http://peterpan.yunsean.com/iptables01.png" alt="image-20190828125115128" loading="lazy"></figure>
 <h3 id="数据处理流程">数据处理流程</h3>
 <p>我们结合下面的图举个例子：<br>
 假如有数据包从Network IN要通过iptables，数据包流向如下：<br>
@@ -1052,11 +1052,11 @@ Allocatable:
 <ul>
 <li>
 <p>图一</p>
-<figure data-type="image" tabindex="3"><img src="https://img.mubu.com/document_image/c1b9ef44-0c8d-4818-a18b-83b527e8d0e4-1235096.jpg" alt="img"></figure>
+<figure data-type="image" tabindex="3"><img src="https://img.mubu.com/document_image/c1b9ef44-0c8d-4818-a18b-83b527e8d0e4-1235096.jpg" alt="img" loading="lazy"></figure>
 </li>
 <li>
 <p>图二</p>
-<figure data-type="image" tabindex="4"><img src="https://img.mubu.com/document_image/bcb89f30-1a57-4967-9a41-3cb6e2c8a5bc-1235096.jpg" alt="img"></figure>
+<figure data-type="image" tabindex="4"><img src="https://img.mubu.com/document_image/bcb89f30-1a57-4967-9a41-3cb6e2c8a5bc-1235096.jpg" alt="img" loading="lazy"></figure>
 </li>
 </ul>
 <h2 id="iptables操作">iptables操作</h2>
@@ -1324,7 +1324,7 @@ https://www.cnblogs.com/zhujingzhi/p/9706664.html</p>
 <h2 id="iptables的源地址转换snat">iptables的源地址转换(SNAT)</h2>
 <h3 id="双网卡实现snat">双网卡实现SNAT</h3>
 <p><strong>示例一</strong></p>
-<figure data-type="image" tabindex="1"><img src="https://img-blog.csdn.net/20171117145802662?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvd2hlYXRfZ3JvdW5k/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="è¿éåå¾çæè¿°"></figure>
+<figure data-type="image" tabindex="1"><img src="https://img-blog.csdn.net/20171117145802662?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvd2hlYXRfZ3JvdW5k/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="è¿éåå¾çæè¿°" loading="lazy"></figure>
 <pre><code># 左边的机器为A，右边的机器为B ，A和B在同一个自网路，B有两个网卡。一个网卡和A同在一个网络，另外一个网卡可以连接外网。 
 # 配置方式
 [root@xuegod63 ~]# iptables -t nat -A POSTROUTING -s 192.168.240.0/24   -j  SNAT  --to 192.168.1.250

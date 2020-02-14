@@ -19,7 +19,7 @@
      <div class="header">
       <div class="logo_title">
 		  
-        <div class="title animated fadeInDown"><img src="https://tomcat1009.coding.me/hexo/images/avatar.png?v=1581662848101"/>
+        <div class="title animated fadeInDown"><img src="https://tomcat1009.coding.me/hexo/images/avatar.png?v=1581665836279"/>
 
           <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
 
@@ -197,7 +197,7 @@
 <h2 id="iptables的源地址转换snat">iptables的源地址转换(SNAT)</h2>
 <h3 id="双网卡实现snat">双网卡实现SNAT</h3>
 <p><strong>示例一</strong></p>
-<figure data-type="image" tabindex="1"><img src="https://img-blog.csdn.net/20171117145802662?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvd2hlYXRfZ3JvdW5k/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="è¿éåå¾çæè¿°"></figure>
+<figure data-type="image" tabindex="1"><img src="https://img-blog.csdn.net/20171117145802662?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvd2hlYXRfZ3JvdW5k/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="è¿éåå¾çæè¿°" loading="lazy"></figure>
 <pre><code># 左边的机器为A，右边的机器为B ，A和B在同一个自网路，B有两个网卡。一个网卡和A同在一个网络，另外一个网卡可以连接外网。 
 # 配置方式
 [root@xuegod63 ~]# iptables -t nat -A POSTROUTING -s 192.168.240.0/24   -j  SNAT  --to 192.168.1.250
