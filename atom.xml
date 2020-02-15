@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-    <id>https://tomcat1009.github.io</id>
+    <id>https://fengjing1009.github.io</id>
     <title>PeterPan</title>
-    <updated>2020-02-15T09:07:19.151Z</updated>
+    <updated>2020-02-15T09:11:24.365Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="https://tomcat1009.github.io"/>
-    <link rel="self" href="https://tomcat1009.github.io/atom.xml"/>
+    <link rel="alternate" href="https://fengjing1009.github.io"/>
+    <link rel="self" href="https://fengjing1009.github.io/atom.xml"/>
     <subtitle>贵有恒，何必三更起五更睡；最无益，只怕一日暴十寒。</subtitle>
-    <logo>https://tomcat1009.github.io/images/avatar.png</logo>
-    <icon>https://tomcat1009.github.io/favicon.ico</icon>
+    <logo>https://fengjing1009.github.io/images/avatar.png</logo>
+    <icon>https://fengjing1009.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, PeterPan</rights>
     <entry>
         <title type="html"><![CDATA[kubernetes 生产环境优化]]></title>
-        <id>https://tomcat1009.github.io/post/2020010601</id>
-        <link href="https://tomcat1009.github.io/post/2020010601">
+        <id>https://fengjing1009.github.io/post/2020010601</id>
+        <link href="https://fengjing1009.github.io/post/2020010601">
         </link>
         <updated>2020-01-16T03:19:02.000Z</updated>
         <content type="html"><![CDATA[<h3 id="系统稳定性">系统稳定性</h3>
@@ -42,8 +42,8 @@
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes 设置节点异常时候POD调度时间]]></title>
-        <id>https://tomcat1009.github.io/post/2019121701</id>
-        <link href="https://tomcat1009.github.io/post/2019121701">
+        <id>https://fengjing1009.github.io/post/2019121701</id>
+        <link href="https://fengjing1009.github.io/post/2019121701">
         </link>
         <updated>2019-12-17T03:32:19.000Z</updated>
         <content type="html"><![CDATA[<blockquote>
@@ -90,8 +90,8 @@
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes master 更换ip（单节点）]]></title>
-        <id>https://tomcat1009.github.io/post/2019121102</id>
-        <link href="https://tomcat1009.github.io/post/2019121102">
+        <id>https://fengjing1009.github.io/post/2019121102</id>
+        <link href="https://fengjing1009.github.io/post/2019121102">
         </link>
         <updated>2019-12-11T06:44:47.000Z</updated>
         <content type="html"><![CDATA[<h3 id="问题分析">问题分析</h3>
@@ -206,8 +206,8 @@ service kubelet restart
     </entry>
     <entry>
         <title type="html"><![CDATA[etcd故障后恢复]]></title>
-        <id>https://tomcat1009.github.io/post/2019121101</id>
-        <link href="https://tomcat1009.github.io/post/2019121101">
+        <id>https://fengjing1009.github.io/post/2019121101</id>
+        <link href="https://fengjing1009.github.io/post/2019121101">
         </link>
         <updated>2019-12-11T04:46:33.000Z</updated>
         <content type="html"><![CDATA[<h3 id="etcd故障描述">etcd故障描述</h3>
@@ -268,8 +268,8 @@ docker run --restart=always --net host -it --name etcd3 -d -v /var/etcd:/var/etc
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes 新增master节点]]></title>
-        <id>https://tomcat1009.github.io/post/2019112201</id>
-        <link href="https://tomcat1009.github.io/post/2019112201">
+        <id>https://fengjing1009.github.io/post/2019112201</id>
+        <link href="https://fengjing1009.github.io/post/2019112201">
         </link>
         <updated>2019-11-22T02:25:27.000Z</updated>
         <content type="html"><![CDATA[<blockquote>
@@ -308,8 +308,8 @@ echo &quot;$(kubeadm token create --print-join-command) --control-plane --certif
     </entry>
     <entry>
         <title type="html"><![CDATA[etcd测试集群搭建（http）]]></title>
-        <id>https://tomcat1009.github.io/post/2019102501</id>
-        <link href="https://tomcat1009.github.io/post/2019102501">
+        <id>https://fengjing1009.github.io/post/2019102501</id>
+        <link href="https://fengjing1009.github.io/post/2019102501">
         </link>
         <updated>2019-10-25T07:35:10.000Z</updated>
         <content type="html"><![CDATA[<h3 id="集群搭建">集群搭建</h3>
@@ -407,8 +407,8 @@ ETCDCTL_API=3 etcdctl put foo bar
     </entry>
     <entry>
         <title type="html"><![CDATA[使用kubeadm 新加入节点（原始token过期后）]]></title>
-        <id>https://tomcat1009.github.io/post/2019091201</id>
-        <link href="https://tomcat1009.github.io/post/2019091201">
+        <id>https://fengjing1009.github.io/post/2019091201</id>
+        <link href="https://fengjing1009.github.io/post/2019091201">
         </link>
         <updated>2019-09-12T04:47:00.000Z</updated>
         <content type="html"><![CDATA[<h2 id="kubeadm-join">kubeadm join</h2>
@@ -454,8 +454,8 @@ kubeadm token create $token --print-join-command --ttl=0
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes1.15.3离线安装]]></title>
-        <id>https://tomcat1009.github.io/post/2019090901</id>
-        <link href="https://tomcat1009.github.io/post/2019090901">
+        <id>https://fengjing1009.github.io/post/2019090901</id>
+        <link href="https://fengjing1009.github.io/post/2019090901">
         </link>
         <updated>2019-09-09T10:09:51.000Z</updated>
         <content type="html"><![CDATA[<h1 id="kubeadm-k8s集群离线安装">kubeadm k8s集群离线安装</h1>
@@ -536,8 +536,8 @@ kubectl  get nodes |grep master |awk '{print $1}' |xargs -i kubectl  taint node 
     </entry>
     <entry>
         <title type="html"><![CDATA[etcd数据备份和恢复]]></title>
-        <id>https://tomcat1009.github.io/post/2019090503</id>
-        <link href="https://tomcat1009.github.io/post/2019090503">
+        <id>https://fengjing1009.github.io/post/2019090503</id>
+        <link href="https://fengjing1009.github.io/post/2019090503">
         </link>
         <updated>2019-09-05T03:46:23.000Z</updated>
         <content type="html"><![CDATA[<h2 id="对于etcd-api-v3数据备份与恢复方法">对于etcd api v3数据备份与恢复方法</h2>
@@ -631,8 +631,8 @@ b29b94ace458096d, started, k8s-master3, https://192.168.32.130:2380, https://192
     </entry>
     <entry>
         <title type="html"><![CDATA[Centos7下的日志切割]]></title>
-        <id>https://tomcat1009.github.io/post/2019090502</id>
-        <link href="https://tomcat1009.github.io/post/2019090502">
+        <id>https://fengjing1009.github.io/post/2019090502</id>
+        <link href="https://fengjing1009.github.io/post/2019090502">
         </link>
         <updated>2019-09-05T03:27:49.000Z</updated>
         <content type="html"><![CDATA[<h2 id="logrotate">logrotate</h2>
@@ -676,8 +676,8 @@ include /etc/logrotate.d    # 包含其他配置文件的目录
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes里面的GC]]></title>
-        <id>https://tomcat1009.github.io/post/2019090501</id>
-        <link href="https://tomcat1009.github.io/post/2019090501">
+        <id>https://fengjing1009.github.io/post/2019090501</id>
+        <link href="https://fengjing1009.github.io/post/2019090501">
         </link>
         <updated>2019-09-05T03:02:08.000Z</updated>
         <content type="html"><![CDATA[<h2 id="什么是gc">什么是GC</h2>
@@ -759,8 +759,8 @@ include /etc/logrotate.d    # 包含其他配置文件的目录
     </entry>
     <entry>
         <title type="html"><![CDATA[linux cgroups简介]]></title>
-        <id>https://tomcat1009.github.io/post/2019090202</id>
-        <link href="https://tomcat1009.github.io/post/2019090202">
+        <id>https://fengjing1009.github.io/post/2019090202</id>
+        <link href="https://fengjing1009.github.io/post/2019090202">
         </link>
         <updated>2019-09-02T07:54:27.000Z</updated>
         <content type="html"><![CDATA[<p>https://blog.csdn.net/ahilll/article/details/82109008<br>
@@ -769,8 +769,8 @@ https://blog.csdn.net/chenleiking/article/details/87988851</p>
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes 清理孤儿POD]]></title>
-        <id>https://tomcat1009.github.io/post/2019090201</id>
-        <link href="https://tomcat1009.github.io/post/2019090201">
+        <id>https://fengjing1009.github.io/post/2019090201</id>
+        <link href="https://fengjing1009.github.io/post/2019090201">
         </link>
         <updated>2019-09-02T07:53:25.000Z</updated>
         <content type="html"><![CDATA[<h3 id="孤儿pod的产生">孤儿pod的产生</h3>
@@ -806,8 +806,8 @@ done
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes资源预留]]></title>
-        <id>https://tomcat1009.github.io/post/2019083002</id>
-        <link href="https://tomcat1009.github.io/post/2019083002">
+        <id>https://fengjing1009.github.io/post/2019083002</id>
+        <link href="https://fengjing1009.github.io/post/2019083002">
         </link>
         <updated>2019-08-30T09:25:37.000Z</updated>
         <content type="html"><![CDATA[<blockquote>
@@ -949,8 +949,8 @@ Allocatable:
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes集群证书过期之后]]></title>
-        <id>https://tomcat1009.github.io/post/2019083001</id>
-        <link href="https://tomcat1009.github.io/post/2019083001">
+        <id>https://fengjing1009.github.io/post/2019083001</id>
+        <link href="https://fengjing1009.github.io/post/2019083001">
         </link>
         <updated>2019-08-30T08:50:14.000Z</updated>
         <content type="html"><![CDATA[<h2 id="步骤">步骤</h2>
@@ -988,8 +988,8 @@ Allocatable:
     </entry>
     <entry>
         <title type="html"><![CDATA[iptables的四表五链]]></title>
-        <id>https://tomcat1009.github.io/post/2019082802</id>
-        <link href="https://tomcat1009.github.io/post/2019082802">
+        <id>https://fengjing1009.github.io/post/2019082802</id>
+        <link href="https://fengjing1009.github.io/post/2019082802">
         </link>
         <updated>2019-08-28T04:44:56.000Z</updated>
         <content type="html"><![CDATA[<h2 id="netfilter介绍">netfilter介绍</h2>
@@ -1307,8 +1307,8 @@ https://www.cnblogs.com/zhujingzhi/p/9706664.html</p>
     </entry>
     <entry>
         <title type="html"><![CDATA[使用iptables实现网络互联]]></title>
-        <id>https://tomcat1009.github.io/post/2019082702</id>
-        <link href="https://tomcat1009.github.io/post/2019082702">
+        <id>https://fengjing1009.github.io/post/2019082702</id>
+        <link href="https://fengjing1009.github.io/post/2019082702">
         </link>
         <updated>2019-08-27T15:34:48.000Z</updated>
         <content type="html"><![CDATA[<h2 id="iptables实现网络功能的方式">iptables实现网络功能的方式</h2>
@@ -1424,8 +1424,8 @@ service iptables start
     </entry>
     <entry>
         <title type="html"><![CDATA[使用ipvs模式安装kubernetes]]></title>
-        <id>https://tomcat1009.github.io/post/2019082701</id>
-        <link href="https://tomcat1009.github.io/post/2019082701">
+        <id>https://fengjing1009.github.io/post/2019082701</id>
+        <link href="https://fengjing1009.github.io/post/2019082701">
         </link>
         <updated>2019-08-27T07:11:33.000Z</updated>
         <content type="html"><![CDATA[<h3 id="安装ipvs">安装ipvs</h3>
@@ -1511,8 +1511,8 @@ mode: ipvs  # kube-proxy 模式
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes的国内软件源配置]]></title>
-        <id>https://tomcat1009.github.io/post/2019080801</id>
-        <link href="https://tomcat1009.github.io/post/2019080801">
+        <id>https://fengjing1009.github.io/post/2019080801</id>
+        <link href="https://fengjing1009.github.io/post/2019080801">
         </link>
         <updated>2019-08-08T06:40:52.000Z</updated>
         <content type="html"><![CDATA[<h2 id="ubuntu-软件源配置">ubuntu 软件源配置</h2>
@@ -1545,8 +1545,8 @@ EOF
     </entry>
     <entry>
         <title type="html"><![CDATA[centos快速创建kubernetes]]></title>
-        <id>https://tomcat1009.github.io/post/2019090701</id>
-        <link href="https://tomcat1009.github.io/post/2019090701">
+        <id>https://fengjing1009.github.io/post/2019090701</id>
+        <link href="https://fengjing1009.github.io/post/2019090701">
         </link>
         <updated>2019-08-07T08:22:17.000Z</updated>
         <content type="html"><![CDATA[<h2 id="前置条件">前置条件</h2>
