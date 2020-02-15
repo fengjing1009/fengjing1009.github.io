@@ -1,0 +1,1171 @@
+
+<html>
+  <head lang="zh">
+        <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+        <meta content="yes" name="apple-mobile-web-app-capable"/>
+        <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+        <meta content="telephone=no" name="format-detection"/>
+        <meta name="renderer" content="webkit">
+    <title>kubernetes双栈集群安装 | PeterPan</title>
+<link href="https://fengjing1009.github.io/styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://fengjing1009.github.io/media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://fengjing1009.github.io/media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+  </head>
+
+  <body>
+     <div class="header">
+      <div class="logo_title">
+		  
+        <div class="title animated fadeInDown"><img src="https://fengjing1009.github.io/images/avatar.png?v=1581761723969"/>
+
+          <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
+
+          </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="https://fengjing1009.github.io/post/about/" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="https://fengjing1009.github.io/post/about/" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+
+<div class="content">
+
+
+
+
+
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>kubernetes双栈集群安装</a>
+
+
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2020-02-15</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> Views</span>
+
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+	<a href="https://fengjing1009.github.io/tag/OzrDk-wrZ" class="tag">kubernetes</a>
+
+
+</span>
+
+
+    </div>
+
+  </div>
+
+
+
+
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><h1 id="准备calicoyaml内容如下">准备calico.yaml,内容如下：</h1>
+<hr>
+<h1 id="source-calicotemplatescalico-configyaml">Source: calico/templates/calico-config.yaml</h1>
+<h1 id="this-configmap-is-used-to-configure-a-self-hosted-calico-installation">This ConfigMap is used to configure a self-hosted Calico installation.</h1>
+<p>kind: ConfigMap<br>
+apiVersion: v1<br>
+metadata:<br>
+name: calico-config<br>
+namespace: kube-system<br>
+data:</p>
+<h1 id="typha-is-disabled">Typha is disabled.</h1>
+<p>typha_service_name: &quot;none&quot;</p>
+<h1 id="configure-the-backend-to-use">Configure the backend to use.</h1>
+<p>calico_backend: &quot;bird&quot;</p>
+<h1 id="configure-the-mtu-to-use">Configure the MTU to use</h1>
+<p>veth_mtu: &quot;1440&quot;</p>
+<h1 id="the-cni-network-configuration-to-install-on-each-node-the-special">The CNI network configuration to install on each node.  The special</h1>
+<h1 id="values-in-this-config-will-be-automatically-populated">values in this config will be automatically populated.</h1>
+<p>cni_network_config: |-<br>
+{<br>
+&quot;name&quot;: &quot;k8s-pod-network&quot;,<br>
+&quot;cniVersion&quot;: &quot;0.3.1&quot;,<br>
+&quot;plugins&quot;: [<br>
+{<br>
+&quot;type&quot;: &quot;calico&quot;,<br>
+&quot;log_level&quot;: &quot;info&quot;,<br>
+&quot;datastore_type&quot;: &quot;kubernetes&quot;,<br>
+&quot;nodename&quot;: &quot;<strong>KUBERNETES_NODE_NAME</strong>&quot;,<br>
+&quot;mtu&quot;: <strong>CNI_MTU</strong>,<br>
+&quot;ipam&quot;: {<br>
+&quot;type&quot;: &quot;calico-ipam&quot;,<br>
+&quot;assign_ipv4&quot;: &quot;true&quot;,<br>
+&quot;assign_ipv6&quot;: &quot;true&quot;<br>
+},<br>
+&quot;policy&quot;: {<br>
+&quot;type&quot;: &quot;k8s&quot;<br>
+},<br>
+&quot;kubernetes&quot;: {<br>
+&quot;kubeconfig&quot;: &quot;<strong>KUBECONFIG_FILEPATH</strong>&quot;<br>
+}<br>
+},<br>
+{<br>
+&quot;type&quot;: &quot;portmap&quot;,<br>
+&quot;snat&quot;: true,<br>
+&quot;capabilities&quot;: {&quot;portMappings&quot;: true}<br>
+},<br>
+{<br>
+&quot;type&quot;: &quot;bandwidth&quot;,<br>
+&quot;capabilities&quot;: {&quot;bandwidth&quot;: true}<br>
+}<br>
+]<br>
+}</p>
+<hr>
+<h1 id="source-calicotemplateskdd-crdsyaml">Source: calico/templates/kdd-crds.yaml</h1>
+<h2 id="apiversion-apiextensionsk8siov1beta1kind-customresourcedefinitionmetadataname-felixconfigurationscrdprojectcalicoorgspecscope-clustergroup-crdprojectcalicoorgversion-v1nameskind-felixconfigurationplural-felixconfigurationssingular-felixconfiguration">apiVersion: apiextensions.k8s.io/v1beta1<br>
+kind: CustomResourceDefinition<br>
+metadata:<br>
+name: felixconfigurations.crd.projectcalico.org<br>
+spec:<br>
+scope: Cluster<br>
+group: crd.projectcalico.org<br>
+version: v1<br>
+names:<br>
+kind: FelixConfiguration<br>
+plural: felixconfigurations<br>
+singular: felixconfiguration</h2>
+<p>apiVersion: apiextensions.k8s.io/v1beta1<br>
+kind: CustomResourceDefinition<br>
+metadata:<br>
+name: ipamblocks.crd.projectcalico.org<br>
+spec:<br>
+scope: Cluster<br>
+group: crd.projectcalico.org<br>
+version: v1<br>
+names:<br>
+kind: IPAMBlock<br>
+plural: ipamblocks<br>
+singular: ipamblock</p>
+<hr>
+<p>apiVersion: apiextensions.k8s.io/v1beta1<br>
+kind: CustomResourceDefinition<br>
+metadata:<br>
+name: blockaffinities.crd.projectcalico.org<br>
+spec:<br>
+scope: Cluster<br>
+group: crd.projectcalico.org<br>
+version: v1<br>
+names:<br>
+kind: BlockAffinity<br>
+plural: blockaffinities<br>
+singular: blockaffinity</p>
+<hr>
+<p>apiVersion: apiextensions.k8s.io/v1beta1<br>
+kind: CustomResourceDefinition<br>
+metadata:<br>
+name: ipamhandles.crd.projectcalico.org<br>
+spec:<br>
+scope: Cluster<br>
+group: crd.projectcalico.org<br>
+version: v1<br>
+names:<br>
+kind: IPAMHandle<br>
+plural: ipamhandles<br>
+singular: ipamhandle</p>
+<hr>
+<p>apiVersion: apiextensions.k8s.io/v1beta1<br>
+kind: CustomResourceDefinition<br>
+metadata:<br>
+name: ipamconfigs.crd.projectcalico.org<br>
+spec:<br>
+scope: Cluster<br>
+group: crd.projectcalico.org<br>
+version: v1<br>
+names:<br>
+kind: IPAMConfig<br>
+plural: ipamconfigs<br>
+singular: ipamconfig</p>
+<hr>
+<p>apiVersion: apiextensions.k8s.io/v1beta1<br>
+kind: CustomResourceDefinition<br>
+metadata:<br>
+name: bgppeers.crd.projectcalico.org<br>
+spec:<br>
+scope: Cluster<br>
+group: crd.projectcalico.org<br>
+version: v1<br>
+names:<br>
+kind: BGPPeer<br>
+plural: bgppeers<br>
+singular: bgppeer</p>
+<hr>
+<p>apiVersion: apiextensions.k8s.io/v1beta1<br>
+kind: CustomResourceDefinition<br>
+metadata:<br>
+name: bgpconfigurations.crd.projectcalico.org<br>
+spec:<br>
+scope: Cluster<br>
+group: crd.projectcalico.org<br>
+version: v1<br>
+names:<br>
+kind: BGPConfiguration<br>
+plural: bgpconfigurations<br>
+singular: bgpconfiguration</p>
+<hr>
+<p>apiVersion: apiextensions.k8s.io/v1beta1<br>
+kind: CustomResourceDefinition<br>
+metadata:<br>
+name: ippools.crd.projectcalico.org<br>
+spec:<br>
+scope: Cluster<br>
+group: crd.projectcalico.org<br>
+version: v1<br>
+names:<br>
+kind: IPPool<br>
+plural: ippools<br>
+singular: ippool</p>
+<hr>
+<p>apiVersion: apiextensions.k8s.io/v1beta1<br>
+kind: CustomResourceDefinition<br>
+metadata:<br>
+name: hostendpoints.crd.projectcalico.org<br>
+spec:<br>
+scope: Cluster<br>
+group: crd.projectcalico.org<br>
+version: v1<br>
+names:<br>
+kind: HostEndpoint<br>
+plural: hostendpoints<br>
+singular: hostendpoint</p>
+<hr>
+<p>apiVersion: apiextensions.k8s.io/v1beta1<br>
+kind: CustomResourceDefinition<br>
+metadata:<br>
+name: clusterinformations.crd.projectcalico.org<br>
+spec:<br>
+scope: Cluster<br>
+group: crd.projectcalico.org<br>
+version: v1<br>
+names:<br>
+kind: ClusterInformation<br>
+plural: clusterinformations<br>
+singular: clusterinformation</p>
+<hr>
+<p>apiVersion: apiextensions.k8s.io/v1beta1<br>
+kind: CustomResourceDefinition<br>
+metadata:<br>
+name: globalnetworkpolicies.crd.projectcalico.org<br>
+spec:<br>
+scope: Cluster<br>
+group: crd.projectcalico.org<br>
+version: v1<br>
+names:<br>
+kind: GlobalNetworkPolicy<br>
+plural: globalnetworkpolicies<br>
+singular: globalnetworkpolicy</p>
+<hr>
+<p>apiVersion: apiextensions.k8s.io/v1beta1<br>
+kind: CustomResourceDefinition<br>
+metadata:<br>
+name: globalnetworksets.crd.projectcalico.org<br>
+spec:<br>
+scope: Cluster<br>
+group: crd.projectcalico.org<br>
+version: v1<br>
+names:<br>
+kind: GlobalNetworkSet<br>
+plural: globalnetworksets<br>
+singular: globalnetworkset</p>
+<hr>
+<p>apiVersion: apiextensions.k8s.io/v1beta1<br>
+kind: CustomResourceDefinition<br>
+metadata:<br>
+name: networkpolicies.crd.projectcalico.org<br>
+spec:<br>
+scope: Namespaced<br>
+group: crd.projectcalico.org<br>
+version: v1<br>
+names:<br>
+kind: NetworkPolicy<br>
+plural: networkpolicies<br>
+singular: networkpolicy</p>
+<hr>
+<h2 id="apiversion-apiextensionsk8siov1beta1kind-customresourcedefinitionmetadataname-networksetscrdprojectcalicoorgspecscope-namespacedgroup-crdprojectcalicoorgversion-v1nameskind-networksetplural-networksetssingular-networkset">apiVersion: apiextensions.k8s.io/v1beta1<br>
+kind: CustomResourceDefinition<br>
+metadata:<br>
+name: networksets.crd.projectcalico.org<br>
+spec:<br>
+scope: Namespaced<br>
+group: crd.projectcalico.org<br>
+version: v1<br>
+names:<br>
+kind: NetworkSet<br>
+plural: networksets<br>
+singular: networkset</h2>
+<h1 id="source-calicotemplatesrbacyaml">Source: calico/templates/rbac.yaml</h1>
+<h1 id="include-a-clusterrole-for-the-kube-controllers-component">Include a clusterrole for the kube-controllers component,</h1>
+<h1 id="and-bind-it-to-the-calico-kube-controllers-serviceaccount">and bind it to the calico-kube-controllers serviceaccount.</h1>
+<p>kind: ClusterRole<br>
+apiVersion: rbac.authorization.k8s.io/v1<br>
+metadata:<br>
+name: calico-kube-controllers<br>
+rules:</p>
+<h1 id="nodes-are-watched-to-monitor-for-deletions">Nodes are watched to monitor for deletions.</h1>
+<ul>
+<li>apiGroups: [&quot;&quot;]<br>
+resources:
+<ul>
+<li>nodes<br>
+verbs:</li>
+<li>watch</li>
+<li>list</li>
+<li>get</li>
+</ul>
+</li>
+</ul>
+<h1 id="pods-are-queried-to-check-for-existence">Pods are queried to check for existence.</h1>
+<ul>
+<li>apiGroups: [&quot;&quot;]<br>
+resources:
+<ul>
+<li>pods<br>
+verbs:</li>
+<li>get</li>
+</ul>
+</li>
+</ul>
+<h1 id="ipam-resources-are-manipulated-when-nodes-are-deleted">IPAM resources are manipulated when nodes are deleted.</h1>
+<ul>
+<li>apiGroups: [&quot;crd.projectcalico.org&quot;]<br>
+resources:
+<ul>
+<li>ippools<br>
+verbs:</li>
+<li>list</li>
+</ul>
+</li>
+<li>apiGroups: [&quot;crd.projectcalico.org&quot;]<br>
+resources:
+<ul>
+<li>blockaffinities</li>
+<li>ipamblocks</li>
+<li>ipamhandles<br>
+verbs:</li>
+<li>get</li>
+<li>list</li>
+<li>create</li>
+<li>update</li>
+<li>delete</li>
+</ul>
+</li>
+</ul>
+<h1 id="needs-access-to-update-clusterinformations">Needs access to update clusterinformations.</h1>
+<ul>
+<li>apiGroups: [&quot;crd.projectcalico.org&quot;]<br>
+resources:
+<ul>
+<li>clusterinformations<br>
+verbs:</li>
+<li>get</li>
+<li>create</li>
+<li>update</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p>kind: ClusterRoleBinding<br>
+apiVersion: rbac.authorization.k8s.io/v1<br>
+metadata:<br>
+name: calico-kube-controllers<br>
+roleRef:<br>
+apiGroup: rbac.authorization.k8s.io<br>
+kind: ClusterRole<br>
+name: calico-kube-controllers<br>
+subjects:</p>
+<ul>
+<li>kind: ServiceAccount<br>
+name: calico-kube-controllers<br>
+namespace: kube-system</li>
+</ul>
+<hr>
+<h1 id="include-a-clusterrole-for-the-calico-node-daemonset">Include a clusterrole for the calico-node DaemonSet,</h1>
+<h1 id="and-bind-it-to-the-calico-node-serviceaccount">and bind it to the calico-node serviceaccount.</h1>
+<p>kind: ClusterRole<br>
+apiVersion: rbac.authorization.k8s.io/v1<br>
+metadata:<br>
+name: calico-node<br>
+rules:</p>
+<h1 id="the-cni-plugin-needs-to-get-pods-nodes-and-namespaces">The CNI plugin needs to get pods, nodes, and namespaces.</h1>
+<ul>
+<li>apiGroups: [&quot;&quot;]<br>
+resources:
+<ul>
+<li>pods</li>
+<li>nodes</li>
+<li>namespaces<br>
+verbs:</li>
+<li>get</li>
+</ul>
+</li>
+<li>apiGroups: [&quot;&quot;]<br>
+resources:
+<ul>
+<li>endpoints</li>
+<li>services<br>
+verbs:</li>
+</ul>
+<h1 id="used-to-discover-service-ips-for-advertisement">Used to discover service IPs for advertisement.</h1>
+<ul>
+<li>watch</li>
+<li>list</li>
+</ul>
+<h1 id="used-to-discover-typhas">Used to discover Typhas.</h1>
+<ul>
+<li>get</li>
+</ul>
+</li>
+<li>apiGroups: [&quot;&quot;]<br>
+resources:
+<ul>
+<li>nodes/status<br>
+verbs:</li>
+</ul>
+<h1 id="needed-for-clearing-nodenetworkunavailable-flag">Needed for clearing NodeNetworkUnavailable flag.</h1>
+<ul>
+<li>patch</li>
+</ul>
+<h1 id="calico-stores-some-configuration-information-in-node-annotations">Calico stores some configuration information in node annotations.</h1>
+<ul>
+<li>update</li>
+</ul>
+</li>
+</ul>
+<h1 id="watch-for-changes-to-kubernetes-networkpolicies">Watch for changes to Kubernetes NetworkPolicies.</h1>
+<ul>
+<li>apiGroups: [&quot;networking.k8s.io&quot;]<br>
+resources:
+<ul>
+<li>networkpolicies<br>
+verbs:</li>
+<li>watch</li>
+<li>list</li>
+</ul>
+</li>
+</ul>
+<h1 id="used-by-calico-for-policy-information">Used by Calico for policy information.</h1>
+<ul>
+<li>apiGroups: [&quot;&quot;]<br>
+resources:
+<ul>
+<li>pods</li>
+<li>namespaces</li>
+<li>serviceaccounts<br>
+verbs:</li>
+<li>list</li>
+<li>watch</li>
+</ul>
+</li>
+</ul>
+<h1 id="the-cni-plugin-patches-podsstatus">The CNI plugin patches pods/status.</h1>
+<ul>
+<li>apiGroups: [&quot;&quot;]<br>
+resources:
+<ul>
+<li>pods/status<br>
+verbs:</li>
+<li>patch</li>
+</ul>
+</li>
+</ul>
+<h1 id="calico-monitors-various-crds-for-config">Calico monitors various CRDs for config.</h1>
+<ul>
+<li>apiGroups: [&quot;crd.projectcalico.org&quot;]<br>
+resources:
+<ul>
+<li>globalfelixconfigs</li>
+<li>felixconfigurations</li>
+<li>bgppeers</li>
+<li>globalbgpconfigs</li>
+<li>bgpconfigurations</li>
+<li>ippools</li>
+<li>ipamblocks</li>
+<li>globalnetworkpolicies</li>
+<li>globalnetworksets</li>
+<li>networkpolicies</li>
+<li>networksets</li>
+<li>clusterinformations</li>
+<li>hostendpoints</li>
+<li>blockaffinities<br>
+verbs:</li>
+<li>get</li>
+<li>list</li>
+<li>watch</li>
+</ul>
+</li>
+</ul>
+<h1 id="calico-must-create-and-update-some-crds-on-startup">Calico must create and update some CRDs on startup.</h1>
+<ul>
+<li>apiGroups: [&quot;crd.projectcalico.org&quot;]<br>
+resources:
+<ul>
+<li>ippools</li>
+<li>felixconfigurations</li>
+<li>clusterinformations<br>
+verbs:</li>
+<li>create</li>
+<li>update</li>
+</ul>
+</li>
+</ul>
+<h1 id="calico-stores-some-configuration-information-on-the-node">Calico stores some configuration information on the node.</h1>
+<ul>
+<li>apiGroups: [&quot;&quot;]<br>
+resources:
+<ul>
+<li>nodes<br>
+verbs:</li>
+<li>get</li>
+<li>list</li>
+<li>watch</li>
+</ul>
+</li>
+</ul>
+<h1 id="these-permissions-are-only-requried-for-upgrade-from-v26-and-can">These permissions are only requried for upgrade from v2.6, and can</h1>
+<h1 id="be-removed-after-upgrade-or-on-fresh-installations">be removed after upgrade or on fresh installations.</h1>
+<ul>
+<li>apiGroups: [&quot;crd.projectcalico.org&quot;]<br>
+resources:
+<ul>
+<li>bgpconfigurations</li>
+<li>bgppeers<br>
+verbs:</li>
+<li>create</li>
+<li>update</li>
+</ul>
+</li>
+</ul>
+<h1 id="these-permissions-are-required-for-calico-cni-to-perform-ipam-allocations">These permissions are required for Calico CNI to perform IPAM allocations.</h1>
+<ul>
+<li>apiGroups: [&quot;crd.projectcalico.org&quot;]<br>
+resources:
+<ul>
+<li>blockaffinities</li>
+<li>ipamblocks</li>
+<li>ipamhandles<br>
+verbs:</li>
+<li>get</li>
+<li>list</li>
+<li>create</li>
+<li>update</li>
+<li>delete</li>
+</ul>
+</li>
+<li>apiGroups: [&quot;crd.projectcalico.org&quot;]<br>
+resources:
+<ul>
+<li>ipamconfigs<br>
+verbs:</li>
+<li>get</li>
+</ul>
+</li>
+</ul>
+<h1 id="block-affinities-must-also-be-watchable-by-confd-for-route-aggregation">Block affinities must also be watchable by confd for route aggregation.</h1>
+<ul>
+<li>apiGroups: [&quot;crd.projectcalico.org&quot;]<br>
+resources:
+<ul>
+<li>blockaffinities<br>
+verbs:</li>
+<li>watch</li>
+</ul>
+</li>
+</ul>
+<h1 id="the-calico-ipam-migration-needs-to-get-daemonsets-these-permissions-can-be">The Calico IPAM migration needs to get daemonsets. These permissions can be</h1>
+<h1 id="removed-if-not-upgrading-from-an-installation-using-host-local-ipam">removed if not upgrading from an installation using host-local IPAM.</h1>
+<ul>
+<li>apiGroups: [&quot;apps&quot;]<br>
+resources:
+<ul>
+<li>daemonsets<br>
+verbs:</li>
+<li>get</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p>apiVersion: rbac.authorization.k8s.io/v1<br>
+kind: ClusterRoleBinding<br>
+metadata:<br>
+name: calico-node<br>
+roleRef:<br>
+apiGroup: rbac.authorization.k8s.io<br>
+kind: ClusterRole<br>
+name: calico-node<br>
+subjects:</p>
+<ul>
+<li>kind: ServiceAccount<br>
+name: calico-node<br>
+namespace: kube-system</li>
+</ul>
+<hr>
+<h1 id="source-calicotemplatescalico-nodeyaml">Source: calico/templates/calico-node.yaml</h1>
+<h1 id="this-manifest-installs-the-calico-node-container-as-well">This manifest installs the calico-node container, as well</h1>
+<h1 id="as-the-cni-plugins-and-network-config-on">as the CNI plugins and network config on</h1>
+<h1 id="each-master-and-worker-node-in-a-kubernetes-cluster">each master and worker node in a Kubernetes cluster.</h1>
+<h2 id="kind-daemonsetapiversion-appsv1metadataname-calico-nodenamespace-kube-systemlabelsk8s-app-calico-nodespecselectormatchlabelsk8s-app-calico-nodeupdatestrategytype-rollingupdaterollingupdatemaxunavailable-1templatemetadatalabelsk8s-app-calico-nodeannotations-this-along-with-the-criticaladdonsonly-toleration-below-marks-the-pod-as-a-critical-add-on-ensuring-it-gets-priority-scheduling-and-that-its-resources-are-reserved-if-it-ever-gets-evictedscheduleralphakubernetesiocritical-pod-specnodeselectorkubernetesioos-linuxhostnetwork-truetolerations-make-sure-calico-node-gets-scheduled-on-all-nodes-effect-noscheduleoperator-exists-mark-the-pod-as-a-critical-add-on-for-rescheduling-key-criticaladdonsonlyoperator-exists-effect-noexecuteoperator-existsserviceaccountname-calico-node-minimize-downtime-during-a-rolling-upgrade-or-deletion-tell-kubernetes-to-do-a-force-deletion-httpskubernetesiodocsconceptsworkloadspodspodtermination-of-podsterminationgraceperiodseconds-0priorityclassname-system-node-criticalinitcontainers-this-container-performs-upgrade-from-host-local-ipam-to-calico-ipam-it-can-be-deleted-if-this-is-a-fresh-installation-or-if-you-have-already-upgraded-to-use-calico-ipam-name-upgrade-ipamimage-calicocniv3120command-optcnibincalico-ipam-upgradeenv-name-kubernetes_node_namevaluefromfieldreffieldpath-specnodename-name-calico_networking_backendvaluefromconfigmapkeyrefname-calico-configkey-calico_backendvolumemounts-mountpath-varlibcninetworksname-host-local-net-dir-mountpath-hostoptcnibinname-cni-bin-dirsecuritycontextprivileged-true-this-container-installs-the-cni-binaries-and-cni-network-config-file-on-each-node-name-install-cniimage-calicocniv3120command-install-cnishenv-name-of-the-cni-config-file-to-create-name-cni_conf_namevalue-10-calicoconflist-the-cni-network-config-to-install-on-each-node-name-cni_network_configvaluefromconfigmapkeyrefname-calico-configkey-cni_network_config-set-the-hostname-based-on-the-k8s-node-name-name-kubernetes_node_namevaluefromfieldreffieldpath-specnodename-cni-mtu-config-variable-name-cni_mtuvaluefromconfigmapkeyrefname-calico-configkey-veth_mtu-prevents-the-container-from-sleeping-forever-name-sleepvalue-falsevolumemounts-mountpath-hostoptcnibinname-cni-bin-dir-mountpath-hostetccninetdname-cni-net-dirsecuritycontextprivileged-true-adds-a-flex-volume-driver-that-creates-a-per-pod-unix-domain-socket-to-allow-dikastes-to-communicate-with-felix-over-the-policy-sync-api-name-flexvol-driverimage-calicopod2daemon-flexvolv3120volumemounts-name-flexvol-driver-hostmountpath-hostdriversecuritycontextprivileged-truecontainers-runs-calico-node-container-on-each-kubernetes-node-this-container-programs-network-policy-and-routes-on-each-host-name-calico-nodeimage-caliconodev3120env-use-kubernetes-api-as-the-backing-datastore-name-datastore_typevalue-kubernetes-wait-for-the-datastore-name-wait_for_datastorevalue-true-set-based-on-the-k8s-node-name-name-nodenamevaluefromfieldreffieldpath-specnodename-choose-the-backend-to-use-name-calico_networking_backendvaluefromconfigmapkeyrefname-calico-configkey-calico_backend-cluster-type-to-identify-the-deployment-type-name-cluster_typevalue-k8sbgp-auto-detect-the-bgp-ip-address-name-ipvalue-autodetect-name-ip6value-autodetect-enable-ipip-name-calico_ipv4pool_ipipvalue-always-name-calico_ipv6pool_ipipvalue-always-set-mtu-for-tunnel-device-used-if-ipip-is-enabled-name-felix_ipinipmtuvaluefromconfigmapkeyrefname-calico-configkey-veth_mtu-the-default-ipv4-pool-to-create-on-startup-if-none-exists-pod-ips-will-be-chosen-from-this-range-changing-this-value-after-installation-will-have-no-effect-this-should-fall-within-cluster-cidr-name-calico_ipv4pool_cidrvalue-102440016-name-calico_ipv6pool_cidrvalue-fc0064-disable-file-logging-so-kubectl-logs-works-name-calico_disable_file_loggingvalue-true-set-felix-endpoint-to-host-default-action-to-accept-name-felix_defaultendpointtohostactionvalue-accept-disable-ipv6-on-kubernetes-name-felix_ipv6supportvalue-true-set-felix-logging-to-info-name-felix_logseverityscreenvalue-info-name-felix_healthenabledvalue-truesecuritycontextprivileged-trueresourcesrequestscpu-250mlivenessprobeexeccommand-bincalico-node-felix-live-bird-liveperiodseconds-10initialdelayseconds-10failurethreshold-6readinessprobeexeccommand-bincalico-node-felix-ready-bird-readyperiodseconds-10volumemounts-mountpath-libmodulesname-lib-modulesreadonly-true-mountpath-runxtableslockname-xtables-lockreadonly-false-mountpath-varruncaliconame-var-run-calicoreadonly-false-mountpath-varlibcaliconame-var-lib-calicoreadonly-false-name-policysyncmountpath-varrunnodeagentvolumes-used-by-calico-node-name-lib-moduleshostpathpath-libmodules-name-var-run-calicohostpathpath-varruncalico-name-var-lib-calicohostpathpath-varlibcalico-name-xtables-lockhostpathpath-runxtableslocktype-fileorcreate-used-to-install-cni-name-cni-bin-dirhostpathpath-optcnibin-name-cni-net-dirhostpathpath-etccninetd-mount-in-the-directory-for-host-local-ipam-allocations-this-is-used-when-upgrading-from-host-local-to-calico-ipam-and-can-be-removed-if-not-using-the-upgrade-ipam-init-container-name-host-local-net-dirhostpathpath-varlibcninetworks-used-to-create-per-pod-unix-domain-sockets-name-policysynchostpathtype-directoryorcreatepath-varrunnodeagent-used-to-install-flex-volume-driver-name-flexvol-driver-hosthostpathtype-directoryorcreatepath-usrlibexeckuberneteskubelet-pluginsvolumeexecnodeagent~uds">kind: DaemonSet<br>
+apiVersion: apps/v1<br>
+metadata:<br>
+name: calico-node<br>
+namespace: kube-system<br>
+labels:<br>
+k8s-app: calico-node<br>
+spec:<br>
+selector:<br>
+matchLabels:<br>
+k8s-app: calico-node<br>
+updateStrategy:<br>
+type: RollingUpdate<br>
+rollingUpdate:<br>
+maxUnavailable: 1<br>
+template:<br>
+metadata:<br>
+labels:<br>
+k8s-app: calico-node<br>
+annotations:<br>
+# This, along with the CriticalAddonsOnly toleration below,<br>
+# marks the pod as a critical add-on, ensuring it gets<br>
+# priority scheduling and that its resources are reserved<br>
+# if it ever gets evicted.<br>
+scheduler.alpha.kubernetes.io/critical-pod: ''<br>
+spec:<br>
+nodeSelector:<br>
+kubernetes.io/os: linux<br>
+hostNetwork: true<br>
+tolerations:<br>
+# Make sure calico-node gets scheduled on all nodes.<br>
+- effect: NoSchedule<br>
+operator: Exists<br>
+# Mark the pod as a critical add-on for rescheduling.<br>
+- key: CriticalAddonsOnly<br>
+operator: Exists<br>
+- effect: NoExecute<br>
+operator: Exists<br>
+serviceAccountName: calico-node<br>
+# Minimize downtime during a rolling upgrade or deletion; tell Kubernetes to do a &quot;force<br>
+# deletion&quot;: https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods.<br>
+terminationGracePeriodSeconds: 0<br>
+priorityClassName: system-node-critical<br>
+initContainers:<br>
+# This container performs upgrade from host-local IPAM to calico-ipam.<br>
+# It can be deleted if this is a fresh installation, or if you have already<br>
+# upgraded to use calico-ipam.<br>
+- name: upgrade-ipam<br>
+image: calico/cni:v3.12.0<br>
+command: [&quot;/opt/cni/bin/calico-ipam&quot;, &quot;-upgrade&quot;]<br>
+env:<br>
+- name: KUBERNETES_NODE_NAME<br>
+valueFrom:<br>
+fieldRef:<br>
+fieldPath: spec.nodeName<br>
+- name: CALICO_NETWORKING_BACKEND<br>
+valueFrom:<br>
+configMapKeyRef:<br>
+name: calico-config<br>
+key: calico_backend<br>
+volumeMounts:<br>
+- mountPath: /var/lib/cni/networks<br>
+name: host-local-net-dir<br>
+- mountPath: /host/opt/cni/bin<br>
+name: cni-bin-dir<br>
+securityContext:<br>
+privileged: true<br>
+# This container installs the CNI binaries<br>
+# and CNI network config file on each node.<br>
+- name: install-cni<br>
+image: calico/cni:v3.12.0<br>
+command: [&quot;/install-cni.sh&quot;]<br>
+env:<br>
+# Name of the CNI config file to create.<br>
+- name: CNI_CONF_NAME<br>
+value: &quot;10-calico.conflist&quot;<br>
+# The CNI network config to install on each node.<br>
+- name: CNI_NETWORK_CONFIG<br>
+valueFrom:<br>
+configMapKeyRef:<br>
+name: calico-config<br>
+key: cni_network_config<br>
+# Set the hostname based on the k8s node name.<br>
+- name: KUBERNETES_NODE_NAME<br>
+valueFrom:<br>
+fieldRef:<br>
+fieldPath: spec.nodeName<br>
+# CNI MTU Config variable<br>
+- name: CNI_MTU<br>
+valueFrom:<br>
+configMapKeyRef:<br>
+name: calico-config<br>
+key: veth_mtu<br>
+# Prevents the container from sleeping forever.<br>
+- name: SLEEP<br>
+value: &quot;false&quot;<br>
+volumeMounts:<br>
+- mountPath: /host/opt/cni/bin<br>
+name: cni-bin-dir<br>
+- mountPath: /host/etc/cni/net.d<br>
+name: cni-net-dir<br>
+securityContext:<br>
+privileged: true<br>
+# Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes<br>
+# to communicate with Felix over the Policy Sync API.<br>
+- name: flexvol-driver<br>
+image: calico/pod2daemon-flexvol:v3.12.0<br>
+volumeMounts:<br>
+- name: flexvol-driver-host<br>
+mountPath: /host/driver<br>
+securityContext:<br>
+privileged: true<br>
+containers:<br>
+# Runs calico-node container on each Kubernetes node.  This<br>
+# container programs network policy and routes on each<br>
+# host.<br>
+- name: calico-node<br>
+image: calico/node:v3.12.0<br>
+env:<br>
+# Use Kubernetes API as the backing datastore.<br>
+- name: DATASTORE_TYPE<br>
+value: &quot;kubernetes&quot;<br>
+# Wait for the datastore.<br>
+- name: WAIT_FOR_DATASTORE<br>
+value: &quot;true&quot;<br>
+# Set based on the k8s node name.<br>
+- name: NODENAME<br>
+valueFrom:<br>
+fieldRef:<br>
+fieldPath: spec.nodeName<br>
+# Choose the backend to use.<br>
+- name: CALICO_NETWORKING_BACKEND<br>
+valueFrom:<br>
+configMapKeyRef:<br>
+name: calico-config<br>
+key: calico_backend<br>
+# Cluster type to identify the deployment type<br>
+- name: CLUSTER_TYPE<br>
+value: &quot;k8s,bgp&quot;<br>
+# Auto-detect the BGP IP address.<br>
+- name: IP<br>
+value: &quot;autodetect&quot;<br>
+- name: IP6<br>
+value: &quot;autodetect&quot;<br>
+# Enable IPIP<br>
+- name: CALICO_IPV4POOL_IPIP<br>
+value: &quot;Always&quot;<br>
+- name: CALICO_IPV6POOL_IPIP<br>
+value: &quot;Always&quot;<br>
+# Set MTU for tunnel device used if ipip is enabled<br>
+- name: FELIX_IPINIPMTU<br>
+valueFrom:<br>
+configMapKeyRef:<br>
+name: calico-config<br>
+key: veth_mtu<br>
+# The default IPv4 pool to create on startup if none exists. Pod IPs will be<br>
+# chosen from this range. Changing this value after installation will have<br>
+# no effect. This should fall within <code>--cluster-cidr</code>.<br>
+- name: CALICO_IPV4POOL_CIDR<br>
+value: &quot;10.244.0.0/16&quot;<br>
+- name: CALICO_IPV6POOL_CIDR<br>
+value: &quot;fc00::/64&quot;<br>
+# Disable file logging so <code>kubectl logs</code> works.<br>
+- name: CALICO_DISABLE_FILE_LOGGING<br>
+value: &quot;true&quot;<br>
+# Set Felix endpoint to host default action to ACCEPT.<br>
+- name: FELIX_DEFAULTENDPOINTTOHOSTACTION<br>
+value: &quot;ACCEPT&quot;<br>
+# Disable IPv6 on Kubernetes.<br>
+- name: FELIX_IPV6SUPPORT<br>
+value: &quot;true&quot;<br>
+# Set Felix logging to &quot;info&quot;<br>
+- name: FELIX_LOGSEVERITYSCREEN<br>
+value: &quot;info&quot;<br>
+- name: FELIX_HEALTHENABLED<br>
+value: &quot;true&quot;<br>
+securityContext:<br>
+privileged: true<br>
+resources:<br>
+requests:<br>
+cpu: 250m<br>
+livenessProbe:<br>
+exec:<br>
+command:<br>
+- /bin/calico-node<br>
+- -felix-live<br>
+- -bird-live<br>
+periodSeconds: 10<br>
+initialDelaySeconds: 10<br>
+failureThreshold: 6<br>
+readinessProbe:<br>
+exec:<br>
+command:<br>
+- /bin/calico-node<br>
+- -felix-ready<br>
+- -bird-ready<br>
+periodSeconds: 10<br>
+volumeMounts:<br>
+- mountPath: /lib/modules<br>
+name: lib-modules<br>
+readOnly: true<br>
+- mountPath: /run/xtables.lock<br>
+name: xtables-lock<br>
+readOnly: false<br>
+- mountPath: /var/run/calico<br>
+name: var-run-calico<br>
+readOnly: false<br>
+- mountPath: /var/lib/calico<br>
+name: var-lib-calico<br>
+readOnly: false<br>
+- name: policysync<br>
+mountPath: /var/run/nodeagent<br>
+volumes:<br>
+# Used by calico-node.<br>
+- name: lib-modules<br>
+hostPath:<br>
+path: /lib/modules<br>
+- name: var-run-calico<br>
+hostPath:<br>
+path: /var/run/calico<br>
+- name: var-lib-calico<br>
+hostPath:<br>
+path: /var/lib/calico<br>
+- name: xtables-lock<br>
+hostPath:<br>
+path: /run/xtables.lock<br>
+type: FileOrCreate<br>
+# Used to install CNI.<br>
+- name: cni-bin-dir<br>
+hostPath:<br>
+path: /opt/cni/bin<br>
+- name: cni-net-dir<br>
+hostPath:<br>
+path: /etc/cni/net.d<br>
+# Mount in the directory for host-local IPAM allocations. This is<br>
+# used when upgrading from host-local to calico-ipam, and can be removed<br>
+# if not using the upgrade-ipam init container.<br>
+- name: host-local-net-dir<br>
+hostPath:<br>
+path: /var/lib/cni/networks<br>
+# Used to create per-pod Unix Domain Sockets<br>
+- name: policysync<br>
+hostPath:<br>
+type: DirectoryOrCreate<br>
+path: /var/run/nodeagent<br>
+# Used to install Flex Volume Driver<br>
+- name: flexvol-driver-host<br>
+hostPath:<br>
+type: DirectoryOrCreate<br>
+path: /usr/libexec/kubernetes/kubelet-plugins/volume/exec/nodeagent~uds</h2>
+<p>apiVersion: v1<br>
+kind: ServiceAccount<br>
+metadata:<br>
+name: calico-node<br>
+namespace: kube-system</p>
+<hr>
+<h1 id="source-calicotemplatescalico-kube-controllersyaml">Source: calico/templates/calico-kube-controllers.yaml</h1>
+<h1 id="see-httpsgithubcomprojectcalicokube-controllers">See https://github.com/projectcalico/kube-controllers</h1>
+<p>apiVersion: apps/v1<br>
+kind: Deployment<br>
+metadata:<br>
+name: calico-kube-controllers<br>
+namespace: kube-system<br>
+labels:<br>
+k8s-app: calico-kube-controllers<br>
+spec:</p>
+<h1 id="the-controllers-can-only-have-a-single-active-instance">The controllers can only have a single active instance.</h1>
+<p>replicas: 1<br>
+selector:<br>
+matchLabels:<br>
+k8s-app: calico-kube-controllers<br>
+strategy:<br>
+type: Recreate<br>
+template:<br>
+metadata:<br>
+name: calico-kube-controllers<br>
+namespace: kube-system<br>
+labels:<br>
+k8s-app: calico-kube-controllers<br>
+annotations:<br>
+scheduler.alpha.kubernetes.io/critical-pod: ''<br>
+spec:<br>
+nodeSelector:<br>
+kubernetes.io/os: linux<br>
+tolerations:<br>
+# Mark the pod as a critical add-on for rescheduling.<br>
+- key: CriticalAddonsOnly<br>
+operator: Exists<br>
+- key: node-role.kubernetes.io/master<br>
+effect: NoSchedule<br>
+serviceAccountName: calico-kube-controllers<br>
+priorityClassName: system-cluster-critical<br>
+containers:<br>
+- name: calico-kube-controllers<br>
+image: calico/kube-controllers:v3.12.0<br>
+env:<br>
+# Choose which controllers to run.<br>
+- name: ENABLED_CONTROLLERS<br>
+value: node<br>
+- name: DATASTORE_TYPE<br>
+value: kubernetes<br>
+readinessProbe:<br>
+exec:<br>
+command:<br>
+- /usr/bin/check-status<br>
+- -r</p>
+<hr>
+<h2 id="apiversion-v1kind-serviceaccountmetadataname-calico-kube-controllersnamespace-kube-system">apiVersion: v1<br>
+kind: ServiceAccount<br>
+metadata:<br>
+name: calico-kube-controllers<br>
+namespace: kube-system</h2>
+<h1 id="source-calicotemplatescalico-etcd-secretsyaml">Source: calico/templates/calico-etcd-secrets.yaml</h1>
+<hr>
+<h1 id="source-calicotemplatescalico-typhayaml">Source: calico/templates/calico-typha.yaml</h1>
+<hr>
+<h1 id="source-calicotemplatesconfigure-canalyaml">Source: calico/templates/configure-canal.yaml</h1>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://fengjing1009.github.io/media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://fengjing1009.github.io/media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+
+
+<link href="https://fengjing1009.github.io/styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+</div>
+
+
+
+  </div>
+</div>
+
+
+
+      </div>
+
+
+
+
+    </div>
+
+   <div class="footer">
+<link href="https://fengjing1009.github.io/styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://fengjing1009.github.io/styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright"><ul class="links">
+<li><a href="/" target="_blank" rel="noopener noreferrer">小飞侠的飞行日记</a></li>
+</ul>
+      </div>
+
+</div></div>
+
+    </div>
+
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://fengjing1009.github.io/media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>
