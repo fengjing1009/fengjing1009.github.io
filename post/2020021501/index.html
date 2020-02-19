@@ -19,7 +19,7 @@
      <div class="header">
       <div class="logo_title">
 		  
-        <div class="title animated fadeInDown"><img src="https://fengjing1009.github.io/images/avatar.png?v=1581909499681"/>
+        <div class="title animated fadeInDown"><img src="https://fengjing1009.github.io/images/avatar.png?v=1582078590574"/>
 
           <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
 
@@ -165,7 +165,7 @@
 <i class="fa fa-bookmark-o"></i>
 <span class="tags_info weaklink">
 	
-	<a href="https://fengjing1009.github.io/tag/OzrDk-wrZ" class="tag">kubernetes</a>
+	<a href="https://fengjing1009.github.io/tag/OzrDk-wrZ/" class="tag">kubernetes</a>
 
 
 </span>
@@ -1178,7 +1178,7 @@ rtt min/avg/max/mdev = 0.171/0.261/0.351/0.090 ms
 </code></pre>
 <h3 id="可能遇见的问题">可能遇见的问题</h3>
 <p><strong>得不到IPV6地址：</strong></p>
-<p>由于节点IPV6地址不可路由导致，需要修改IPV6接口的修改规则，比如：</p>
+<p>由于节点IPV6地址不可路由导致，需要修改IPV6接口的检测规则，比如：</p>
 <pre><code>kubectl set env daemonset/calico-node -n kube-system IP6_AUTODETECTION_METHOD=&lt;autodetection-method&gt;
 kubectl set env daemonset/calico-node -n kube-system IP6_AUTODETECTION_METHOD=can-reach=240E:120F:A004:1::6440:0D01
 kubectl set env daemonset/calico-node -n kube-system IP6_AUTODETECTION_METHOD=interface=ens192
