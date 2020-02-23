@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://fengjing1009.github.io</id>
     <title>PeterPan</title>
-    <updated>2020-02-19T02:16:37.164Z</updated>
+    <updated>2020-02-23T12:52:41.750Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://fengjing1009.github.io"/>
     <link rel="self" href="https://fengjing1009.github.io/atom.xml"/>
@@ -10,6 +10,218 @@
     <logo>https://fengjing1009.github.io/images/avatar.png</logo>
     <icon>https://fengjing1009.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, PeterPan</rights>
+    <entry>
+        <title type="html"><![CDATA[centos7针对大并发场景的系统优化]]></title>
+        <id>https://fengjing1009.github.io/post/2020022301/</id>
+        <link href="https://fengjing1009.github.io/post/2020022301/">
+        </link>
+        <updated>2020-02-23T12:51:52.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="为什么端口号最大为65535">为什么端口号最大为65535</h3>
+<ul>
+<li>在TCP、UDP协议的开头，会分别有16位来存储源端口号和目标端口号，所以端口个数是2^16-1=65535个。</li>
+<li>tcp客户端连接服务端的时候，需要获取本地的临时端口，传输层协议限制了最多只有65535个端口</li>
+</ul>
+<hr>
+<h3 id="linux打开的文件数限制">linux打开的文件数限制</h3>
+<blockquote>
+<p>参考文档：https://blog.csdn.net/u010320108/article/details/82854014</p>
+</blockquote>
+<h4 id="单进程文件句柄限制">单进程文件句柄限制</h4>
+<p>句柄数限制又分为系统总限制和单进程限制.</p>
+<p>使用命令 ulimit -n 可以看到系统对于单个进程的限制，即open files。执行命令 ulimit -a 如下:</p>
+<pre><code>[root@k8s-node-2 ~]# ulimit  -a
+core file size          (blocks, -c) 0
+data seg size           (kbytes, -d) unlimited
+scheduling priority             (-e) 0
+file size               (blocks, -f) unlimited
+pending signals                 (-i) 31189
+max locked memory       (kbytes, -l) 64
+max memory size         (kbytes, -m) unlimited
+open files                      (-n) 204800
+pipe size            (512 bytes, -p) 8
+POSIX message queues     (bytes, -q) 819200
+real-time priority              (-r) 0
+stack size              (kbytes, -s) 8192
+cpu time               (seconds, -t) unlimited
+max user processes              (-u) 204800
+virtual memory          (kbytes, -v) unlimited
+file locks                      (-x) unlimited
+</code></pre>
+<p>open files 204800 表示登录的用户（root），每个进程可以打开204800个句柄，当然总和不能超过file-max限制。</p>
+<p><strong>临时修改该值</strong></p>
+<pre><code># 临时修改
+ulimit -HSn 10000 将open-files 修改为10000，退出当前shell后即失效。H和S选项表示硬限制和软限制，下面有解释，省略的话表示同时修改。
+</code></pre>
+<p><strong>永久修改该值</strong></p>
+<pre><code># 永久修改
+vim /etc/security/limits.conf
+root soft nofile 204800
+root hard nofile 204800
+* soft nofile 204800
+* hard nofile 204800
+</code></pre>
+<p><strong>该值的最大限制</strong></p>
+<p>这个值是有上限的，这个上限的值设置在 <code>/proc/sys/fs/nr_open</code> ,默认值为 1048576，nr_open 表示一个线程最多能分配的文件句柄数。</p>
+<pre><code>[root@k8s-node-2 goim]# cat  /proc/sys/fs/nr_open
+1048576
+</code></pre>
+<h4 id="系统总打开文件句柄限制">系统总打开文件句柄限制</h4>
+<p>系统级的限制在这个文件中 /proc/sys/fs/file-max</p>
+<pre><code>[root@k8s-node-2 goim]# cat /proc/sys/fs/file-max
+790774
+</code></pre>
+<p>file-max指定了系统范围内所有进程可以打开的文件句柄限制。修改上面那个文件也是临时生效的，重启后会失效。如果要永久生效，则要修改这个文件， <code>/etc/sysctl.conf</code>。</p>
+<pre><code>fs.file-max  = 6815744
+</code></pre>
+<p><code>lsof -p 进程pid</code>  查看单个进程打开的文件句柄</p>
+<p><code>/proc/sys/fs/file-nr</code>记录当前系统打开的句柄数</p>
+<pre><code class="language-shell">[root@k8s-node-2 goim]# cat /proc/sys/fs/file-nr
+2080	0	790774
+# 第一列表示已打开的句柄数
+# 第二列表示已分配但是未使用的句柄数
+# 第三列表示系统总的句柄数，即 file-max
+</code></pre>
+<h4 id="文件打开说明小节">文件打开说明小节</h4>
+<pre><code>1、所有进程能够打开的文件句柄总数不能超过 file-max
+2、单个进程打开的句柄数不能超过nofile soft limit
+3、nofile soft limit 的设置不能超过nofile hard limit
+4、nofile hard limit 的设置不能超过 nr_open
+5、nr_open 的设置不能超过 file-max
+</code></pre>
+<h4 id="系统优化">系统优化</h4>
+<pre><code># /etc/sysctl.conf 增加下面内容
+fs.file-max  = 6815744
+
+# /etc/security/limits.conf 增加下面内容
+* soft nofile 204800
+* hard nofile 204800
+</code></pre>
+<h3 id="linux端口的相关设置">linux端口的相关设置</h3>
+<blockquote>
+<p>参考地址：https://blog.csdn.net/xf_87/article/details/91810087</p>
+</blockquote>
+<p><strong>查看：</strong></p>
+<pre><code>[root@k8s-node-2 goim]# sysctl -a |grep ipv4.ip_local_port_range
+net.ipv4.ip_local_port_range = 10000	60999
+</code></pre>
+<p><strong>修改：</strong></p>
+<pre><code># 编辑/etc/sysctl.conf 在文件中新增以下内容
+net.ipv4.ip_local_port_range = 1024 65535
+</code></pre>
+<h3 id="linux-tcp相关设置">linux TCP相关设置</h3>
+<p><strong>linux服务器常见的几种状态</strong></p>
+<ul>
+<li>TIME_WAIT (主动关闭方的状态)</li>
+<li>CLOSE_WAIT（被动关闭方的状态）</li>
+<li>FIN_WAIT1（被动关闭方的状态）</li>
+<li>FIN_WAIT2（主动关闭方的状态）</li>
+</ul>
+<p><strong>大并发报错</strong></p>
+<pre><code>Cannot assign requested address
+</code></pre>
+<blockquote>
+<p>参考地址：</p>
+<p>https://www.jianshu.com/p/51a953b789a4</p>
+<p>https://www.cnblogs.com/dadonggg/p/8778318.html</p>
+<p>https://blog.csdn.net/libaineu2004/article/details/78886182</p>
+</blockquote>
+<p>原因：高并发的场景下，就会出现端口不足(主动关闭连接的一方，连接会处在TIME-WAIT的状态下，需要等2MSL时间后，系统才会回收这条连接，端口才可以继续被使用）。</p>
+<p>解决：</p>
+<pre><code># 编辑/etc/sysctl.conf 在文件中新增以下内容
+net.ipv4.tcp_tw_reuse = 1 
+#开启重用。允许将TIME-WAIT sockets重新用于新的TCP连接，默认为0，表示关闭；
+net.ipv4.tcp_tw_recycle = 1 
+#开启TCP连接中TIME-WAIT sockets的快速回收，默认为0，表示关闭。
+net.ipv4.tcp_max_tw_buckets = 5000
+# 表示系统同时保持TIME_WAIT套接字的最大数量，如果超过这个数字，TIME_WAIT套接字将立刻被清除并打印警告信息。默认为180000，改为5000。
+</code></pre>
+<pre><code>close wait 过多
+</code></pre>
+<p>在被动关闭连接情况下，在已经接收到FIN，但是还没有发送自己的FIN的时刻，连接处于CLOSE_WAIT状态。<br>
+通常来讲，CLOSE_WAIT状态的持续时间应该很短，正如SYN_RCVD状态。但是在一些特殊情况下，就会出现连接长时间处于CLOSE_WAIT状态的情况。</p>
+<p>出现大量close_wait的现象，主要原因是某种情况下对方关闭了socket链接，但是我方忙与读或者写，没有关闭连接。代码需要判断socket，一旦读到0，断开连接，read返回负，检查一下errno，如果不是AGAIN，就断开连接。</p>
+<p>解决：</p>
+<blockquote>
+<p>参考地址：https://blog.csdn.net/wwd0501/article/details/78674170</p>
+</blockquote>
+<pre><code># 编辑/etc/sysctl.conf 在文件中新增以下内容
+net.ipv4.tcp_keepalive_time = 1800 #当keepalive打开的情况下，TCP发送keepalive消息的频率
+net.ipv4.tcp_keepalive_probes = 3 #TCP发送keepalive探测以确定该连接已经断开的次数。
+net.ipv4.tcp_keepalive_intvl = 15 #当探测没有确认时，重新发送探测的频度。探测消息发送的频率
+</code></pre>
+<h3 id="大并发优化总结">大并发优化总结</h3>
+<blockquote>
+<p>参考地址：https://my.oschina.net/shyloveliyi/blog/2979058</p>
+</blockquote>
+<p>最大文件描述符</p>
+<pre><code>ulimit -SHn 1024000 
+echo &quot;ulimit -SHn 1024000&quot; &gt;&gt; /etc/rc.d/rc.local 
+source /etc/rc.d/rc.local
+</code></pre>
+<p>内核参数优化<code>/etc/sysctl.conf</code></p>
+<pre><code>#关闭ipv6
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+
+#决定检查过期多久邻居条目
+net.ipv4.neigh.default.gc_stale_time=120
+
+#使用arp_announce / arp_ignore解决ARP映射问题
+net.ipv4.conf.default.arp_announce = 2
+net.ipv4.conf.all.arp_announce=2
+net.ipv4.conf.lo.arp_announce=2 # 避免放大攻击
+net.ipv4.icmp_echo_ignore_broadcasts = 1 # 开启恶意icmp错误消息保护
+net.ipv4.icmp_ignore_bogus_error_responses = 1
+
+#处理无源路由的包
+net.ipv4.conf.all.accept_source_route = 0
+net.ipv4.conf.default.accept_source_route = 0
+
+#core文件名中添加pid作为扩展名
+kernel.core_uses_pid = 1 # 开启SYN洪水攻击保护
+net.ipv4.tcp_syncookies = 1
+
+#修改消息队列长度
+kernel.msgmnb = 65536
+kernel.msgmax = 65536
+
+#timewait的数量，默认180000
+net.ipv4.tcp_max_tw_buckets = 6000
+net.ipv4.tcp_sack = 1
+net.ipv4.tcp_window_scaling = 1
+net.ipv4.tcp_rmem = 4096 87380 4194304
+net.ipv4.tcp_wmem = 4096 16384 4194304
+net.core.wmem_default = 8388608
+net.core.rmem_default = 8388608
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+
+#限制仅仅是为了防止简单的DoS 攻击
+net.ipv4.tcp_max_orphans = 3276800
+
+#未收到客户端确认信息的连接请求的最大值
+net.ipv4.tcp_max_syn_backlog = 262144
+net.ipv4.tcp_timestamps = 0
+
+#内核放弃建立连接之前发送SYNACK 包的数量
+net.ipv4.tcp_synack_retries = 1
+
+#内核放弃建立连接之前发送SYN 包的数量
+net.ipv4.tcp_syn_retries = 1
+
+#启用timewait 快速回收
+net.ipv4.tcp_tw_recycle = 1
+
+#开启重用。允许将TIME-WAIT sockets 重新用于新的TCP 连接
+net.ipv4.tcp_tw_reuse = 1
+net.ipv4.tcp_mem = 94500000 915000000 927000000
+net.ipv4.tcp_fin_timeout = 1
+</code></pre>
+<p>然后执行以下命令重载配置</p>
+<pre><code> sysctl -p
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes双栈集群安装]]></title>
         <id>https://fengjing1009.github.io/post/2020021501/</id>
@@ -2522,40 +2734,6 @@ mode: ipvs  # kube-proxy 模式
 <h3 id="参考地址">参考地址</h3>
 <p>https://mp.weixin.qq.com/s/vnriX2bTtnkv8i2UpLeNnA</p>
 <p>https://www.qikqiak.com/post/use-kubeadm-install-kubernetes-1.15.3/</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[kubernetes的国内软件源配置]]></title>
-        <id>https://fengjing1009.github.io/post/2019080801/</id>
-        <link href="https://fengjing1009.github.io/post/2019080801/">
-        </link>
-        <updated>2019-08-08T06:40:52.000Z</updated>
-        <content type="html"><![CDATA[<h2 id="ubuntu-软件源配置">ubuntu 软件源配置</h2>
-<pre><code>add-apt-repository &quot;deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main&quot;
-add-apt-repository &quot;deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable&quot;
-wget -q https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg -O- | sudo apt-key add -
-curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
-apt-get update
-apt-get -y install apt-transport-https ca-certificates curl software-properties-common
-apt-get -y install docker-ce kubeadm kubectl kubelet
-systemctl enable docker kubelet &amp;&amp; systemctl start docker
-</code></pre>
-<h2 id="centos-软件源配置">centos 软件源配置</h2>
-<pre><code># 切换到配置目录
-cd /etc/yum.repos.d/
-# 配置docker-ce阿里源
-wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
-# 配置kubernetes阿里源
-cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
-EOF
-</code></pre>
 ]]></content>
     </entry>
 </feed>
