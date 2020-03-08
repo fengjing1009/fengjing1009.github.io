@@ -19,7 +19,7 @@
      <div class="header">
       <div class="logo_title">
 		  
-        <div class="title animated fadeInDown"><img src="https://js2hlu.coding-pages.com/images/avatar.png?v=1582786061143"/>
+        <div class="title animated fadeInDown"><img src="https://js2hlu.coding-pages.com/images/avatar.png?v=1583666763153"/>
 
           <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
 
@@ -219,6 +219,13 @@ yum install docker-ce kubeadm kubectl kubelet -y
 
 # 开机启动kubelet和docker
 systemctl enable docker kubelet
+
+# 配置docker镜像加速
+cat &lt;&lt;EOF &gt;  /etc/docker/daemon.json
+{
+  &quot;registry-mirrors&quot;: [&quot;https://9cpn8tt6.mirror.aliyuncs.com&quot;]
+}
+EOF
 
 # 启动docker
 systemctl start docker
