@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://js2hlu.coding-pages.com</id>
     <title>PeterPan</title>
-    <updated>2020-03-08T11:26:06.668Z</updated>
+    <updated>2020-03-14T15:44:58.956Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://js2hlu.coding-pages.com"/>
     <link rel="self" href="https://js2hlu.coding-pages.com/atom.xml"/>
@@ -10,6 +10,87 @@
     <logo>https://js2hlu.coding-pages.com/images/avatar.png</logo>
     <icon>https://js2hlu.coding-pages.com/favicon.ico</icon>
     <rights>All rights reserved 2020, PeterPan</rights>
+    <entry>
+        <title type="html"><![CDATA[nginx部署https区别]]></title>
+        <id>https://js2hlu.coding-pages.com/post/2020031402/</id>
+        <link href="https://js2hlu.coding-pages.com/post/2020031402/">
+        </link>
+        <updated>2020-03-14T15:43:58.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="生成证书相关文件">生成证书相关文件</h3>
+<pre><code># 生成私钥和证书签名请求，请替换subj的相关信息
+openssl req -new -newkey rsa:2048 -sha256 -nodes -out test_com.csr -keyout test_com.key -subj &quot;/C=CN/ST=ShenZhen/L=ShenZhen/O=Example Inc./OU=Web Security/CN=test.com&quot;
+
+# 自签证书
+openssl x509 -req -days 3650 -in test_com.csr  -signkey test_com.key -out test_com.crt
+</code></pre>
+<h3 id="配置nginx">配置nginx</h3>
+<pre><code># nginx 版本为nginx/1.16.1
+    server {
+        listen     443 ssl  ;
+        server_name  test.com;  #指定服务域名
+        ssl_certificate     test_com.crt;  #证书文件，需要放在conf目录下
+        ssl_certificate_key test_com.key;  #证书文件，需要放在conf目录下
+        ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
+        ssl_session_cache    shared:SSL:1m;
+        ssl_session_timeout  5m;
+        ssl_ciphers  HIGH:!aNULL:!MD5;
+        ssl_prefer_server_ciphers  on;
+        location / {
+            root   html;
+            index  index.html index.htm;
+        }
+        location = /50x.html {
+            root   html;
+        }
+    }
+</code></pre>
+<h3 id="参考地址">参考地址</h3>
+<p>https://aotu.io/notes/2016/08/16/nginx-https/index.html</p>
+<p>https://www.cnblogs.com/crazymagic/p/11042333.html</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[http中的301和302状态码]]></title>
+        <id>https://js2hlu.coding-pages.com/post/2020031401/</id>
+        <link href="https://js2hlu.coding-pages.com/post/2020031401/">
+        </link>
+        <updated>2020-03-14T15:21:05.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="http状态码的301和302">HTTP状态码的301和302</h3>
+<p>301 redirect: 301 代表永久性转移(Permanently Moved)</p>
+<p>302 redirect: 302 代表暂时性转移(Temporarily Moved )</p>
+<p>详细来说，301和302状态码都表示重定向，就是说浏览器在拿到服务器返回的这个状态码后会自动跳转到一个新的URL地址，这个地址可以从响应的Location首部中获取（用户看到的效果就是他输入的地址A瞬间变成了另一个地址B）——这是它们的共同点。他们的不同在于。301表示旧地址A的资源已经被永久地移除了（这个资源不可访问了），<strong>搜索引擎在抓取新内容的同时也将旧的网址交换为重定向之后的网址</strong>；302表示旧地址A的资源还在（仍然可以访问），这个重定向只是临时地从旧地址A跳转到地址B，<strong>搜索引擎会抓取新的内容而保存旧的网址。</strong></p>
+<p>301重定向常用于站点永久废弃迁移到新域名的情况，或者多个域名共用一个站点的情况。<br>
+301的跳转需要慎用：很可能导致客户端问题永久性转移无法正常访问更新资源。</p>
+<p>302则用于站点临时跳转的情况，后续还会重新使用之前的域名。（常用）</p>
+<p>302跳转的风险会存在URL劫持的问题。</p>
+<h3 id="301跳转配置">301跳转配置</h3>
+<p>Nginx下常见的301跳转有以下三种，虽然都能达到同样的目的。但是三种写法上还是有区别的，主要的区别是在正则匹配的性能上。</p>
+<p>第一种：使用rewrite指令，通过正则匹配所有的URI后再去掉开头第一个/(反斜线)</p>
+<pre><code>rewrite ^/(.*)$ https://www.hi-linux.com/$1;
+</code></pre>
+<p>第二种：同样使用rewrite指令，不同的是通过<code>$request_uri</code>变量匹配所有的URI。</p>
+<pre><code>rewrite ^ https://www.hi-linux.com$request_uri? permanent;
+</code></pre>
+<p>这样写的好处是省去了去掉开头第一个反斜线的过程，正则匹配上性能更优。</p>
+<p>第三种：使用return指令，通过301状态码和<code>$request_uri</code>参数，直接告诉Nginx这是个301重定向和抓取指定URI。</p>
+<pre><code>return 301 https://www.hi-linux.com$request_uri;
+</code></pre>
+<p>这种方法是性能上最优的，因为<code>rewrite</code>指令有很多写法和规则，执行完所有正则匹配后，Nginx 才会知道这是一个301永久重定向。</p>
+<h3 id="302跳转配置">302跳转配置</h3>
+<p>Nginx下常见的301跳转有以下三种，虽然都能达到同样的目的。但是三种写法上还是有区别的，主要的区别是在正则匹配的性能上。</p>
+<p>第一种：使用rewrite指令，通过正则匹配所有的URI后再去掉开头第一个/(反斜线)</p>
+<pre><code>rewrite ^/(.*)$ https://www.hi-linux.com/$1 redirect;
+</code></pre>
+<p>第二种：同样使用rewrite指令，不同的是通过<code>$request_uri</code>变量匹配所有的URI。</p>
+<pre><code>rewrite ^(.*)$ https://www.hi-linux.com$request_uri? redirect;
+</code></pre>
+<p>这样写的好处是省去了去掉开头第一个反斜线的过程，正则匹配上性能更优。</p>
+<p>第三种：使用return指令，通过301状态码和<code>$request_uri</code>参数，直接告诉Nginx这是个301重定向和抓取指定URI。</p>
+<pre><code>return 302 https://www.hi-linux.com$request_uri;
+</code></pre>
+<p>这种方法是性能上最优的，因为<code>rewrite</code>指令有很多写法和规则，执行完所有正则匹配后，Nginx 才会知道这是一个302临时。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes升级iptables为ipvs]]></title>
         <id>https://js2hlu.coding-pages.com/post/20200227001/</id>
@@ -2257,442 +2338,6 @@ Allocatable:
 <p>https://stackoverflow.com/questions/56320930/renew-kubernetes-pki-after-expired</p>
 <p>https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init-phase/</p>
 <p>https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[iptables的四表五链]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2019082802/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2019082802/">
-        </link>
-        <updated>2019-08-28T04:44:56.000Z</updated>
-        <content type="html"><![CDATA[<h2 id="netfilter介绍">netfilter介绍</h2>
-<ul>
-<li>它是iptables的主要的工作模块，位于内核中，在网络层的五个位置（也就是防火墙四表五链中的五链）注册了一些钩子函数，用来抓取数据包；</li>
-<li>把数据包的信息拿出来匹配各个链位置在对应表中的规则；</li>
-<li>匹配之后，进行相应的处理ACCEPT、DROP等等；</li>
-</ul>
-<h3 id="netfilter和iptables的关系图">netfilter和iptables的关系图</h3>
-<figure data-type="image" tabindex="1"><img src="https://img.mubu.com/document_image/e0653c59-e432-40d9-a8bd-38558599a4da-1235096.jpg" alt="img" loading="lazy"></figure>
-<h2 id="四表五链">四表五链</h2>
-<ul>
-<li>链就是位置：共有五个，进路由(PREROUTING)、进系统(INPUT) 、转发(FORWARD)、出系统(OUTPUT)、出路由(POSTROUTING)；</li>
-<li>表就是存储的规则；数据包到了该链处，会去对应表中查询设置的规则，然后决定是否放行、丢弃、转发还是修改等等操作。</li>
-</ul>
-<h3 id="四表">四表</h3>
-<ul>
-<li>filter表——过滤数据包</li>
-<li>Nat表——用于网络地址转换（IP、端口）</li>
-<li>Mangle表——修改数据包的服务类型、TTL、并且可以配置路由实现QOS</li>
-<li>Raw表——决定数据包是否被状态跟踪机制处理</li>
-</ul>
-<h3 id="五链">五链</h3>
-<ul>
-<li>INPUT链——进来的数据包应用此规则链中的策略</li>
-<li>OUTPUT链——外出的数据包应用此规则链中的策略</li>
-<li>FORWARD链——转发数据包时应用此规则链中的策略</li>
-<li>PREROUTING链——对数据包作路由选择前应用此链中的规则（所有的数据包进来的时侯都先由这个链处理）</li>
-<li>POSTROUTING链——对数据包作路由选择后应用此链中的规则（所有的数据包出来的时侯都先由这个链处理）</li>
-</ul>
-<h3 id="链表关系图">链表关系图</h3>
-<figure data-type="image" tabindex="2"><img src="http://peterpan.yunsean.com/iptables01.png" alt="image-20190828125115128" loading="lazy"></figure>
-<h3 id="数据处理流程">数据处理流程</h3>
-<p>我们结合下面的图举个例子：<br>
-假如有数据包从Network IN要通过iptables，数据包流向如下：<br>
-1.Network IN数据包到达服务器的网络接口<br>
-2.进入raw表的 PREROUTING 链，这个链的作用是决定数据包是否被状态跟踪。<br>
-进入 mangle 表的 PREROUTING 链，在此可以修改数据包，比如 TOS 等。<br>
-进入 nat 表的 PREROUTING 链，可以在此做DNAT(目标地址转换)<br>
-3.决定路由，查看目标地址是交给本地主机还是转发给其它主机。</p>
-<p>4.到这里分两种情况，一种情况是数据包要转发给其它主机（一般情况下它是在担任网关服务器），数据包会依次经过：<br>
-5.进入 mangle 表的 FORWARD 链，<br>
-进入 filter 表的 FORWARD 链，在这里我们可以对所有转发的数据包进行过滤。<br>
-6.进入 mangle 表的 POSTROUTING 链<br>
-进入 nat 表的 POSTROUTING 链，在这里一般都是用来做 SNAT （源地址转换）<br>
-7.数据包流出网络接口，发往network out。</p>
-<p>8.另一种情况，数据包的目标地址就是发给本地主机的，它会依次穿过：<br>
-9.进入 mangle 表的 INPUT 链，<br>
-进入 filter 表的 INPUT 链，在这里我们可以对流入的所有数据包进行过滤，<br>
-数据包交给本地主机的应用程序进行处理。<br>
-10.应用程序处理完毕后发送的数据包进行路由发送决定。<br>
-11.进入 raw 表的 OUTPUT 链。<br>
-进入 mangle 表的 OUTPUT 链，<br>
-进入 nat 表的 OUTPUT 链，<br>
-进入 filter 表的 OUTPUT 链。<br>
-12.进入 mangle 表的 POSTROUTING 链，<br>
-进入 nat 表的 POSTROUTING 链。<br>
-13.进入出去的网络接口，发送往network out。</p>
-<p>所以，如果我们要过滤控制包的进出，只需要把input chain和forward chain这两个关口把控住就好了，这也是我们需要把input chain和forward chain默认设置为drop的原因。</p>
-<ul>
-<li>
-<p>图一</p>
-<figure data-type="image" tabindex="3"><img src="https://img.mubu.com/document_image/c1b9ef44-0c8d-4818-a18b-83b527e8d0e4-1235096.jpg" alt="img" loading="lazy"></figure>
-</li>
-<li>
-<p>图二</p>
-<figure data-type="image" tabindex="4"><img src="https://img.mubu.com/document_image/bcb89f30-1a57-4967-9a41-3cb6e2c8a5bc-1235096.jpg" alt="img" loading="lazy"></figure>
-</li>
-</ul>
-<h2 id="iptables操作">iptables操作</h2>
-<pre><code>iptables [-t 表名] 选项 [链名] [条件] [-j 控制类型]
-
--P 设置默认策略:iptables
- 
--P INPUT (DROP|ACCEPT)
- 
--F 清空规则链
- 
--L 查看规则链
- 
--A 在规则链的末尾加入新规则
- 
--I num 在规则链的头部加入新规则
- 
--D num 删除某一条规则
- 
--s 匹配来源地址IP/MASK，加叹号&quot;!&quot;表示除这个IP外。
- 
--d 匹配目标地址
- 
--i 网卡名称 匹配从这块网卡流入的数据
- 
--o 网卡名称 匹配从这块网卡流出的数据
- 
--p 匹配协议,如tcp,udp,icmp
- 
---dport num 匹配目标端口号
- 
---sport num 匹配来源端口号
-</code></pre>
-<h3 id="常用iptables的语句">常用iptables的语句</h3>
-<pre><code>1. 删除已有规则
-在开始创建iptables规则之前，你也许需要删除已有规则。命令如下：
-iptables -F
-(or)
-iptables –flush
-查看已有规则
-iptables -nL
- 
- 
-2.设置链的默认策略
-链的默认政策设置为”ACCEPT”（接受），若要将INPUT,FORWARD,OUTPUT链设置成”DROP”（拒绝），命令如下：
-iptables -P INPUT DROP
-iptables -P FORWARD DROP
-iptables -P OUTPUT DROP
-当INPUT链和OUTPUT链都设置成DROP时，对于每一个防火墙规则，我们都应该定义两个规则。例如：一个传入另一个传出。在下面所有的例子中，由于我们已将DROP设置成INPUT链和OUTPUT链的默认策略，每种情况我们都将制定两条规则。
-当然，如果你相信你的内部用户,则可以省略上面的最后一行。例如：默认不丢弃所有出站的数据包。在这种情况下,对于每一个防火墙规则要求,你只需要制定一个规则——只对进站的数据包制定规则。
- 
- 
-3. 阻止指定IP地址
-例：丢弃来自IP地址x.x.x.x的包
-BLOCK_THIS_IP=&quot;x.x.x.x&quot;
-iptables -A INPUT -s &quot;$BLOCK_THIS_IP&quot; -j DROP
-注：当你在log里发现来自某ip地址的异常记录，可以通过此命令暂时阻止该地址的访问以做更深入分析
-例：阻止来自IP地址x.x.x.x eth0 tcp的包
-iptables -A INPUT -i eth0 -s &quot;$BLOCK_THIS_IP&quot; -j DROP
-iptables -A INPUT -i eth0 -p tcp -s &quot;$BLOCK_THIS_IP&quot; -j DROP
- 
- 
-4. 允许所有SSH的连接请求
-例：允许所有来自外部的SSH连接请求，即只允许进入eth0接口，并且目标端口为22的数据包
-iptables -A INPUT -i eth0 -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
- 
- 
-5. 仅允许来自指定网络的SSH连接请求
-例：仅允许来自于192.168.100.0/24域的用户的ssh连接请求
-iptables -A INPUT -i eth0 -p tcp -s 192.168.100.0/24 --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
- 
- 
-6.允许http和https的连接请求
-例：允许所有来自web - http的连接请求
-iptables -A INPUT -i eth0 -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 80 -m state --state ESTABLISHED -j ACCEPT
-例：允许所有来自web - https的连接请求
-iptables -A INPUT -i eth0 -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 443 -m state --state ESTABLISHED -j ACCEPT
- 
- 
-7. 使用multiport 将多个规则结合在一起
-允许多个端口从外界连入，除了为每个端口都写一条独立的规则外，我们可以用multiport将其组合成一条规则。如下所示：
-例：允许所有ssh,http,https的流量访问
-iptables -A INPUT -i eth0 -p tcp -m multiport --dports 22,80,443 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp -m multiport --sports 22,80,443 -m state --state ESTABLISHED -j ACCEPT
- 
- 
-8. 允许从本地发起的SSH请求
-iptables -A OUTPUT -o eth0 -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A INPUT -i eth0 -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
-请注意,这与允许ssh连入的规则略有不同。本例在OUTPUT链上，我们允许NEW和ESTABLISHED状态。在INPUT链上，我们只允许ESTABLISHED状态。ssh连入的规则与之相反。
- 
- 
-9. 仅允许从本地发起到一个指定的网络域的SSH请求
-例：仅允许从内部连接到网域192.168.100.0/24
-iptables -A OUTPUT -o eth0 -p tcp -d 192.168.100.0/24 --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A INPUT -i eth0 -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
- 
- 
-10. 允许从本地发起的HTTPS连接请求
-下面的规则允许输出安全的网络流量。如果你想允许用户访问互联网，这是非常有必要的。在服务器上，这些规则能让你使用wget从外部下载一些文件
-iptables -A OUTPUT -o eth0 -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A INPUT -i eth0 -p tcp --sport 443 -m state --state ESTABLISHED -j ACCEPT
-注：对于HTTP web流量的外联请求，只需要将上述命令中的端口从443改成80即可。
- 
- 
-11. 负载平衡传入的网络流量
-使用iptables可以实现传入web流量的负载均衡，我们可以传入web流量负载平衡使用iptables防火墙规则。
-例：使用iptables nth将HTTPS流量负载平衡至三个不同的ip地址。
-iptables -A PREROUTING -i eth0 -p tcp --dport 443 -m state --state NEW -m nth --counter 0 --every 3 --packet 0 -j DNAT --to-destination 192.168.1.101:443
-iptables -A PREROUTING -i eth0 -p tcp --dport 443 -m state --state NEW -m nth --counter 0 --every 3 --packet 1 -j DNAT --to-destination 192.168.1.102:443
-iptables -A PREROUTING -i eth0 -p tcp --dport 443 -m state --state NEW -m nth --counter 0 --every 3 --packet 2 -j DNAT --to-destination 192.168.1.103:443
- 
- 
-12. 允许外部主机ping内部主机
-iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
-iptables -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
- 
- 
-13. 允许内部主机ping外部主机
-iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
-iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
- 
- 
-14. 允许回环访问 例：在服务器上允许127.0.0.1回环访问。
-iptables -A INPUT -i lo -j ACCEPT
-iptables -A OUTPUT -o lo -j ACCEPT
- 
- 
-15. 允许内部网络域外部网络的通信
-防火墙服务器上的其中一个网卡连接到外部，另一个网卡连接到内部服务器，使用以下规则允许内部网络与外部网络的通信。此例中，eth1连接到外部网络(互联网)，eth0连接到内部网络(例如:192.168.1.x)。
-iptables -A FORWARD -i eth0 -o eth1 -j ACCEPT
- 
- 
-16. 允许出站的DNS连接
-iptables -A OUTPUT -p udp -o eth0 --dport 53 -j ACCEPT
-iptables -A INPUT -p udp -i eth0 --sport 53 -j ACCEPT
- 
- 
-17. 允许NIS连接
-如果你使用NIS管理用户帐户，你需要允许NIS连接。如果你不允许NIS相关的ypbind连接请求，即使SSH连接请求已被允许，用户仍然无法登录。NIS的端口是动态的，先使用命令rpcinfo –p来知道端口号，此例中为853和850端口。
-rpcinfo -p | grep ypbind
-例：允许来自111端口以及ypbind使用端口的连接请求
-iptables -A INPUT -p tcp --dport 111 -j ACCEPT
-iptables -A INPUT -p udp --dport 111 -j ACCEPT
-iptables -A INPUT -p tcp --dport 853 -j ACCEPT
-iptables -A INPUT -p udp --dport 853 -j ACCEPT
-iptables -A INPUT -p tcp --dport 850 -j ACCEPT
-iptables -A INPUT -p udp --dport 850 -j ACCEPT
-注：当你重启ypbind之后端口将不同，上述命令将无效。有两种解决方案：
-1）使用你NIS的静态IP
-2）编写shell脚本通过“rpcinfo - p”命令自动获取动态端口号,并在上述iptables规则中使用。
- 
- 
-18. 允许来自指定网络的rsync连接请求
-例：允许来自网络192.168.101.0/24的rsync连接请求
-iptables -A INPUT -i eth0 -p tcp -s 192.168.101.0/24 --dport 873 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 873 -m state --state ESTABLISHED -j ACCEPT
- 
- 
-19. 允许来自指定网络的MySQL连接请求
-很多情况下，MySQL数据库与web服务跑在同一台服务器上。有时候我们仅希望DBA和开发人员从内部网络（192.168.100.0/24）直接登录数据库，可尝试以下命令：
-iptables -A INPUT -i eth0 -p tcp -s 192.168.100.0/24 --dport 3306 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 3306 -m state --state ESTABLISHED -j ACCEPT
- 
- 
-20. 允许Sendmail, Postfix邮件服务
-Sendmail和postfix都使用了25端口，因此我们只需要允许来自25端口的连接请求即可。
-iptables -A INPUT -i eth0 -p tcp --dport 25 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 25 -m state --state ESTABLISHED -j ACCEPT
- 
- 
-21. 允许IMAP和IMAPS 例：允许IMAP/IMAP2流量，端口为143
-iptables -A INPUT -i eth0 -p tcp --dport 143 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 143 -m state --state ESTABLISHED -j ACCEPT
-例：允许IMAPS流量，端口为993
-iptables -A INPUT -i eth0 -p tcp --dport 993 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 993 -m state --state ESTABLISHED -j ACCEPT
- 
- 
-22. 允许POP3和POP3S 例：允许POP3访问
-iptables -A INPUT -i eth0 -p tcp --dport 110 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 110 -m state --state ESTABLISHED -j ACCEPT
-例：允许POP3S访问
-iptables -A INPUT -i eth0 -p tcp --dport 995 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 995 -m state --state ESTABLISHED -j ACCEPT
- 
- 
-23. 防止DoS攻击
-iptables -A INPUT -p tcp --dport 80 -m limit --limit 25/minute --limit-burst 100 -j ACCEPT
-上述例子中： -m limit: 启用limit扩展 –limit 25/minute: 允许最多每分钟25个连接（根据需求更改）。 –limit-burst 100: 只有当连接达到limit-burst水平(此例为100)时才启用上述limit/minute限制。
- 
- 
-24. 端口转发 例：将来自422端口的流量全部转到22端口。
-这意味着我们既能通过422端口又能通过22端口进行ssh连接。启用DNAT转发。
-iptables -t nat -A PREROUTING -p tcp -d 192.168.102.37 --dport 422 -j DNAT --to 192.168.102.37:22
-除此之外，还需要允许连接到422端口的请求
-iptables -A INPUT -i eth0 -p tcp --dport 422 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 422 -m state --state ESTABLISHED -j ACCEPT
- 
- 
-25. 记录丢弃的数据表 第一步：新建名为LOGGING的链
-iptables -N LOGGING
-第二步：将所有来自INPUT链中的数据包跳转到LOGGING链中
-iptables -A INPUT -j LOGGING
-第三步：为这些包自定义个前缀，命名为”IPTables Packet Dropped”
-iptables -A LOGGING -m limit --limit 2/min -j LOG --log-prefix &quot;IPTables Packet Dropped: &quot; --log-level 7
-第四步：丢弃这些数据包
-iptables -A LOGGING -j DROP
- 
- 
-26. ip映射(NAT)
-假设有一家ISP提供园区Internet接入服务，为了方便管理，该ISP分配给园区用户的IP地址都是伪IP，但是部分用户要求建立自己的WWW服务器对外发布信息。
-我们可以再防火墙的外部网卡上绑定多个合法IP地址，然后通过ip映射使发给其中某一 个IP地址的包转发至内部某一用户的WWW服务器上，然后再将该内部WWW服务器响应包伪装成该合法IP发出的包。
- 
-我们假设以下情景:
-该ISP分配给A单位www服务器的ip为:
-伪ip:192.168.1.100
-真实ip:202.110.123.100
-该ISP分配给B单位www服务器的ip为:
-伪ip:192.168.1.200
-真实ip:202.110.123.200
-linux防火墙的ip地址分别为:
-内网接口eth1:192.168.1.1
-外网接口eth0:202.110.123.1
-然后我们将分配给A、B单位的真实ip绑定到防火墙的外网接口，以root权限执行以下命令:
-ifconfig eth0 add 202.110.123.100 netmask 255.255.255.0
-ifconfig eth0 add 202.110.123.200 netmask 255.255.255.0
- 
-首先，对防火墙接收到的目的ip为202.110.123.100和202.110.123.200的所有数据包进行目的NAT(DNAT):
-iptables -A PREROUTING -i eth0 -d 202.110.123.100 -j DNAT --to 192.168.1.100
-iptables -A PREROUTING -i eth0 -d 202.110.123.200 -j DNAT --to 192.168.1.200
- 
-其次，对防火墙接收到的源ip地址为192.168.1.100和192.168.1.200的数据包进行源NAT(SNAT):
-iptables -A POSTROUTING -o eth0 -s 192.168.1.100 -j SNAT --to 202.110.123.100
-iptables -A POSTROUTING -o eth0 -s 192.168.1.200 -j SNAT --to 202.110.123.200
- 
-这样，所有目的ip为202.110.123.100和202.110.123.200的数据包都将分别被转发给192.168.1.100和192.168.1.200;而所有来自192.168.1.100和192.168.1.200的数据包都将分 别被伪装成由202.110.123.100和202.110.123.200，从而也就实现了ip映射。
-</code></pre>
-<h2 id="参考文档">参考文档</h2>
-<p>https://www.cnblogs.com/zejin2008/p/5919550.html<br>
-https://blog.csdn.net/skc361/article/details/20481521<br>
-https://www.cnblogs.com/zhujingzhi/p/9706664.html</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[使用iptables实现网络互联]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2019082702/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2019082702/">
-        </link>
-        <updated>2019-08-27T15:34:48.000Z</updated>
-        <content type="html"><![CDATA[<h2 id="iptables实现网络功能的方式">iptables实现网络功能的方式</h2>
-<p>SNAT：代理上网实现原地址转换</p>
-<p>DNAT：用于端口转发实现目标地址转换</p>
-<p>实现以上两种功能均要打开内核路由转发功能</p>
-<pre><code>[root@xuegod63 ~]# vim /etc/sysctl.conf
-#改：#net.ipv4.ip_forward = 0
-#为： net.ipv4.ip_forward = 1
-#改完使配置生效：
-[root@xuegod63 ~]# sysctl -p
-</code></pre>
-<h2 id="iptables的源地址转换snat">iptables的源地址转换(SNAT)</h2>
-<h3 id="双网卡实现snat">双网卡实现SNAT</h3>
-<p><strong>示例一</strong></p>
-<figure data-type="image" tabindex="1"><img src="https://img-blog.csdn.net/20171117145802662?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvd2hlYXRfZ3JvdW5k/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="è¿éåå¾çæè¿°" loading="lazy"></figure>
-<pre><code># 左边的机器为A，右边的机器为B ，A和B在同一个自网路，B有两个网卡。一个网卡和A同在一个网络，另外一个网卡可以连接外网。 
-# 配置方式
-[root@xuegod63 ~]# iptables -t nat -A POSTROUTING -s 192.168.240.0/24   -j  SNAT  --to 192.168.1.250
-或：
-[root@xuegod63 ~]#iptables -t nat -A POSTROUTING -s 192.168.2.0/24  -o eth0  -j MASQUERADE
-# 拒绝访问转发机器本身
-[root@xuegod63 ~]# iptables -A INPUT -s 192.168.2.2 -j DROP
-</code></pre>
-<p><strong>示例二</strong></p>
-<pre><code>场景：
-有一台A服务器不能上网，和B服务器通过内网来连接，B服务器可以上网，要实现A服务器也可以上网。
-A IP:192.168.0.35
-B IP:192.168.0.146（123.196.112.146为外网ip）
-
-SNAT:改变数据包的源地址。防火墙会使用外部地址，替换数据包的本地网络地址。这样使网络内部主机能够与网络外部通信。
-
-1.在可以上网那台服务器B上，开启内核路由转发功能
-echo 1 &gt; /proc/sys/net/ipv4/ip_forward
-
-2.在需要通过代理上网服务器A上，查看路由表。并添加默认网关。route add default gw 192.168.0.146
-[root@localhost ~]# route -n
-Kernel IP routing table
-Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
-192.168.0.0     0.0.0.0         255.255.255.0   U     0      0        0 eth0
-169.254.0.0     0.0.0.0         255.255.0.0     U     0      0        0 eth0
-0.0.0.0         192.168.0.146   0.0.0.0         UG    0      0        0 eth0
-
-3.在可以上网那台服务器B上添加SNAT规则
-iptables -t nat -A POSTROUTING -o eth0 -s 192.168.0.0/24 -j SNAT –-to 123.196.112.146
-
-4.保存
-service iptables save
-
-5.验证是否可以正常上网。
-</code></pre>
-<h3 id="单网卡实现snat">单网卡实现SNAT</h3>
-<p><strong>示例</strong></p>
-<pre><code>场景：
-给转发机器网卡绑定两个IP。一个内网IP，无需设置网关，另一个接口，IP要可以连接internet。
-直接将下面内容加在 /etc/rc.local 启动脚本内（把192.168.51.250换成外网IP，把192.168.151.1换内网的网络地址）
-
-echo 1 &gt; /proc/sys/net/ipv4/ip_forward
-ifconfig eth0:1 192.168.151.1 netmask 255.255.255.0
-iptables -F
-iptables -F -t nat
-iptables -P FORWARD DROP
-iptables -A FORWARD -s 192.168.151.0/24 -j ACCEPT
-iptables -A FORWARD -i eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT
-iptables -t nat -A POSTROUTING -o eth0 -s 192.168.151.0/24 -j SNAT --to 192.168.51.250
-</code></pre>
-<h2 id="iptables的目标地址转换dnat">iptables的目标地址转换（DNAT）</h2>
-<h3 id="双网卡实现dnat">双网卡实现DNAT</h3>
-<pre><code># 代理192.168.0.10的80端口到NAT服务器
-# NAT服务器IP： 172.16.0.1  192.168.0.1
-# 服务端IP： 192.168.0.10 需要将服务端的网关指向NAT服务器
-# 做DNAT转发：
-iptables -t nat -A PREROUTING -i ens33 -d 172.16.0.1 -p tcp --dport  80 -j DNAT --to-destination 192.168.0.10
-</code></pre>
-<h3 id="单网卡实现dnat">单网卡实现DNAT</h3>
-<p><strong>说明</strong></p>
-<pre><code>A)将本机端口转发至目标机器
-iptables -t nat -A PREROUTING -p tcp -d [本地服务器主网卡绑定IP] –dport [本地端口] -j DNAT –to-destination [目标IP:目标端口]
-iptables -t nat -A PREROUTING -p udp -d [本地服务器主网卡绑定IP] –dport [本地端口] -j DNAT –to-destination [目标IP:目标端口]
-
-B)将目标机器返回的数据转发至本机
-iptables -t nat -A POSTROUTING -p tcp -d [目标IP] –dport [目标端口] -j SNAT –to-source [本地服务器主网卡绑定IP]
-iptables -t nat -A POSTROUTING -p udp -d [目标IP] –dport [目标端口] -j SNAT –to-source [本地服务器主网卡绑定IP]
-</code></pre>
-<p><strong>示例</strong></p>
-<pre><code># 单网卡iptables配置路由转发，需要配置snat和dnat
-# pc1 ip:192.168.23.252 
-# pc2 ip:192.168.23.253 
-
-iptables -t nat -A PREROUTING -d 192.168.23.252 -p tcp --dport 80 -j DNAT --to-destination 192.168.23.253:80
-# 如果进来的route的访问目的地址是192.168.23.252并且访问的目的端口是80，就进行dnat转换，把目的地址改为192.168.23.253 ，端口还是80
- 
-iptables -t nat -A POSTROUTING -d 192.168.23.253 -p tcp --dport 80 -j SNAT --to 192.168.23.252
-# 当FORWARD 出来后，访问的目的地址是192.168.23.253，端口是80的。进行snat地址转换，把原地址改为192.168.23.252
- 
-iptables -A FORWARD -o eth0 -d 192.168.23.253 -p tcp --dport 80 -j ACCEPT
-# 当从eth0出去的访问目的地址是 192.168.23.253且目的端口是80的route，允许通过
- 
-iptables -A FORWARD -i eth0 -s 192.168.23.253 -p tcp --dport 80 -j ACCEPT
-# 当从eth0进来的原地址是 192.168.23.253且目的端口是80的route，允许通过
- 
-# 保存规则启动iptables
-service iptables save
-service iptables start
-</code></pre>
-<h2 id="参考链接">参考链接</h2>
-<p>https://blog.csdn.net/wheat_ground/article/details/78561750</p>
-<p>https://blog.51cto.com/jinchuang/1947052</p>
-<p>http://www.flynoc.com/help/helpview_390.html</p>
-<p>https://blog.51cto.com/2333657/2157070?source=dra</p>
-<p>https://blog.csdn.net/weixin_42537861/article/details/81195070</p>
 ]]></content>
     </entry>
 </feed>

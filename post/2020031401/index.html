@@ -6,7 +6,7 @@
         <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
         <meta content="telephone=no" name="format-detection"/>
         <meta name="renderer" content="webkit">
-    <title>使用kubeadm 新加入节点（原始token过期后） | PeterPan</title>
+    <title>http中的301和302状态码 | PeterPan</title>
 <link href="https://js2hlu.coding-pages.com/styles/main.css" type="text/css" rel="stylesheet"/>
 <script type="text/javascript" src="https://js2hlu.coding-pages.com/media/scripts/jquery.js"></script>
 <script type="text/javascript" src="https://js2hlu.coding-pages.com/media/scripts/basic.js"></script>
@@ -147,7 +147,7 @@
 
 <div class="post">
   <div class="post_title sm_margin">
-    <h2><a>使用kubeadm 新加入节点（原始token过期后）</a>
+    <h2><a>http中的301和302状态码</a>
 
 
 
@@ -156,7 +156,7 @@
 
   <div class="post_details">
     <div class="info"><i class="fa fa-clock-o"></i>
-<span class="date_info">2019-09-12</span>
+<span class="date_info">2020-03-14</span>
 <i class="fa fa-eye"></i>
 
 <span class="date_info"><span id="busuanzi_value_page_pv"></span> Views</span>
@@ -165,7 +165,7 @@
 <i class="fa fa-bookmark-o"></i>
 <span class="tags_info weaklink">
 	
-	<a href="https://js2hlu.coding-pages.com/tag/OzrDk-wrZ/" class="tag">kubernetes</a>
+	<a href="https://js2hlu.coding-pages.com/tag/WNdlutgnv/" class="tag">运维</a>
 
 
 </span>
@@ -180,45 +180,40 @@
 
 
   <div class="post_content markdown"><p class="md_block">
-    <span class="md_line md_line_start md_line_end"><h2 id="kubeadm-join">kubeadm join</h2>
-<blockquote>
-<p>kubeadm init 安装完成后你会得到以下的输出，使用join指令可以新增节点到集群,此token 有效期为24小时</p>
-</blockquote>
-<pre><code>You should now deploy a pod network to the cluster.
-Run &quot;kubectl apply -f [podnetwork].yaml&quot; with one of the options listed at:
-  https://kubernetes.io/docs/concepts/cluster-administration/addons/
-
-You can now join any number of machines by running the following on each node
-as root:
-
-  kubeadm join 18.16.202.35:6443 --token zr8n5j.yfkanjio0lfsupc0 --discovery-token-ca-cert-hash sha256:380b775b7f9ea362d45e4400be92adc4f71d86793ba6aae091ddb53c489d218c
+    <span class="md_line md_line_start md_line_end"><h3 id="http状态码的301和302">HTTP状态码的301和302</h3>
+<p>301 redirect: 301 代表永久性转移(Permanently Moved)</p>
+<p>302 redirect: 302 代表暂时性转移(Temporarily Moved )</p>
+<p>详细来说，301和302状态码都表示重定向，就是说浏览器在拿到服务器返回的这个状态码后会自动跳转到一个新的URL地址，这个地址可以从响应的Location首部中获取（用户看到的效果就是他输入的地址A瞬间变成了另一个地址B）——这是它们的共同点。他们的不同在于。301表示旧地址A的资源已经被永久地移除了（这个资源不可访问了），<strong>搜索引擎在抓取新内容的同时也将旧的网址交换为重定向之后的网址</strong>；302表示旧地址A的资源还在（仍然可以访问），这个重定向只是临时地从旧地址A跳转到地址B，<strong>搜索引擎会抓取新的内容而保存旧的网址。</strong></p>
+<p>301重定向常用于站点永久废弃迁移到新域名的情况，或者多个域名共用一个站点的情况。<br>
+301的跳转需要慎用：很可能导致客户端问题永久性转移无法正常访问更新资源。</p>
+<p>302则用于站点临时跳转的情况，后续还会重新使用之前的域名。（常用）</p>
+<p>302跳转的风险会存在URL劫持的问题。</p>
+<h3 id="301跳转配置">301跳转配置</h3>
+<p>Nginx下常见的301跳转有以下三种，虽然都能达到同样的目的。但是三种写法上还是有区别的，主要的区别是在正则匹配的性能上。</p>
+<p>第一种：使用rewrite指令，通过正则匹配所有的URI后再去掉开头第一个/(反斜线)</p>
+<pre><code>rewrite ^/(.*)$ https://www.hi-linux.com/$1;
 </code></pre>
-<h2 id="kubeadm-token">kubeadm token</h2>
-<blockquote>
-<p>在新节点没有拿到证书以前，新节点和api server的通信是通过token和ca的签名完成的，具体的步骤如下</p>
-</blockquote>
-<pre><code># 生成token
-[root@node1 flannel]# kubeadm  token create
-kiyfhw.xiacqbch8o8fa8qj
-[root@node1 flannel]# kubeadm  token list
-TOKEN                     TTL         EXPIRES                     USAGES                   DESCRIPTION   EXTRA GROUPS
-gvvqwk.hn56nlsgsv11mik6   &lt;invalid&gt;   2018-10-25T14:16:06+08:00   authentication,signing   &lt;none&gt;        system:bootstrappers:kubeadm:default-node-token
-kiyfhw.xiacqbch8o8fa8qj   23h         2018-10-27T06:39:24+08:00   authentication,signing   &lt;none&gt;        system:bootstrappers:kubeadm:default-node-token
+<p>第二种：同样使用rewrite指令，不同的是通过<code>$request_uri</code>变量匹配所有的URI。</p>
+<pre><code>rewrite ^ https://www.hi-linux.com$request_uri? permanent;
 </code></pre>
-<pre><code># 生成ca的sha256 hash值
-[root@node1 flannel]# openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2&gt;/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'
-5417eb1b68bd4e7a4c82aded83abc55ec91bd601e45734d6aba85de8b1ebb057
+<p>这样写的好处是省去了去掉开头第一个反斜线的过程，正则匹配上性能更优。</p>
+<p>第三种：使用return指令，通过301状态码和<code>$request_uri</code>参数，直接告诉Nginx这是个301重定向和抓取指定URI。</p>
+<pre><code>return 301 https://www.hi-linux.com$request_uri;
 </code></pre>
-<pre><code># 组装join命令
-kubeadm join 18.16.202.35:6443 --token kiyfhw.xiacqbch8o8fa8qj --discovery-token-ca-cert-hash sha256:5417eb1b68bd4e7a4c82aded83abc55ec91bd601e45734d6aba85de8b1ebb057
+<p>这种方法是性能上最优的，因为<code>rewrite</code>指令有很多写法和规则，执行完所有正则匹配后，Nginx 才会知道这是一个301永久重定向。</p>
+<h3 id="302跳转配置">302跳转配置</h3>
+<p>Nginx下常见的301跳转有以下三种，虽然都能达到同样的目的。但是三种写法上还是有区别的，主要的区别是在正则匹配的性能上。</p>
+<p>第一种：使用rewrite指令，通过正则匹配所有的URI后再去掉开头第一个/(反斜线)</p>
+<pre><code>rewrite ^/(.*)$ https://www.hi-linux.com/$1 redirect;
 </code></pre>
-<pre><code># 一步完成以上步骤
-kubeadm token create --print-join-command
+<p>第二种：同样使用rewrite指令，不同的是通过<code>$request_uri</code>变量匹配所有的URI。</p>
+<pre><code>rewrite ^(.*)$ https://www.hi-linux.com$request_uri? redirect;
 </code></pre>
-<pre><code># 手动生成token，完成命令打印
-token=$(kubeadm token generate)
-kubeadm token create $token --print-join-command --ttl=0
+<p>这样写的好处是省去了去掉开头第一个反斜线的过程，正则匹配上性能更优。</p>
+<p>第三种：使用return指令，通过301状态码和<code>$request_uri</code>参数，直接告诉Nginx这是个301重定向和抓取指定URI。</p>
+<pre><code>return 302 https://www.hi-linux.com$request_uri;
 </code></pre>
+<p>这种方法是性能上最优的，因为<code>rewrite</code>指令有很多写法和规则，执行完所有正则匹配后，Nginx 才会知道这是一个302临时。</p>
 </p>
 
      <p class="md_block">
