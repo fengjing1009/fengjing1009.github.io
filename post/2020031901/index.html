@@ -6,7 +6,7 @@
         <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
         <meta content="telephone=no" name="format-detection"/>
         <meta name="renderer" content="webkit">
-    <title>Centos 7 install nfs | PeterPan</title>
+    <title>linux 配置ssh客户端（便于集群管理） | PeterPan</title>
 <link href="https://js2hlu.coding-pages.com/styles/main.css" type="text/css" rel="stylesheet"/>
 <script type="text/javascript" src="https://js2hlu.coding-pages.com/media/scripts/jquery.js"></script>
 <script type="text/javascript" src="https://js2hlu.coding-pages.com/media/scripts/basic.js"></script>
@@ -147,7 +147,7 @@
 
 <div class="post">
   <div class="post_title sm_margin">
-    <h2><a>Centos 7 install nfs</a>
+    <h2><a>linux 配置ssh客户端（便于集群管理）</a>
 
 
 
@@ -156,7 +156,7 @@
 
   <div class="post_details">
     <div class="info"><i class="fa fa-clock-o"></i>
-<span class="date_info">2019-06-21</span>
+<span class="date_info">2020-03-19</span>
 <i class="fa fa-eye"></i>
 
 <span class="date_info"><span id="busuanzi_value_page_pv"></span> Views</span>
@@ -165,6 +165,8 @@
 <i class="fa fa-bookmark-o"></i>
 <span class="tags_info weaklink">
 	
+	<a href="https://js2hlu.coding-pages.com/tag/WNdlutgnv/" class="tag">运维</a>
+
 
 </span>
 
@@ -178,32 +180,53 @@
 
 
   <div class="post_content markdown"><p class="md_block">
-    <span class="md_line md_line_start md_line_end"><p>使用centos7 安装NFS用于环境POC</p>
-<!-- more -->
-<h1 id="安装nfs和rpcbind">安装nfs和rpcbind</h1>
-<p><strong>lab环境仅适用于测试</strong><br>
-<strong>lab环境需要关闭防火墙</strong></p>
-<pre><code>yum -y install nfs-utils ,rpcbind
+    <span class="md_line md_line_start md_line_end"><h3 id="配置连接管理">配置连接管理</h3>
+<p>可以配置<code>远程别名、主机地址、用户名、端口、证书文件</code></p>
+<pre><code>➜  nginx cat ~/.ssh/config
+#####aws 客户（学生）####
+host c2node1
+  hostname ec2-34-233-126-45.compute-1.amazonaws.com
+  user ubuntu
+  port 22
+  IdentityFile ~/pem/project.pem
 </code></pre>
-<h1 id="启动nfs和rpcbind">启动nfs和rpcbind</h1>
-<pre><code># nfs需要向rpc注册，rpc一旦重启，注册的文件都丢失，向他注册的服务都需要重启，注意启动顺序
-systemctl start rpcbind.service &amp;&amp; systemctl start nfs.service
-systemctl enable  rpcbind.service &amp;&amp; systemctl enable nfs.service
+<h3 id="配置客户端第一次连接不输入yes并且不验证指纹">配置客户端第一次连接不输入yes,并且不验证指纹</h3>
+<p>方法一：连接时加入StrictHostKeyChecking=no</p>
+<pre><code>ssh -o StrictHostKeyChecking=no root@192.168.1.100
 </code></pre>
-<h1 id="配置nfs">配置nfs</h1>
-<blockquote>
-<p>配置文件/etc/exports</p>
-</blockquote>
-<pre><code>/nfsdata  *(rw,sync,no_root_squash)
-systemctl restart rpcbind.service &amp;&amp; systemctl restart nfs.service
+<p>方法二：修改/etc/ssh/ssh_config配置文件，添加：</p>
+<pre><code>StrictHostKeyChecking no
 </code></pre>
-<ul>
-<li>nfsdata 为存放数据的目录,需要先创建</li>
-<li>'*':任何人</li>
-<li>rw:读写权限</li>
-<li>sync:资料会先暂存于内存中，而非直接写入硬盘。</li>
-<li>no_root_squash:当登录NFS主机使用共享目录的使用者是root时，其权限将被转换成为匿名使用者，通常它的UID与GID都会变成nobody身份。</li>
-</ul>
+<p>此外，为防止出现这类警告：POSSIBLE BREAK-IN ATTEMPT!</p>
+<pre><code>Address 192.168.0.101 maps to localhost, but this does not map back to the address - POSSIBLE BREAK-IN ATTEMPT!
+</code></pre>
+<p>可以将/etc/ssh/ssh_config配置文件中的</p>
+<pre><code>GSSAPIAuthentication yes
+</code></pre>
+<p>改为：</p>
+<pre><code>GSSAPIAuthentication no
+</code></pre>
+<p>可以使用sed流编辑器来完成修改：</p>
+<pre><code>sed -i 's/#   StrictHostKeyChecking ask/StrictHostKeyChecking no/' /etc/ssh/ssh_config
+sed -i 's/GSSAPIAuthentication yes/GSSAPIAuthentication no/' /etc/ssh/ssh_config
+service sshd restart
+</code></pre>
+<h3 id="docker-里面启用ssh">docker 里面启用ssh</h3>
+<pre><code># 安装ssh
+yum install openssh-server
+yum install openssh-clients
+
+# 生成必要的ssh相关文件
+/usr/sbin/sshd-keygen -A
+
+# 配置本机免密登陆
+ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys
+chmod 0600 ~/.ssh/authorized_keys
+
+# 启动ssh
+/usr/sbin/sshd
+</code></pre>
 </p>
 
      <p class="md_block">
