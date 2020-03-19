@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://js2hlu.coding-pages.com</id>
     <title>PeterPan</title>
-    <updated>2020-03-19T05:45:56.475Z</updated>
+    <updated>2020-03-19T06:37:52.881Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://js2hlu.coding-pages.com"/>
     <link rel="self" href="https://js2hlu.coding-pages.com/atom.xml"/>
@@ -10,6 +10,27 @@
     <logo>https://js2hlu.coding-pages.com/images/avatar.png</logo>
     <icon>https://js2hlu.coding-pages.com/favicon.ico</icon>
     <rights>All rights reserved 2020, PeterPan</rights>
+    <entry>
+        <title type="html"><![CDATA[部署metric-server]]></title>
+        <id>https://js2hlu.coding-pages.com/post/2020031902/</id>
+        <link href="https://js2hlu.coding-pages.com/post/2020031902/">
+        </link>
+        <updated>2020-03-19T06:36:54.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="获取metric-server服务">获取metric-server服务</h3>
+<pre><code>git clone https://gitee.com/peterpan1009/metrics-server.git
+</code></pre>
+<h3 id="编辑deployment文件">编辑deployment文件</h3>
+<pre><code># edit metric-server deployment to add the flags
+args:
+- --kubelet-insecure-tls
+- --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+</code></pre>
+<h3 id="部署metrics-server">部署metrics-server</h3>
+<pre><code>cd metrics-server/deploy/kubernetes
+kubectl apply -f .
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[linux 配置ssh客户端（便于集群管理）]]></title>
         <id>https://js2hlu.coding-pages.com/post/2020031901/</id>
@@ -2259,43 +2280,6 @@ include /etc/logrotate.d    # 包含其他配置文件的目录
         <updated>2019-09-02T07:54:27.000Z</updated>
         <content type="html"><![CDATA[<p>https://blog.csdn.net/ahilll/article/details/82109008<br>
 https://blog.csdn.net/chenleiking/article/details/87988851</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[kubernetes 清理孤儿POD]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2019090201/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2019090201/">
-        </link>
-        <updated>2019-09-02T07:53:25.000Z</updated>
-        <content type="html"><![CDATA[<h3 id="孤儿pod的产生">孤儿pod的产生</h3>
-<p>节点OOM以后或者节点异常崩溃的情况下，pod未能被正常的清理而导致的孤儿进程。</p>
-<p><strong>提示如下</strong></p>
-<pre><code>Orphaned pod found - but volume paths are still present on disk
-</code></pre>
-<p><strong>进入k8s的pod目录</strong></p>
-<pre><code>cd /var/lib/kubelet/pods/
-</code></pre>
-<h3 id="解决问题">解决问题</h3>
-<p>过滤日志中的孤儿pod，删除pod。</p>
-<pre><code class="language-js">#!/bin/bash
-num=$(grep &quot;errors similar to this. Turn up verbosity to see them.&quot;  /var/log/messages |tail -1 | awk '{print $12}' |sed 's/&quot;//g')
-echo $num
-
-while [ $num ]
-do
-   [ -d &quot;/var/lib/kubelet/pods/${num}&quot; ] &amp;&amp; rm -rf /var/lib/kubelet/pods/${num}
-
-  sleep 2s
-  num=$(grep &quot;errors similar to this. Turn up verbosity to see them.&quot;  /var/log/messages |tail -1 | awk '{print $12}' |sed 's/&quot;//g')
-  [ -d &quot;/var/lib/kubelet/pods/${num}&quot; ] || num=
-
-  echo &quot;$num remaining&quot;
-
-done
-</code></pre>
-<p>但是这个方法有一定的<code>危险性</code>，还不确认是否有<code>数据丢失</code>的风险，如果可以确认，再执行。</p>
-<p>如果已经挂载了PVC等相关存储，先执行umount再执行删除。</p>
-<p>再去查看日志，就会发现syslog不会再刷类似的日志了。</p>
 ]]></content>
     </entry>
 </feed>
