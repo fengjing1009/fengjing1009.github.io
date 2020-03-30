@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://js2hlu.coding-pages.com</id>
     <title>PeterPan</title>
-    <updated>2020-03-30T06:33:02.721Z</updated>
+    <updated>2020-03-30T06:35:53.352Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://js2hlu.coding-pages.com"/>
     <link rel="self" href="https://js2hlu.coding-pages.com/atom.xml"/>
@@ -17,7 +17,9 @@
         </link>
         <updated>2020-03-30T06:32:29.000Z</updated>
         <content type="html"><![CDATA[<h3 id="前言">前言</h3>
-<p>kubernetes 默认对服务的证书签发时间为1年，相应的其对应的CA服务：kubernetes CA、 etcd CA、 front-proxy-CA 为10年，因此修改时间长度需要更正ca时间和证书签发时间两部分。</p>
+<p>kubernetes 默认对服务的证书签发时间为1年。</p>
+<p>其对应的CA服务：kubernetes CA、 etcd CA、 front-proxy-CA 为10年。</p>
+<p>因此修改证书过期时间长度需要更正ca时间和证书签发时间两部分。</p>
 <h3 id="代码下载和更新">代码下载和更新</h3>
 <pre><code># git clone（需要去掉dirty后缀）
 git clone https://github.com/kubernetes/kubernetes -b v1.17.3
@@ -145,7 +147,11 @@ front-proxy-ca          Mar 05, 2030 15:36 UTC   9y              no
 </blockquote>
 <blockquote>
 <p>完成后重启kube-apiserver,kube-controller,kube-scheduler这三个容器</p>
+</blockquote>
+<blockquote>
 <p>警告： 如果您运行了一个 HA 集群，这个命令需要在所有控制面板节点上执行。</p>
+</blockquote>
+<blockquote>
 <p>注意：alpha certs renew 使用现有的证书作为属性 (Common Name、Organization、SAN 等) 的权威来源，而不是 kubeadm-config ConfigMap 。强烈建议使它们保持同步。</p>
 </blockquote>
 <h4 id="新集群安装检查">新集群安装检查</h4>
