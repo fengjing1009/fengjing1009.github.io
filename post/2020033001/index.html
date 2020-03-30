@@ -19,7 +19,7 @@
      <div class="header">
       <div class="logo_title">
 		  
-        <div class="title animated fadeInDown"><img src="https://js2hlu.coding-pages.com/images/avatar.png?v=1585550151008"/>
+        <div class="title animated fadeInDown"><img src="https://js2hlu.coding-pages.com/images/avatar.png?v=1585550394899"/>
 
           <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
 
@@ -221,7 +221,10 @@ func NewSelfSignedCACert(cfg Config, key crypto.Signer) (*x509.Certificate, erro
         return x509.ParseCertificate(certDERBytes)
 }
 </code></pre>
-<h4 id="修改证书时间">修改证书时间</h4>
+<h4 id="修改服务证书时间">修改服务证书时间</h4>
+<blockquote>
+<p>如果仅修改服务证书时间为10年，修改当前文件即可。</p>
+</blockquote>
 <pre><code>[root@k8s-m1 kubernetes]# vim ./cmd/kubeadm/app/constants/constants.go
 </code></pre>
 <pre><code>const (
