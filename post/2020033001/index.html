@@ -1,0 +1,487 @@
+
+<html>
+  <head lang="zh">
+        <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+        <meta content="yes" name="apple-mobile-web-app-capable"/>
+        <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+        <meta content="telephone=no" name="format-detection"/>
+        <meta name="renderer" content="webkit">
+    <title>kubernetes 证书过期时间修改 | PeterPan</title>
+<link href="https://js2hlu.coding-pages.com/styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://js2hlu.coding-pages.com/media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://js2hlu.coding-pages.com/media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+  </head>
+
+  <body>
+     <div class="header">
+      <div class="logo_title">
+		  
+        <div class="title animated fadeInDown"><img src="https://js2hlu.coding-pages.com/images/avatar.png?v=1585549979835"/>
+
+          <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
+
+          </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="https://fengjing1009.github.io/post/about/" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="d2ef19af68cc211e98f8a0242ac110003" href="https://fengjing1009.github.io/post/about/" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+
+<div class="content">
+
+
+
+
+
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>kubernetes 证书过期时间修改</a>
+
+
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2020-03-30</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> Views</span>
+
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+	<a href="https://js2hlu.coding-pages.com/tag/OzrDk-wrZ/" class="tag">kubernetes</a>
+
+
+</span>
+
+
+    </div>
+
+  </div>
+
+
+
+
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><h3 id="前言">前言</h3>
+<p>kubernetes 默认对服务的证书签发时间为1年，相应的其对应的CA服务：kubernetes CA、 etcd CA、 front-proxy-CA 为10年，因此修改时间长度需要更正ca时间和证书签发时间两部分。</p>
+<h3 id="代码下载和更新">代码下载和更新</h3>
+<pre><code># git clone（需要去掉dirty后缀）
+git clone https://github.com/kubernetes/kubernetes -b v1.17.3
+cd kubernetes
+git checkout -b v1.17.3
+
+# wget (推荐)
+wget https://codeload.github.com/kubernetes/kubernetes/tar.gz/v1.17.3
+tar xvf kubernetes-1.17.3.tar.gz
+cd kubernetes-1.17.3
+</code></pre>
+<h4 id="修改ca时间">修改CA时间</h4>
+<pre><code>[root@k8s-m1 kubernetes]# vim ./staging/src/k8s.io/client-go/util/cert/cert.go
+</code></pre>
+<pre><code>// NewSelfSignedCACert creates a CA certificate
+func NewSelfSignedCACert(cfg Config, key crypto.Signer) (*x509.Certificate, error) {
+        now := time.Now()
+        tmpl := x509.Certificate{
+                SerialNumber: new(big.Int).SetInt64(0),
+                Subject: pkix.Name{
+                        CommonName:   cfg.CommonName,
+                        Organization: cfg.Organization,
+                },
+                NotBefore:             now.UTC(),
+                NotAfter:              now.Add(duration365d * 10).UTC(),         # 修改NotAfter字段，默认为10年改为100年
+                KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+                BasicConstraintsValid: true,
+                IsCA:                  true,
+        }
+
+        certDERBytes, err := x509.CreateCertificate(cryptorand.Reader, &amp;tmpl, &amp;tmpl, key.Public(), key)
+        if err != nil {
+                return nil, err
+        }
+        return x509.ParseCertificate(certDERBytes)
+}
+</code></pre>
+<h4 id="修改证书时间">修改证书时间</h4>
+<pre><code>[root@k8s-m1 kubernetes]# vim ./cmd/kubeadm/app/constants/constants.go
+</code></pre>
+<pre><code>const (
+        // KubernetesDir is the directory Kubernetes owns for storing various configuration files
+        KubernetesDir = &quot;/etc/kubernetes&quot;
+        // ManifestsSubDirName defines directory name to store manifests
+        ManifestsSubDirName = &quot;manifests&quot;
+        // TempDirForKubeadm defines temporary directory for kubeadm
+        // should be joined with KubernetesDir.
+        TempDirForKubeadm = &quot;tmp&quot;
+
+        // CertificateValidity defines the validity for all the signed certificates generated by kubeadm
+        CertificateValidity = time.Hour * 24 * 365 * 100       # 修改CertificateValidity字段
+
+        // CACertAndKeyBaseName defines certificate authority base name
+        CACertAndKeyBaseName = &quot;ca&quot;
+        // CACertName defines certificate name
+        CACertName = &quot;ca.crt&quot;
+        // CAKeyName defines certificate name
+        CAKeyName = &quot;ca.key&quot;
+</code></pre>
+<h3 id="编译">编译</h3>
+<h4 id="方法1本地直接编译">方法1：本地直接编译</h4>
+<pre><code># 执行编译
+cd /Users/peter/workspace/kubernetes-1.17.3
+KUBE_BUILD_PLATFORMS=linux/amd64 make all WHAT=cmd/kubeadm GOFLAGS=-v GOGCFLAGS=&quot;-N -l&quot;
+# 编译输出文件为_output/local/bin/linux/amd64/kubeadm
+</code></pre>
+<h4 id="方法2docker编译">方法2：docker编译</h4>
+<pre><code># 编译容器dockerfile
+
+FROM centos:centos7.6.1810
+MAINTAINER fengjing
+
+ENV GOROOT /usr/local/go
+ENV GOPATH /usr/local/gopath
+ENV PATH /usr/local/go/bin:$PATH
+
+RUN yum install rpm-build which where rsync gcc gcc-c++ automake autoconf libtool make -y \
+    &amp;&amp; curl -L https://studygolang.com/dl/golang/go1.13.9.linux-amd64.tar.gz | tar zxvf - -C /usr/local
+</code></pre>
+<pre><code># 生成镜像
+[root@master build-k8s]# docker build -t centos-7.6-go-1.13.9-k8s-1.17.3 .
+</code></pre>
+<pre><code># 镜像挂载目录
+[root@master kubernetes-1.17.3]# docker run -it --rm \
+-v /root/build-k8s/kubernetes-1.17.3:/usr/local/gopath/src/k8s.io/kubernetes \
+centos-7.6-go-1.13.9-k8s-1.17.3 \
+/bin/bash
+</code></pre>
+<pre><code># 进入k8s跟目录编译k8s
+[root@0f351f2de25d /]# cd /usr/local/gopath/src/k8s.io/kubernetes/
+[root@0f351f2de25d kubernetes]# KUBE_BUILD_PLATFORMS=linux/amd64 make all WHAT=cmd/kubeadm GOFLAGS=-v GOGCFLAGS=&quot;-N -l&quot;
+</code></pre>
+<h3 id="使用">使用</h3>
+<h4 id="旧集群更新">旧集群更新</h4>
+<pre><code>cp -r /etc/kubernetes/pki /etc/kubernetes/pki.backup
+kubeadm alpha certs renew all
+</code></pre>
+<pre><code># ca 时间依然不会更新
+[root@fengjingk8s ~]# kubeadm alpha certs check-expiration
+CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE AUTHORITY   EXTERNALLY MANAGED
+admin.conf                 Mar 30, 2021 03:51 UTC   364d                                    no
+apiserver                  Mar 30, 2021 03:51 UTC   364d            ca                      no
+apiserver-etcd-client      Mar 30, 2021 03:51 UTC   364d            etcd-ca                 no
+apiserver-kubelet-client   Mar 30, 2021 03:51 UTC   364d            ca                      no
+controller-manager.conf    Mar 30, 2021 03:51 UTC   364d                                    no
+etcd-healthcheck-client    Mar 30, 2021 03:51 UTC   364d            etcd-ca                 no
+etcd-peer                  Mar 30, 2021 03:51 UTC   364d            etcd-ca                 no
+etcd-server                Mar 30, 2021 03:51 UTC   364d            etcd-ca                 no
+front-proxy-client         Mar 30, 2021 03:51 UTC   364d            front-proxy-ca          no
+scheduler.conf             Mar 30, 2021 03:51 UTC   364d                                    no
+
+CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY MANAGED
+ca                      Mar 05, 2030 15:36 UTC   9y              no
+etcd-ca                 Mar 05, 2030 15:36 UTC   9y              no
+front-proxy-ca          Mar 05, 2030 15:36 UTC   9y              no
+</code></pre>
+<blockquote>
+<p>警告： kubeadm 不能管理由外部 CA 签名的证书</p>
+</blockquote>
+<blockquote>
+<p>注意： 上面的列表中没有包含 kubelet.conf 因为 kubeadm 将 kubelet 配置为自动更新证书。</p>
+</blockquote>
+<blockquote>
+<p>注意：上面命令不能更新CA</p>
+</blockquote>
+<blockquote>
+<p>完成后重启kube-apiserver,kube-controller,kube-scheduler这三个容器</p>
+<p>警告： 如果您运行了一个 HA 集群，这个命令需要在所有控制面板节点上执行。</p>
+<p>注意：alpha certs renew 使用现有的证书作为属性 (Common Name、Organization、SAN 等) 的权威来源，而不是 kubeadm-config ConfigMap 。强烈建议使它们保持同步。</p>
+</blockquote>
+<h4 id="新集群安装检查">新集群安装检查</h4>
+<pre><code># 安装
+./kubeadm init --config localinstall/kubeadm.conf --ignore-preflight-errors=all
+</code></pre>
+<pre><code># 使用编译的kubeadm安装集群证书信息如下：
+[root@lop1 ~]# kubeadm alpha certs check-expiration
+CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE AUTHORITY   EXTERNALLY MANAGED
+admin.conf                 Mar 06, 2120 05:09 UTC   99y                                     no
+apiserver                  Mar 06, 2120 05:09 UTC   99y             ca                      no
+apiserver-etcd-client      Mar 06, 2120 05:09 UTC   99y             etcd-ca                 no
+apiserver-kubelet-client   Mar 06, 2120 05:09 UTC   99y             ca                      no
+controller-manager.conf    Mar 06, 2120 05:09 UTC   99y                                     no
+etcd-healthcheck-client    Mar 06, 2120 05:09 UTC   99y             etcd-ca                 no
+etcd-peer                  Mar 06, 2120 05:09 UTC   99y             etcd-ca                 no
+etcd-server                Mar 06, 2120 05:09 UTC   99y             etcd-ca                 no
+front-proxy-client         Mar 06, 2120 05:09 UTC   99y             front-proxy-ca          no
+scheduler.conf             Mar 06, 2120 05:09 UTC   99y                                     no
+
+CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY MANAGED
+ca                      Mar 06, 2120 05:09 UTC   99y             no
+etcd-ca                 Mar 06, 2120 05:09 UTC   99y             no
+front-proxy-ca          Mar 06, 2120 05:09 UTC   99y             no
+</code></pre>
+<h3 id="启用-kubelet-server-证书">启用 Kubelet Server 证书</h3>
+<p>kubelet证书分为<code>server</code>和<code>client</code>两种， k8s 1.9默认启用了client证书的自动轮换，但server证书出于安全原因需要用户手动签发</p>
+<h4 id="增加-kubelet-参数">增加 kubelet 参数</h4>
+<pre><code># 在/etc/systemd/system/kubelet.service.d/10-kubeadm.conf 增加如下参数
+Environment=&quot;KUBELET_EXTRA_ARGS=--feature-gates=RotateKubeletServerCertificate=true&quot;
+
+# 或在文件/var/lib/kubelet/config.yaml中添加如下内容，也可使用kubelet configmap管理
+featureGates:
+  RotateKubeletServerCertificate: true
+</code></pre>
+<h4 id="增加-controller-manager-参数">增加 controller-manager 参数</h4>
+<pre><code># 在/etc/kubernetes/manifests/kube-controller-manager.yaml 添加如下参数
+  - command:
+    - kube-controller-manager
+    - --experimental-cluster-signing-duration=87600h0m0s
+    - --feature-gates=RotateKubeletServerCertificate=true
+    - ....
+</code></pre>
+<h3 id="参考地址">参考地址</h3>
+<p>https://www.cnblogs.com/2019peng/p/11988424.html</p>
+<p>https://www.cnblogs.com/aguncn/p/11465584.html</p>
+<p>https://system51.github.io/2019/12/05/Kubeadm-certificate-modified/</p>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://js2hlu.coding-pages.com/media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://js2hlu.coding-pages.com/media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+
+
+<link href="https://js2hlu.coding-pages.com/styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+</div>
+
+
+
+  </div>
+</div>
+
+
+
+      </div>
+
+
+
+
+    </div>
+
+   <div class="footer">
+<link href="https://js2hlu.coding-pages.com/styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://js2hlu.coding-pages.com/styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright"><ul class="links">
+<li><a href="/" target="_blank" rel="noopener noreferrer">小飞侠的飞行日记</a></li>
+</ul>
+      </div>
+
+</div></div>
+
+    </div>
+
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://js2hlu.coding-pages.com/media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>
