@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-    <id>https://js2hlu.coding-pages.com</id>
+    <id>https://fengjing1009.github.io</id>
     <title>PeterPan</title>
-    <updated>2020-03-31T05:43:14.737Z</updated>
+    <updated>2020-03-31T23:38:30.340Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="https://js2hlu.coding-pages.com"/>
-    <link rel="self" href="https://js2hlu.coding-pages.com/atom.xml"/>
+    <link rel="alternate" href="https://fengjing1009.github.io"/>
+    <link rel="self" href="https://fengjing1009.github.io/atom.xml"/>
     <subtitle>贵有恒，何必三更起五更睡；最无益，只怕一日暴十寒。</subtitle>
-    <logo>https://js2hlu.coding-pages.com/images/avatar.png</logo>
-    <icon>https://js2hlu.coding-pages.com/favicon.ico</icon>
+    <logo>https://fengjing1009.github.io/images/avatar.png</logo>
+    <icon>https://fengjing1009.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, PeterPan</rights>
     <entry>
         <title type="html"><![CDATA[安装kubesphere dashboard]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2020033101/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2020033101/">
+        <id>https://fengjing1009.github.io/post/2020033101/</id>
+        <link href="https://fengjing1009.github.io/post/2020033101/">
         </link>
         <updated>2020-03-31T05:42:38.000Z</updated>
         <content type="html"><![CDATA[<h3 id="前言">前言</h3>
@@ -80,8 +80,8 @@ services:
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes 证书过期时间修改]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2020033001/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2020033001/">
+        <id>https://fengjing1009.github.io/post/2020033001/</id>
+        <link href="https://fengjing1009.github.io/post/2020033001/">
         </link>
         <updated>2020-03-30T06:32:29.000Z</updated>
         <content type="html"><![CDATA[<h3 id="前言">前言</h3>
@@ -274,8 +274,8 @@ featureGates:
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes部署metric-server]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2020031902/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2020031902/">
+        <id>https://fengjing1009.github.io/post/2020031902/</id>
+        <link href="https://fengjing1009.github.io/post/2020031902/">
         </link>
         <updated>2020-03-19T06:36:54.000Z</updated>
         <content type="html"><![CDATA[<h3 id="获取metric-server服务">获取metric-server服务</h3>
@@ -295,8 +295,8 @@ kubectl apply -f .
     </entry>
     <entry>
         <title type="html"><![CDATA[linux 配置ssh客户端（便于集群管理）]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2020031901/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2020031901/">
+        <id>https://fengjing1009.github.io/post/2020031901/</id>
+        <link href="https://fengjing1009.github.io/post/2020031901/">
         </link>
         <updated>2020-03-19T05:45:05.000Z</updated>
         <content type="html"><![CDATA[<h3 id="配置连接管理">配置连接管理</h3>
@@ -350,8 +350,8 @@ chmod 0600 ~/.ssh/authorized_keys
     </entry>
     <entry>
         <title type="html"><![CDATA[keepalived 单播和组播配置]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2020031403/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2020031403/">
+        <id>https://fengjing1009.github.io/post/2020031403/</id>
+        <link href="https://fengjing1009.github.io/post/2020031403/">
         </link>
         <updated>2020-03-14T15:45:09.000Z</updated>
         <content type="html"><![CDATA[<h3 id="单播">单播</h3>
@@ -415,8 +415,8 @@ EOF
     </entry>
     <entry>
         <title type="html"><![CDATA[nginx部署https]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2020031402/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2020031402/">
+        <id>https://fengjing1009.github.io/post/2020031402/</id>
+        <link href="https://fengjing1009.github.io/post/2020031402/">
         </link>
         <updated>2020-03-14T15:43:58.000Z</updated>
         <content type="html"><![CDATA[<h3 id="生成证书相关文件">生成证书相关文件</h3>
@@ -454,8 +454,8 @@ openssl x509 -req -days 3650 -in test_com.csr  -signkey test_com.key -out test_c
     </entry>
     <entry>
         <title type="html"><![CDATA[http中的301和302状态码]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2020031401/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2020031401/">
+        <id>https://fengjing1009.github.io/post/2020031401/</id>
+        <link href="https://fengjing1009.github.io/post/2020031401/">
         </link>
         <updated>2020-03-14T15:21:05.000Z</updated>
         <content type="html"><![CDATA[<h3 id="http状态码的301和302">HTTP状态码的301和302</h3>
@@ -516,8 +516,8 @@ openssl x509 -req -days 3650 -in test_com.csr  -signkey test_com.key -out test_c
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes升级iptables为ipvs]]></title>
-        <id>https://js2hlu.coding-pages.com/post/20200227001/</id>
-        <link href="https://js2hlu.coding-pages.com/post/20200227001/">
+        <id>https://fengjing1009.github.io/post/20200227001/</id>
+        <link href="https://fengjing1009.github.io/post/20200227001/">
         </link>
         <updated>2020-02-27T06:06:14.000Z</updated>
         <content type="html"><![CDATA[<p>Kubernetes 原生的 Service 负载均衡基于 Iptables 实现，其规则链会随 Service 的数量呈线性增长，在大规模场景下对 Service 性能会有严重的影响。具体测试可参考这篇文章：<a href="https://zhuanlan.zhihu.com/p/37230013">《华为云在 K8S 大规模场景下的 Service 性能优化实践》</a></p>
@@ -562,8 +562,8 @@ kubectl get pod  -n kube-system|grep kube-proxy|awk '{print &quot;kubectl delete
     </entry>
     <entry>
         <title type="html"><![CDATA[centos7针对大并发场景的系统优化]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2020022301/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2020022301/">
+        <id>https://fengjing1009.github.io/post/2020022301/</id>
+        <link href="https://fengjing1009.github.io/post/2020022301/">
         </link>
         <updated>2020-02-23T12:51:52.000Z</updated>
         <content type="html"><![CDATA[<h3 id="为什么端口号最大为65535">为什么端口号最大为65535</h3>
@@ -774,8 +774,8 @@ net.ipv4.tcp_fin_timeout = 1
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes双栈集群安装]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2020021501/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2020021501/">
+        <id>https://fengjing1009.github.io/post/2020021501/</id>
+        <link href="https://fengjing1009.github.io/post/2020021501/">
         </link>
         <updated>2020-02-15T10:14:41.000Z</updated>
         <content type="html"><![CDATA[<blockquote>
@@ -1789,8 +1789,8 @@ kubectl set env daemonset/calico-node -n kube-system IP6_AUTODETECTION_METHOD=in
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes 生产环境优化]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2020010601/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2020010601/">
+        <id>https://fengjing1009.github.io/post/2020010601/</id>
+        <link href="https://fengjing1009.github.io/post/2020010601/">
         </link>
         <updated>2020-01-16T03:19:02.000Z</updated>
         <content type="html"><![CDATA[<h3 id="系统稳定性">系统稳定性</h3>
@@ -1819,8 +1819,8 @@ kubectl set env daemonset/calico-node -n kube-system IP6_AUTODETECTION_METHOD=in
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes 设置节点异常时候POD调度时间]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2019121701/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2019121701/">
+        <id>https://fengjing1009.github.io/post/2019121701/</id>
+        <link href="https://fengjing1009.github.io/post/2019121701/">
         </link>
         <updated>2019-12-17T03:32:19.000Z</updated>
         <content type="html"><![CDATA[<blockquote>
@@ -1867,8 +1867,8 @@ kubectl set env daemonset/calico-node -n kube-system IP6_AUTODETECTION_METHOD=in
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes master 更换ip（单节点）]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2019121102/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2019121102/">
+        <id>https://fengjing1009.github.io/post/2019121102/</id>
+        <link href="https://fengjing1009.github.io/post/2019121102/">
         </link>
         <updated>2019-12-11T06:44:47.000Z</updated>
         <content type="html"><![CDATA[<h3 id="问题分析">问题分析</h3>
@@ -1983,8 +1983,8 @@ service kubelet restart
     </entry>
     <entry>
         <title type="html"><![CDATA[etcd故障后恢复]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2019121101/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2019121101/">
+        <id>https://fengjing1009.github.io/post/2019121101/</id>
+        <link href="https://fengjing1009.github.io/post/2019121101/">
         </link>
         <updated>2019-12-11T04:46:33.000Z</updated>
         <content type="html"><![CDATA[<h3 id="etcd故障描述">etcd故障描述</h3>
@@ -2045,8 +2045,8 @@ docker run --restart=always --net host -it --name etcd3 -d -v /var/etcd:/var/etc
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes 新增master节点]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2019112201/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2019112201/">
+        <id>https://fengjing1009.github.io/post/2019112201/</id>
+        <link href="https://fengjing1009.github.io/post/2019112201/">
         </link>
         <updated>2019-11-22T02:25:27.000Z</updated>
         <content type="html"><![CDATA[<blockquote>
@@ -2085,8 +2085,8 @@ echo &quot;$(kubeadm token create --print-join-command) --control-plane --certif
     </entry>
     <entry>
         <title type="html"><![CDATA[etcd测试集群搭建（http）]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2019102501/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2019102501/">
+        <id>https://fengjing1009.github.io/post/2019102501/</id>
+        <link href="https://fengjing1009.github.io/post/2019102501/">
         </link>
         <updated>2019-10-25T07:35:10.000Z</updated>
         <content type="html"><![CDATA[<h3 id="集群搭建">集群搭建</h3>
@@ -2184,8 +2184,8 @@ ETCDCTL_API=3 etcdctl put foo bar
     </entry>
     <entry>
         <title type="html"><![CDATA[使用kubeadm 新加入节点（原始token过期后）]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2019091201/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2019091201/">
+        <id>https://fengjing1009.github.io/post/2019091201/</id>
+        <link href="https://fengjing1009.github.io/post/2019091201/">
         </link>
         <updated>2019-09-12T04:47:00.000Z</updated>
         <content type="html"><![CDATA[<h2 id="kubeadm-join">kubeadm join</h2>
@@ -2231,8 +2231,8 @@ kubeadm token create $token --print-join-command --ttl=0
     </entry>
     <entry>
         <title type="html"><![CDATA[kubernetes1.15.3离线安装]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2019090901/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2019090901/">
+        <id>https://fengjing1009.github.io/post/2019090901/</id>
+        <link href="https://fengjing1009.github.io/post/2019090901/">
         </link>
         <updated>2019-09-09T10:09:51.000Z</updated>
         <content type="html"><![CDATA[<h1 id="kubeadm-k8s集群离线安装">kubeadm k8s集群离线安装</h1>
@@ -2313,8 +2313,8 @@ kubectl  get nodes |grep master |awk '{print $1}' |xargs -i kubectl  taint node 
     </entry>
     <entry>
         <title type="html"><![CDATA[etcd数据备份和恢复]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2019090503/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2019090503/">
+        <id>https://fengjing1009.github.io/post/2019090503/</id>
+        <link href="https://fengjing1009.github.io/post/2019090503/">
         </link>
         <updated>2019-09-05T03:46:23.000Z</updated>
         <content type="html"><![CDATA[<h2 id="对于etcd-api-v3数据备份与恢复方法">对于etcd api v3数据备份与恢复方法</h2>
@@ -2408,8 +2408,8 @@ b29b94ace458096d, started, k8s-master3, https://192.168.32.130:2380, https://192
     </entry>
     <entry>
         <title type="html"><![CDATA[Centos7下的日志切割]]></title>
-        <id>https://js2hlu.coding-pages.com/post/2019090502/</id>
-        <link href="https://js2hlu.coding-pages.com/post/2019090502/">
+        <id>https://fengjing1009.github.io/post/2019090502/</id>
+        <link href="https://fengjing1009.github.io/post/2019090502/">
         </link>
         <updated>2019-09-05T03:27:49.000Z</updated>
         <content type="html"><![CDATA[<h2 id="logrotate">logrotate</h2>
