@@ -19,7 +19,7 @@
      <div class="header">
       <div class="logo_title">
 		  
-        <div class="title animated fadeInDown"><img src="https://fengjing1009.github.io/images/avatar.png?v=1585697903274"/>
+        <div class="title animated fadeInDown"><img src="https://fengjing1009.github.io/images/avatar.png?v=1586828173886"/>
 
           <h1 title="PeterPan" class="weaklink"><a href="/">PeterPan</a>
 
@@ -283,6 +283,8 @@ featureGates:
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 failSwapOn: false
+systemCgroups: systemd
+KubeletCgroups: systemd
 featureGates:
   IPv6DualStack: true
 </code></pre>
